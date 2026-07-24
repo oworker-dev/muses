@@ -1,0 +1,22 @@
+{
+  "name": "saas-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.mjs",
+    "start": "node src/server.mjs",
+    "docker:start": "pnpm run db:migrate && pnpm run start",
+    "db:migrate": "node scripts/migrate.mjs",
+    "check": "node scripts/health.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1046.0",
+    "@aws-sdk/s3-request-presigner": "^3.1046.0",
+    "@hono/node-server": "^1.19.6",
+    "hono": "^4.10.7",
+    "ioredis": "^5.8.2",
+    "pg": "^8.20.0",
+    "zod": "^4.2.0"
+  }
+}

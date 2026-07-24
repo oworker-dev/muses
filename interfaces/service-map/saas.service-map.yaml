@@ -1,0 +1,897 @@
+schema: "anss.service-map/0.1"
+generatedFrom: "src/apps/api/src/capabilities.mjs"
+service:
+  id: "oworker.saas-starter"
+  name: "OWorker SaaS Starter"
+  canonicalServiceRoot: "/"
+  programmableServiceBoundary:
+    type: "hono"
+    localBaseUrl: "http://localhost:3001"
+discovery:
+  agentServiceGuide: "/agent-guide.md"
+  manifest: "/.well-known/anss.json"
+  llms: "/llms.txt"
+  serviceMap: "/anss/saas.service-map.yaml"
+  installIndex: "/anss/install/index.json"
+adapters:
+  openapi:
+    sourcePath: "interfaces/openapi/saas.openapi.yaml"
+    publicPath: "/anss/openapi/saas.openapi.yaml"
+  aclip:
+    sourcePath: "interfaces/aclip/saas.md"
+  mcp:
+    sourcePath: "interfaces/mcp/saas.md"
+  skills:
+    sourcePath: "interfaces/skills/"
+securityBoundary:
+  scope: "metadata-only"
+  adapterCallsUseSameServiceBoundary: true
+  credentialModel: "service-defined"
+  userAgentIsAuthorization: false
+  anssDoesNotImplement:
+    - "authentication"
+    - "authorization"
+    - "confirmation-ui"
+    - "audit-log-storage"
+    - "agent-runtime"
+    - "third-party-registry"
+  note: "ANSS declares safety metadata and adapter entrypoints. The product service remains responsible for authentication, authorization, confirmation, and audit behavior."
+capabilities:
+  - id: "saas.health.read"
+    summary: "Read service health."
+    safety:
+      access: "public-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/admin/health"
+      note: "Site-admin health UI requires site-admin access."
+    http:
+      method: "GET"
+      path: "/health"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "status"
+        - "service"
+        - "runtime"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "ok"
+            - "degraded"
+        service:
+          type: "string"
+          description: "Runtime service id."
+        runtime:
+          type: "string"
+          description: "Runtime implementation."
+        startedAt:
+          type: "string"
+          description: "Service start timestamp."
+        uptimeSeconds:
+          type: "integer"
+          description: "Service uptime in seconds."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas health read --json"
+      aliases:
+        - "health"
+    mcp:
+      tool: "saas.health.read"
+  - id: "saas.integrations.read"
+    summary: "Read configured integration defaults."
+    safety:
+      access: "public-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/admin/diagnostics"
+      note: "Site-admin diagnostics UI requires site-admin access."
+    http:
+      method: "GET"
+      path: "/integrations/health"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "status"
+        - "service"
+        - "integrations"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "ok"
+            - "degraded"
+        service:
+          type: "string"
+          description: "Runtime service id."
+        integrations:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "database"
+            - "cache"
+            - "queue"
+            - "storage"
+            - "email"
+            - "billing"
+            - "observability"
+          properties:
+            database:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            cache:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            queue:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            storage:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            email:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            billing:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+            observability:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "provider"
+                - "status"
+                - "detail"
+              properties:
+                provider:
+                  type: "string"
+                  description: "Integration provider identifier."
+                status:
+                  type: "string"
+                  enum:
+                    - "ok"
+                    - "degraded"
+                    - "error"
+                    - "not_configured"
+                detail:
+                  type: "string"
+                  description: "Operational status detail."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas integrations read --json"
+      aliases:
+        - "integrations"
+    mcp:
+      tool: "saas.integrations.read"
+  - id: "saas.auth.status.read"
+    summary: "Read CLI/API authentication status."
+    safety:
+      access: "public-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/login"
+      note: "Human sign-in remains handled by the Web app."
+    http:
+      method: "GET"
+      path: "/auth/status"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "schema"
+        - "service"
+        - "authenticated"
+        - "mode"
+        - "principal"
+        - "instructions"
+      properties:
+        schema:
+          type: "string"
+          enum:
+            - "anss.auth-status/0.1"
+        service:
+          type: "string"
+          description: "Service id."
+        authenticated:
+          type: "boolean"
+          description: "Whether the supplied credential is accepted."
+        mode:
+          type: "string"
+          description: "Authentication check mode."
+        principal:
+          type:
+            - "object"
+            - "null"
+          additionalProperties: true
+          required:
+            - "type"
+            - "id"
+          properties:
+            type:
+              type: "string"
+              description: "Principal type."
+            id:
+              type: "string"
+              description: "Principal id."
+          description: "Authenticated principal, when present."
+        instructions:
+          type: "object"
+          additionalProperties: true
+          required:
+
+          properties:
+
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas auth status --json"
+      aliases:
+        - "auth status"
+    mcp:
+      tool: "saas.auth.status.read"
+  - id: "saas.account.summary.read"
+    summary: "Read neutral account and subscription summary."
+    safety:
+      access: "demo-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/account"
+      note: "Account UI requires a signed-in user."
+    http:
+      method: "GET"
+      path: "/account/summary"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "account"
+        - "subscription"
+      properties:
+        account:
+          type: "object"
+          additionalProperties: true
+          required:
+            - "id"
+            - "label"
+          properties:
+            id:
+              type: "string"
+              description: "Account id."
+            label:
+              type: "string"
+              description: "Display label."
+        subscription:
+          type:
+            - "object"
+            - "null"
+          additionalProperties: true
+          required:
+            - "plan"
+            - "status"
+          properties:
+            plan:
+              type: "string"
+              description: "Plan id."
+            status:
+              type: "string"
+              description: "Subscription status."
+            monthlyAmountCents:
+              type: "integer"
+              description: "Monthly amount in cents."
+            stripeCustomerId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe customer id."
+            stripeSubscriptionId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe subscription id."
+            stripePriceId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe price id."
+            currentPeriodEnd:
+              type:
+                - "string"
+                - "null"
+              description: "Current period end timestamp."
+          description: "Current subscription, when present."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas account summary read --json"
+      aliases:
+        - "account summary"
+    mcp:
+      tool: "saas.account.summary.read"
+  - id: "saas.billing.plans.read"
+    summary: "Read billing plan metadata."
+    safety:
+      access: "public-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/account/billing"
+      note: "Account billing UI requires a signed-in user."
+    http:
+      method: "GET"
+      path: "/billing/plans"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "plans"
+        - "provider"
+        - "status"
+      properties:
+        plans:
+          type: "array"
+          items:
+            type: "object"
+            additionalProperties: false
+            required:
+              - "id"
+              - "name"
+              - "monthlyAmountCents"
+              - "benefits"
+            properties:
+              id:
+                type: "string"
+                description: "Plan id."
+              name:
+                type: "string"
+                description: "Plan name."
+              monthlyAmountCents:
+                type: "integer"
+                description: "Monthly amount in cents."
+              benefits:
+                type: "array"
+                items:
+                  type: "string"
+                  description: "Replaceable benefit label."
+        provider:
+          type: "string"
+          description: "Billing provider."
+        status:
+          type: "string"
+          description: "Billing provider configuration status."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas billing plans read --json"
+      aliases:
+        - "billing plans"
+    mcp:
+      tool: "saas.billing.plans.read"
+  - id: "saas.billing.state.read"
+    summary: "Read current account billing state."
+    safety:
+      access: "demo-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/account/billing"
+      note: "Account billing UI requires a signed-in user."
+    http:
+      method: "GET"
+      path: "/billing/state"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "provider"
+        - "account"
+        - "subscription"
+      properties:
+        provider:
+          type: "string"
+          description: "Billing provider."
+        account:
+          type: "object"
+          additionalProperties: true
+          required:
+            - "id"
+            - "label"
+          properties:
+            id:
+              type: "string"
+              description: "Account id."
+            label:
+              type: "string"
+              description: "Display label."
+        subscription:
+          type:
+            - "object"
+            - "null"
+          additionalProperties: true
+          required:
+            - "plan"
+            - "status"
+          properties:
+            plan:
+              type: "string"
+              description: "Plan id."
+            status:
+              type: "string"
+              description: "Subscription status."
+            monthlyAmountCents:
+              type: "integer"
+              description: "Monthly amount in cents."
+            stripeCustomerId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe customer id."
+            stripeSubscriptionId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe subscription id."
+            stripePriceId:
+              type:
+                - "string"
+                - "null"
+              description: "Stripe price id."
+            currentPeriodEnd:
+              type:
+                - "string"
+                - "null"
+              description: "Current period end timestamp."
+          description: "Current subscription, when present."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas billing state read --json"
+      aliases:
+        - "billing state"
+    mcp:
+      tool: "saas.billing.state.read"
+  - id: "saas.billing.checkout.create"
+    summary: "Create a billing checkout redirect contract."
+    safety:
+      access: "authenticated-write"
+      writes: true
+      requiresUserConfirmation: true
+    human:
+      path: "/pricing"
+      note: "Human checkout starts from the Pricing UI."
+    http:
+      method: "POST"
+      path: "/billing/checkout"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+        accountId:
+          type: "string"
+          description: "Account id for checkout."
+        email:
+          type: "string"
+          description: "Optional customer email."
+    outputSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "provider"
+      properties:
+        provider:
+          type: "string"
+          description: "Billing provider."
+        url:
+          type: "string"
+          description: "Checkout redirect URL, when created."
+        accountId:
+          type: "string"
+          description: "Account id associated with checkout."
+        status:
+          type: "string"
+          description: "Provider status when checkout could not be created."
+        detail:
+          type: "string"
+          description: "Provider error detail."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas billing checkout create --body <json> --json"
+      aliases:
+        - "billing checkout"
+    mcp:
+      tool: "saas.billing.checkout.create"
+  - id: "saas.storage.presigned-upload.create"
+    summary: "Create an S3-compatible presigned upload contract."
+    safety:
+      access: "authenticated-write"
+      writes: true
+      requiresUserConfirmation: true
+    human:
+      path: "/account"
+      note: "Avatar uploads start from the account UI."
+    http:
+      method: "POST"
+      path: "/storage/presigned-upload"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "fileName"
+      properties:
+        fileName:
+          type: "string"
+          description: "Original file name."
+        contentType:
+          type: "string"
+          description: "Upload content type."
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "provider"
+        - "bucket"
+        - "key"
+        - "method"
+        - "url"
+        - "headers"
+        - "expiresInSeconds"
+      properties:
+        provider:
+          type: "string"
+          description: "Storage provider."
+        bucket:
+          type: "string"
+          description: "Storage bucket."
+        key:
+          type: "string"
+          description: "Object key."
+        method:
+          type: "string"
+          enum:
+            - "PUT"
+        url:
+          type: "string"
+          description: "Presigned upload URL."
+        headers:
+          type: "object"
+          additionalProperties: false
+          required:
+            - "content-type"
+          properties:
+            content-type:
+              type: "string"
+              description: "Required content type header."
+        expiresInSeconds:
+          type: "integer"
+          description: "URL expiration in seconds."
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas storage presigned-upload create --body <json> --json"
+      aliases:
+        - "storage presigned-upload"
+    mcp:
+      tool: "saas.storage.presignedUpload.create"
+  - id: "saas.anss.capabilities.read"
+    summary: "Read the Agent-readable service capability list."
+    safety:
+      access: "public-read"
+      writes: false
+      requiresUserConfirmation: false
+    human:
+      path: "/agent-guide.md"
+    http:
+      method: "GET"
+      path: "/anss/capabilities"
+    inputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+
+      properties:
+
+    outputSchema:
+      type: "object"
+      additionalProperties: false
+      required:
+        - "schema"
+        - "service"
+        - "programmableServiceBoundary"
+        - "capabilities"
+      properties:
+        schema:
+          type: "string"
+          enum:
+            - "anss.capabilities/0.1"
+        service:
+          type: "string"
+          description: "Service id."
+        programmableServiceBoundary:
+          type: "string"
+          description: "Programmable service boundary type."
+        capabilities:
+          type: "array"
+          items:
+            type: "object"
+            additionalProperties: true
+            required:
+
+            properties:
+
+    errorSchema:
+      type: "object"
+      additionalProperties: true
+      required:
+        - "status"
+        - "detail"
+      properties:
+        status:
+          type: "string"
+          enum:
+            - "error"
+        detail:
+          type: "string"
+          description: "Human-readable error detail."
+    aclip:
+      command: "saas anss capabilities read --json"
+      aliases:
+        - "capabilities"
+        - "anss capabilities"
+    mcp:
+      tool: "saas.anss.capabilities.read"

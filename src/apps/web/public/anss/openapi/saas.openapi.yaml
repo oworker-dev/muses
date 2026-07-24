@@ -1,0 +1,1395 @@
+openapi: "3.1.0"
+info:
+  title: "OWorker SaaS Starter API"
+  version: "0.1.0"
+  description: "Generated from src/apps/api/src/capabilities.mjs."
+servers:
+  - url: "http://localhost:3001"
+paths:
+  /health:
+    get:
+      operationId: "saas_health_read"
+      summary: "Read service health."
+      x-anss-capability-id: "saas.health.read"
+      x-anss-safety:
+        access: "public-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "status"
+          - "service"
+          - "runtime"
+        properties:
+          status:
+            type: "string"
+            enum:
+              - "ok"
+              - "degraded"
+          service:
+            type: "string"
+            description: "Runtime service id."
+          runtime:
+            type: "string"
+            description: "Runtime implementation."
+          startedAt:
+            type: "string"
+            description: "Service start timestamp."
+          uptimeSeconds:
+            type: "integer"
+            description: "Service uptime in seconds."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "status"
+                  - "service"
+                  - "runtime"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                  service:
+                    type: "string"
+                    description: "Runtime service id."
+                  runtime:
+                    type: "string"
+                    description: "Runtime implementation."
+                  startedAt:
+                    type: "string"
+                    description: "Service start timestamp."
+                  uptimeSeconds:
+                    type: "integer"
+                    description: "Service uptime in seconds."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /integrations/health:
+    get:
+      operationId: "saas_integrations_read"
+      summary: "Read configured integration defaults."
+      x-anss-capability-id: "saas.integrations.read"
+      x-anss-safety:
+        access: "public-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "status"
+          - "service"
+          - "integrations"
+        properties:
+          status:
+            type: "string"
+            enum:
+              - "ok"
+              - "degraded"
+          service:
+            type: "string"
+            description: "Runtime service id."
+          integrations:
+            type: "object"
+            additionalProperties: false
+            required:
+              - "database"
+              - "cache"
+              - "queue"
+              - "storage"
+              - "email"
+              - "billing"
+              - "observability"
+            properties:
+              database:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              cache:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              queue:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              storage:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              email:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              billing:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+              observability:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "status"
+                  - "detail"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Integration provider identifier."
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                      - "error"
+                      - "not_configured"
+                  detail:
+                    type: "string"
+                    description: "Operational status detail."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "status"
+                  - "service"
+                  - "integrations"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "ok"
+                      - "degraded"
+                  service:
+                    type: "string"
+                    description: "Runtime service id."
+                  integrations:
+                    type: "object"
+                    additionalProperties: false
+                    required:
+                      - "database"
+                      - "cache"
+                      - "queue"
+                      - "storage"
+                      - "email"
+                      - "billing"
+                      - "observability"
+                    properties:
+                      database:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      cache:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      queue:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      storage:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      email:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      billing:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+                      observability:
+                        type: "object"
+                        additionalProperties: false
+                        required:
+                          - "provider"
+                          - "status"
+                          - "detail"
+                        properties:
+                          provider:
+                            type: "string"
+                            description: "Integration provider identifier."
+                          status:
+                            type: "string"
+                            enum:
+                              - "ok"
+                              - "degraded"
+                              - "error"
+                              - "not_configured"
+                          detail:
+                            type: "string"
+                            description: "Operational status detail."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /auth/status:
+    get:
+      operationId: "saas_auth_status_read"
+      summary: "Read CLI/API authentication status."
+      x-anss-capability-id: "saas.auth.status.read"
+      x-anss-safety:
+        access: "public-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "schema"
+          - "service"
+          - "authenticated"
+          - "mode"
+          - "principal"
+          - "instructions"
+        properties:
+          schema:
+            type: "string"
+            enum:
+              - "anss.auth-status/0.1"
+          service:
+            type: "string"
+            description: "Service id."
+          authenticated:
+            type: "boolean"
+            description: "Whether the supplied credential is accepted."
+          mode:
+            type: "string"
+            description: "Authentication check mode."
+          principal:
+            type:
+              - "object"
+              - "null"
+            additionalProperties: true
+            required:
+              - "type"
+              - "id"
+            properties:
+              type:
+                type: "string"
+                description: "Principal type."
+              id:
+                type: "string"
+                description: "Principal id."
+            description: "Authenticated principal, when present."
+          instructions:
+            type: "object"
+            additionalProperties: true
+            required:
+
+            properties:
+
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "schema"
+                  - "service"
+                  - "authenticated"
+                  - "mode"
+                  - "principal"
+                  - "instructions"
+                properties:
+                  schema:
+                    type: "string"
+                    enum:
+                      - "anss.auth-status/0.1"
+                  service:
+                    type: "string"
+                    description: "Service id."
+                  authenticated:
+                    type: "boolean"
+                    description: "Whether the supplied credential is accepted."
+                  mode:
+                    type: "string"
+                    description: "Authentication check mode."
+                  principal:
+                    type:
+                      - "object"
+                      - "null"
+                    additionalProperties: true
+                    required:
+                      - "type"
+                      - "id"
+                    properties:
+                      type:
+                        type: "string"
+                        description: "Principal type."
+                      id:
+                        type: "string"
+                        description: "Principal id."
+                    description: "Authenticated principal, when present."
+                  instructions:
+                    type: "object"
+                    additionalProperties: true
+                    required:
+
+                    properties:
+
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /account/summary:
+    get:
+      operationId: "saas_account_summary_read"
+      summary: "Read neutral account and subscription summary."
+      x-anss-capability-id: "saas.account.summary.read"
+      x-anss-safety:
+        access: "demo-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "account"
+          - "subscription"
+        properties:
+          account:
+            type: "object"
+            additionalProperties: true
+            required:
+              - "id"
+              - "label"
+            properties:
+              id:
+                type: "string"
+                description: "Account id."
+              label:
+                type: "string"
+                description: "Display label."
+          subscription:
+            type:
+              - "object"
+              - "null"
+            additionalProperties: true
+            required:
+              - "plan"
+              - "status"
+            properties:
+              plan:
+                type: "string"
+                description: "Plan id."
+              status:
+                type: "string"
+                description: "Subscription status."
+              monthlyAmountCents:
+                type: "integer"
+                description: "Monthly amount in cents."
+              stripeCustomerId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe customer id."
+              stripeSubscriptionId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe subscription id."
+              stripePriceId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe price id."
+              currentPeriodEnd:
+                type:
+                  - "string"
+                  - "null"
+                description: "Current period end timestamp."
+            description: "Current subscription, when present."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "account"
+                  - "subscription"
+                properties:
+                  account:
+                    type: "object"
+                    additionalProperties: true
+                    required:
+                      - "id"
+                      - "label"
+                    properties:
+                      id:
+                        type: "string"
+                        description: "Account id."
+                      label:
+                        type: "string"
+                        description: "Display label."
+                  subscription:
+                    type:
+                      - "object"
+                      - "null"
+                    additionalProperties: true
+                    required:
+                      - "plan"
+                      - "status"
+                    properties:
+                      plan:
+                        type: "string"
+                        description: "Plan id."
+                      status:
+                        type: "string"
+                        description: "Subscription status."
+                      monthlyAmountCents:
+                        type: "integer"
+                        description: "Monthly amount in cents."
+                      stripeCustomerId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe customer id."
+                      stripeSubscriptionId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe subscription id."
+                      stripePriceId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe price id."
+                      currentPeriodEnd:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Current period end timestamp."
+                    description: "Current subscription, when present."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /billing/plans:
+    get:
+      operationId: "saas_billing_plans_read"
+      summary: "Read billing plan metadata."
+      x-anss-capability-id: "saas.billing.plans.read"
+      x-anss-safety:
+        access: "public-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "plans"
+          - "provider"
+          - "status"
+        properties:
+          plans:
+            type: "array"
+            items:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "id"
+                - "name"
+                - "monthlyAmountCents"
+                - "benefits"
+              properties:
+                id:
+                  type: "string"
+                  description: "Plan id."
+                name:
+                  type: "string"
+                  description: "Plan name."
+                monthlyAmountCents:
+                  type: "integer"
+                  description: "Monthly amount in cents."
+                benefits:
+                  type: "array"
+                  items:
+                    type: "string"
+                    description: "Replaceable benefit label."
+          provider:
+            type: "string"
+            description: "Billing provider."
+          status:
+            type: "string"
+            description: "Billing provider configuration status."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "plans"
+                  - "provider"
+                  - "status"
+                properties:
+                  plans:
+                    type: "array"
+                    items:
+                      type: "object"
+                      additionalProperties: false
+                      required:
+                        - "id"
+                        - "name"
+                        - "monthlyAmountCents"
+                        - "benefits"
+                      properties:
+                        id:
+                          type: "string"
+                          description: "Plan id."
+                        name:
+                          type: "string"
+                          description: "Plan name."
+                        monthlyAmountCents:
+                          type: "integer"
+                          description: "Monthly amount in cents."
+                        benefits:
+                          type: "array"
+                          items:
+                            type: "string"
+                            description: "Replaceable benefit label."
+                  provider:
+                    type: "string"
+                    description: "Billing provider."
+                  status:
+                    type: "string"
+                    description: "Billing provider configuration status."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /billing/state:
+    get:
+      operationId: "saas_billing_state_read"
+      summary: "Read current account billing state."
+      x-anss-capability-id: "saas.billing.state.read"
+      x-anss-safety:
+        access: "demo-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "provider"
+          - "account"
+          - "subscription"
+        properties:
+          provider:
+            type: "string"
+            description: "Billing provider."
+          account:
+            type: "object"
+            additionalProperties: true
+            required:
+              - "id"
+              - "label"
+            properties:
+              id:
+                type: "string"
+                description: "Account id."
+              label:
+                type: "string"
+                description: "Display label."
+          subscription:
+            type:
+              - "object"
+              - "null"
+            additionalProperties: true
+            required:
+              - "plan"
+              - "status"
+            properties:
+              plan:
+                type: "string"
+                description: "Plan id."
+              status:
+                type: "string"
+                description: "Subscription status."
+              monthlyAmountCents:
+                type: "integer"
+                description: "Monthly amount in cents."
+              stripeCustomerId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe customer id."
+              stripeSubscriptionId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe subscription id."
+              stripePriceId:
+                type:
+                  - "string"
+                  - "null"
+                description: "Stripe price id."
+              currentPeriodEnd:
+                type:
+                  - "string"
+                  - "null"
+                description: "Current period end timestamp."
+            description: "Current subscription, when present."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "account"
+                  - "subscription"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Billing provider."
+                  account:
+                    type: "object"
+                    additionalProperties: true
+                    required:
+                      - "id"
+                      - "label"
+                    properties:
+                      id:
+                        type: "string"
+                        description: "Account id."
+                      label:
+                        type: "string"
+                        description: "Display label."
+                  subscription:
+                    type:
+                      - "object"
+                      - "null"
+                    additionalProperties: true
+                    required:
+                      - "plan"
+                      - "status"
+                    properties:
+                      plan:
+                        type: "string"
+                        description: "Plan id."
+                      status:
+                        type: "string"
+                        description: "Subscription status."
+                      monthlyAmountCents:
+                        type: "integer"
+                        description: "Monthly amount in cents."
+                      stripeCustomerId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe customer id."
+                      stripeSubscriptionId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe subscription id."
+                      stripePriceId:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Stripe price id."
+                      currentPeriodEnd:
+                        type:
+                          - "string"
+                          - "null"
+                        description: "Current period end timestamp."
+                    description: "Current subscription, when present."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+  /billing/checkout:
+    post:
+      operationId: "saas_billing_checkout_create"
+      summary: "Create a billing checkout redirect contract."
+      x-anss-capability-id: "saas.billing.checkout.create"
+      x-anss-safety:
+        access: "authenticated-write"
+        writes: true
+        requiresUserConfirmation: true
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+          accountId:
+            type: "string"
+            description: "Account id for checkout."
+          email:
+            type: "string"
+            description: "Optional customer email."
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: true
+        required:
+          - "provider"
+        properties:
+          provider:
+            type: "string"
+            description: "Billing provider."
+          url:
+            type: "string"
+            description: "Checkout redirect URL, when created."
+          accountId:
+            type: "string"
+            description: "Account id associated with checkout."
+          status:
+            type: "string"
+            description: "Provider status when checkout could not be created."
+          detail:
+            type: "string"
+            description: "Provider error detail."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "provider"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Billing provider."
+                  url:
+                    type: "string"
+                    description: "Checkout redirect URL, when created."
+                  accountId:
+                    type: "string"
+                    description: "Account id associated with checkout."
+                  status:
+                    type: "string"
+                    description: "Provider status when checkout could not be created."
+                  detail:
+                    type: "string"
+                    description: "Provider error detail."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: "object"
+              additionalProperties: false
+              required:
+
+              properties:
+                accountId:
+                  type: "string"
+                  description: "Account id for checkout."
+                email:
+                  type: "string"
+                  description: "Optional customer email."
+  /storage/presigned-upload:
+    post:
+      operationId: "saas_storage_presigned_upload_create"
+      summary: "Create an S3-compatible presigned upload contract."
+      x-anss-capability-id: "saas.storage.presigned-upload.create"
+      x-anss-safety:
+        access: "authenticated-write"
+        writes: true
+        requiresUserConfirmation: true
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "fileName"
+        properties:
+          fileName:
+            type: "string"
+            description: "Original file name."
+          contentType:
+            type: "string"
+            description: "Upload content type."
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "provider"
+          - "bucket"
+          - "key"
+          - "method"
+          - "url"
+          - "headers"
+          - "expiresInSeconds"
+        properties:
+          provider:
+            type: "string"
+            description: "Storage provider."
+          bucket:
+            type: "string"
+            description: "Storage bucket."
+          key:
+            type: "string"
+            description: "Object key."
+          method:
+            type: "string"
+            enum:
+              - "PUT"
+          url:
+            type: "string"
+            description: "Presigned upload URL."
+          headers:
+            type: "object"
+            additionalProperties: false
+            required:
+              - "content-type"
+            properties:
+              content-type:
+                type: "string"
+                description: "Required content type header."
+          expiresInSeconds:
+            type: "integer"
+            description: "URL expiration in seconds."
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "provider"
+                  - "bucket"
+                  - "key"
+                  - "method"
+                  - "url"
+                  - "headers"
+                  - "expiresInSeconds"
+                properties:
+                  provider:
+                    type: "string"
+                    description: "Storage provider."
+                  bucket:
+                    type: "string"
+                    description: "Storage bucket."
+                  key:
+                    type: "string"
+                    description: "Object key."
+                  method:
+                    type: "string"
+                    enum:
+                      - "PUT"
+                  url:
+                    type: "string"
+                    description: "Presigned upload URL."
+                  headers:
+                    type: "object"
+                    additionalProperties: false
+                    required:
+                      - "content-type"
+                    properties:
+                      content-type:
+                        type: "string"
+                        description: "Required content type header."
+                  expiresInSeconds:
+                    type: "integer"
+                    description: "URL expiration in seconds."
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: "object"
+              additionalProperties: false
+              required:
+                - "fileName"
+              properties:
+                fileName:
+                  type: "string"
+                  description: "Original file name."
+                contentType:
+                  type: "string"
+                  description: "Upload content type."
+  /anss/capabilities:
+    get:
+      operationId: "saas_anss_capabilities_read"
+      summary: "Read the Agent-readable service capability list."
+      x-anss-capability-id: "saas.anss.capabilities.read"
+      x-anss-safety:
+        access: "public-read"
+        writes: false
+        requiresUserConfirmation: false
+      x-anss-input-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+
+        properties:
+
+      x-anss-output-schema:
+        type: "object"
+        additionalProperties: false
+        required:
+          - "schema"
+          - "service"
+          - "programmableServiceBoundary"
+          - "capabilities"
+        properties:
+          schema:
+            type: "string"
+            enum:
+              - "anss.capabilities/0.1"
+          service:
+            type: "string"
+            description: "Service id."
+          programmableServiceBoundary:
+            type: "string"
+            description: "Programmable service boundary type."
+          capabilities:
+            type: "array"
+            items:
+              type: "object"
+              additionalProperties: true
+              required:
+
+              properties:
+
+      responses:
+        200:
+          description: "JSON response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: false
+                required:
+                  - "schema"
+                  - "service"
+                  - "programmableServiceBoundary"
+                  - "capabilities"
+                properties:
+                  schema:
+                    type: "string"
+                    enum:
+                      - "anss.capabilities/0.1"
+                  service:
+                    type: "string"
+                    description: "Service id."
+                  programmableServiceBoundary:
+                    type: "string"
+                    description: "Programmable service boundary type."
+                  capabilities:
+                    type: "array"
+                    items:
+                      type: "object"
+                      additionalProperties: true
+                      required:
+
+                      properties:
+
+        default:
+          description: "Error response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                additionalProperties: true
+                required:
+                  - "status"
+                  - "detail"
+                properties:
+                  status:
+                    type: "string"
+                    enum:
+                      - "error"
+                  detail:
+                    type: "string"
+                    description: "Human-readable error detail."

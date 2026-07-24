@@ -1,0 +1,326 @@
+items:
+  - id: define-platform-goal
+    name: 定义平台终局目标
+    summary: 把长期产品成功状态、价值边界和不可妥协性质写入 APCC 与目标文档。
+    status: done
+    planRef: establish-platform-architecture
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:27:47.376Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+    statusChangedAt: 2026-07-24T18:30:21.000Z
+  - id: author-durable-architecture
+    name: 编写长期架构文档
+    summary: 记录分层、模块边界、统一协议、数据所有权、非功能要求和演进约束。
+    status: done
+    planRef: establish-platform-architecture
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:27:47.535Z
+    updatedAt: 2026-07-24T18:40:09.132Z
+    statusChangedAt: 2026-07-24T18:40:09.132Z
+  - id: define-kernel-validation
+    name: 定义内核验证路线
+    summary: 设计独立运行、协议复用和跨模块组合三层验收门。
+    status: done
+    planRef: establish-platform-architecture
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:27:47.691Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+    statusChangedAt: 2026-07-24T18:30:21.000Z
+  - id: codify-product-value-constitution
+    name: 固化产品价值宪法
+    summary: 记录用户体验承诺、用户所得价值、商业价值、产品判断原则和停止规则。
+    status: done
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:00:25.100Z
+    updatedAt: 2026-07-24T19:05:21.339Z
+    statusChangedAt: 2026-07-24T19:05:21.339Z
+  - id: codify-open-development-policy
+    name: 固化开放开发原则
+    summary: 定义开源、Build in Public、用户自由、隐私安全和可持续商业边界。
+    status: done
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:00:25.278Z
+    updatedAt: 2026-07-24T19:05:21.662Z
+    statusChangedAt: 2026-07-24T19:05:21.662Z
+  - id: define-founder-validation-loop
+    name: 定义创始人业务验证闭环
+    summary: 以 AI 短剧和 PPT 定制记录基线、实验、交付结果与外部纠偏证据。
+    status: done
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:00:25.450Z
+    updatedAt: 2026-07-24T19:05:21.980Z
+    statusChangedAt: 2026-07-24T19:05:21.980Z
+  - id: define-value-metrics-ledger
+    name: 定义价值指标与假设台账
+    summary: 建立北极星、护栏、假设证据、决策阈值和停止机制。
+    status: done
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:00:25.608Z
+    updatedAt: 2026-07-24T19:08:30.550Z
+    statusChangedAt: 2026-07-24T19:08:30.550Z
+  - id: collect-founder-workflow-baselines
+    name: 采集创始人真实工作流基线
+    summary: 分别记录 AI 短剧和 PPT 定制当前工具链、步骤、耗时、成本、返工、交付与自由度基线。
+    status: pending
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: product-owner
+    pinned: true
+    pinnedReason: 价值文档完成后必须用真实业务数据填充的下一步。
+    createdAt: 2026-07-24T19:05:22.311Z
+    updatedAt: 2026-07-24T19:05:22.311Z
+    statusChangedAt: 2026-07-24T19:05:22.311Z
+  - id: validate-external-user-needs
+    name: 验证外部同类用户需求
+    summary: 邀请外部 AI 短剧、PPT 或内容生产用户复现关键任务并修正创始人偏差。
+    status: pending
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:05:22.485Z
+    updatedAt: 2026-07-24T19:05:22.485Z
+    statusChangedAt: 2026-07-24T19:05:22.485Z
+  - id: codify-audio-music-module
+    name: 固化 AI 音频与音乐模块边界
+    summary: 定义音乐、配音、音效、音频处理的对象、能力、版权来源、非目标与组合验收。
+    status: done
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:07:35.906Z
+    updatedAt: 2026-07-24T19:08:30.392Z
+    statusChangedAt: 2026-07-24T19:08:30.392Z
+  - id: define-technical-requirements-matrix
+    name: 建立技术需求与体验约束矩阵
+    summary: 把用户体验、媒体闭环、协作、可编辑性、开放迁移和成本目标映射为技术约束。
+    status: pending
+    planRef: technical-discovery
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:02:53.801Z
+    updatedAt: 2026-07-24T19:02:53.801Z
+    statusChangedAt: 2026-07-24T19:02:53.801Z
+  - id: prototype-document-collaboration-model
+    name: 原型验证文档与协作模型
+    summary: 比较状态快照、操作日志、CRDT/OT 对命令、修订、冲突、撤销和离线恢复的影响。
+    status: pending
+    planRef: technical-discovery
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:02:53.973Z
+    updatedAt: 2026-07-24T19:02:53.973Z
+    statusChangedAt: 2026-07-24T19:02:53.973Z
+  - id: prototype-canvas-media-runtime
+    name: 原型验证画布与媒体运行时
+    summary: 验证 Canvas/SVG/WebGL、浏览器/Worker/媒体进程在图像、视频与音频编辑中的边界。
+    status: pending
+    planRef: technical-discovery
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:02:54.142Z
+    updatedAt: 2026-07-24T19:02:54.142Z
+    statusChangedAt: 2026-07-24T19:02:54.142Z
+  - id: prototype-durable-execution-model
+    name: 原型验证持久执行模型
+    summary: 验证 Job 与 Workflow 的暂停恢复、重试、幂等、长任务和供应商回调语义。
+    status: pending
+    planRef: technical-discovery
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:02:54.304Z
+    updatedAt: 2026-07-24T19:02:54.304Z
+    statusChangedAt: 2026-07-24T19:02:54.304Z
+  - id: record-technical-route-decisions
+    name: 记录关键技术路线决策
+    summary: 依据原型证据记录可逆选择、淘汰理由、适配边界与 Wave 0 契约约束。
+    status: pending
+    planRef: technical-discovery
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:02:54.463Z
+    updatedAt: 2026-07-24T19:02:54.463Z
+    statusChangedAt: 2026-07-24T19:02:54.463Z
+  - id: specify-wave-0-contracts
+    name: 规格化 Wave 0 核心契约
+    summary: 在实现前确定首批 Schema、状态机、端口、迁移规则、测试矩阵和包边界。
+    status: pending
+    planRef: wave-0-protocol-lab
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+    statusChangedAt: 2026-07-24T18:30:21.000Z
+  - id: implement-protocol-harness
+    name: 实现协议 Harness 与内存参考实现
+    summary: 为 CreativeDocument、Command、Capability 与 Job 提供可独立运行的最小参考实现。
+    status: pending
+    planRef: wave-0-protocol-lab
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+    statusChangedAt: 2026-07-24T18:30:21.000Z
+  - id: verify-protocol-adapters
+    name: 验证持久化与异步适配器
+    summary: 让 PostgreSQL、S3 和 Queue 适配器通过相同契约、迁移、幂等与故障测试。
+    status: pending
+    planRef: wave-0-protocol-lab
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+    statusChangedAt: 2026-07-24T18:30:21.000Z
+  - id: deliver-document-canvas-kernel
+    name: 交付创作文档与最小画布内核
+    summary: 通过文档迁移、统一命令、自动保存、撤销恢复和画布性能验收。
+    status: pending
+    planRef: wave-1-document-canvas
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:39:07.341Z
+    updatedAt: 2026-07-24T18:39:07.341Z
+    statusChangedAt: 2026-07-24T18:39:07.341Z
+  - id: deliver-asset-job-image-kernel
+    name: 交付资产、任务与图像能力内核
+    summary: 通过资产生命周期、Job 可靠性、来源记录和首个图像能力的 Gate A/B 验收。
+    status: pending
+    planRef: wave-2-asset-job-image
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:39:07.494Z
+    updatedAt: 2026-07-24T18:39:07.494Z
+    statusChangedAt: 2026-07-24T18:39:07.494Z
+  - id: deliver-agent-canvas-loop
+    name: 交付 Agent 画布操作闭环
+    summary: 证明 Agent 在权限、预算、确认和检查点约束下只通过公共能力与命令行动。
+    status: pending
+    planRef: wave-3-agent-canvas
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:39:07.646Z
+    updatedAt: 2026-07-24T18:39:07.646Z
+    statusChangedAt: 2026-07-24T18:39:07.646Z
+  - id: prove-three-entry-reuse
+    name: 证明三入口能力复用
+    summary: 证明同一图像能力由界面、Agent 和工作流调用且共享任务、资产与来源语义。
+    status: pending
+    planRef: wave-4-workflow-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:39:07.790Z
+    updatedAt: 2026-07-24T18:39:07.790Z
+    statusChangedAt: 2026-07-24T18:39:07.790Z
+  - id: deliver-professional-media-composition
+    name: 交付专业媒体组合基线
+    summary: 验证视频、音频/音乐、演示和品牌能力保留专业语义并共享平台内核，完成至少两条场景组合链路。
+    status: pending
+    planRef: wave-5-professional-media
+    parentTaskId: null
+    countedForProgress: true
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:39:07.935Z
+    updatedAt: 2026-07-24T18:39:07.935Z
+    statusChangedAt: 2026-07-24T18:39:07.935Z
+  - id: select-open-source-license
+    name: 确定并落地开源许可证
+    summary: 评估 AGPLv3 等候选、依赖与贡献兼容、托管商业边界和法律风险，通过正式政策决策写入 LICENSE。
+    status: pending
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:10:59.493Z
+    updatedAt: 2026-07-24T19:10:59.493Z
+    statusChangedAt: 2026-07-24T19:10:59.493Z
+  - id: prepare-build-in-public-release
+    name: 准备 Build in Public 首次公开发布
+    summary: 完成 Muses 命名、密钥与内容审计、公开入口、Git 初始化、GitHub 公共仓库创建和首版推送。
+    status: in_progress
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:10:59.657Z
+    updatedAt: 2026-07-24T19:13:21.462Z
+    statusChangedAt: 2026-07-24T19:13:21.462Z

@@ -1,0 +1,55 @@
+{
+  "schema": "anss.adapter-install/0.1",
+  "adapter": "skills",
+  "status": "guide-only",
+  "service": "oworker.saas-starter",
+  "generatedFrom": "src/apps/api/src/capabilities.mjs",
+  "registryDependency": "none",
+  "install": {
+    "source": "canonical-root",
+    "userApprovalRequired": true,
+    "registryDependency": "none",
+    "note": "The service canonical root is the primary discovery source. Third-party registries may mirror this metadata, but are not required."
+  },
+  "securityBoundary": {
+    "scope": "metadata-only",
+    "adapterCallsUseSameServiceBoundary": true,
+    "credentialModel": "service-defined",
+    "userAgentIsAuthorization": false,
+    "anssDoesNotImplement": [
+      "authentication",
+      "authorization",
+      "confirmation-ui",
+      "audit-log-storage",
+      "agent-runtime",
+      "third-party-registry"
+    ],
+    "note": "ANSS declares safety metadata and adapter entrypoints. The product service remains responsible for authentication, authorization, confirmation, and audit behavior."
+  },
+  "authorization": {
+    "installRequiresUserApproval": true,
+    "note": "Adapter discovery is public, but installation and authenticated calls must follow user or organization policy."
+  },
+  "sourcePath": "interfaces/skills/",
+  "guides": [
+    "interfaces/skills/anss-service.md",
+    "interfaces/skills/saas-auth.md",
+    "interfaces/skills/account-console.md",
+    "interfaces/skills/site-admin.md"
+  ],
+  "packageDistribution": {
+    "status": "not-configured",
+    "note": "This starter exposes skill-facing guides, not a packaged client-specific Skill bundle."
+  },
+  "capabilities": [
+    "saas.health.read",
+    "saas.integrations.read",
+    "saas.auth.status.read",
+    "saas.account.summary.read",
+    "saas.billing.plans.read",
+    "saas.billing.state.read",
+    "saas.billing.checkout.create",
+    "saas.storage.presigned-upload.create",
+    "saas.anss.capabilities.read"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "oworker.project/1.0",
+  "name": "saas",
+  "starter": {
+    "id": "saas",
+    "name": "SaaS Starter",
+    "version": "0.1.0"
+  },
+  "standard": {
+    "id": "oworker-core",
+    "version": "1.0",
+    "agentNative": true,
+    "apcc": "recommended"
+  },
+  "context": {
+    "controlPlane": ".oworker/",
+    "projectContext": ".apcc/",
+    "delivery": "delivery/"
+  }
+}

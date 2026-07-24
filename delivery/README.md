@@ -1,0 +1,67 @@
+# Delivery
+
+The current product direction and architecture baseline are recorded in
+`delivery/architecture-baseline.md`. This document continues to describe the
+accepted SaaS foundation on which the AI design platform is being built.
+
+The current value, open-development, and real-work validation boundary is
+recorded in `delivery/value-foundation.md`.
+
+This SaaS starter is acceptable when a newly created project can be run, verified, and extended without hidden OWorker platform dependencies.
+
+## Scope
+
+- Local-first neutral SaaS runtime with Web, API, worker, PostgreSQL, Valkey, and MinIO.
+- Docker workflow split for daily infrastructure, image build, full rebuild acceptance, stop, and reset.
+- Email/password authentication with email verification, password reset, change password, verified email change, optional GitHub/Google OAuth, protected account center, and server-side protected routes.
+- Database-backed auth rate limiting and conservative default security headers.
+- Neutral landing page, account console with avatar upload, account billing, site-admin visibility, account subscription state, and subscription controls.
+- System-aware light/dark theme support and mobile-safe public/auth surfaces.
+- Stripe-compatible checkout, portal, persisted subscription state, payment records, and idempotent webhook boundaries that fail closed until provider credentials are configured.
+- Explicit billing state contract for the current account subscription.
+- First-party analytics event ingestion, account activity summaries, and rollup-based admin visibility without raw IP storage.
+- Audit logs for security-sensitive account, billing, and admin actions.
+- S3-compatible presigned upload contract with MinIO-backed local acceptance.
+- Account avatar upload backed by the same S3-compatible object storage boundary.
+- Resend-compatible account lifecycle email workflows with React Email templates and local-test fallback.
+- Production configuration doctor for unsafe defaults and missing production env.
+- Open provider boundaries for database, cache, queue, storage, email, billing, and observability.
+- Contract surfaces under `interfaces/` and verification under `tests/` and `scripts/`.
+
+## Acceptance
+
+1. `pnpm install` completes from the project root.
+2. `pnpm run docker:up` starts the local stack without forcing an image rebuild.
+3. `http://localhost:3000/register` creates the first account and sends a verification email.
+4. Anonymous users cannot enter protected account routes such as `http://localhost:3000/account`.
+5. Unverified email/password users land on `http://localhost:3000/verify-email` and can resend verification from that screen.
+6. Verified users can review `http://localhost:3000/account`.
+7. Verified users can change password from `http://localhost:3000/account` and sign in with the new password.
+8. Verified users can upload an account avatar from `http://localhost:3000/account`, and the image persists through S3-compatible object storage.
+9. `http://localhost:3000/forgot-password` sends a password reset email through the configured email boundary.
+10. Better Auth creates the database-backed `rateLimit` table and returns 429 when auth mutation limits are exceeded.
+11. Web responses include baseline security headers such as `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy`.
+12. Verified users can review `http://localhost:3000/account/billing`.
+13. The first verified local user, or a configured `SITE_ADMIN_EMAILS` user, can review `http://localhost:3000/admin`, including account activity, aggregate analytics, service health, audit logs, and diagnostics.
+14. `http://localhost:3001/health` reports `ok`.
+15. `http://localhost:3001/integrations/health` reports `ok` for database, cache, queue, and storage in Docker.
+16. `http://localhost:3001/account/summary` returns account and subscription data.
+17. `http://localhost:3001/billing/state` returns the active billing provider mode, subscription state, and persisted Stripe identifiers when configured.
+18. `http://localhost:3001/storage/presigned-upload` returns a PUT upload contract when storage is configured.
+19. `pnpm run smoke` passes after Docker is healthy, proves analytics ingestion, billing webhook idempotency, payment record creation, subscription updates, and uploads through the presigned URL.
+20. `pnpm run doctor:production` reports local development warnings without crashing.
+21. `pnpm run doctor:production:strict` fails until production secrets and provider credentials are configured.
+22. `pnpm run e2e` passes after Docker is healthy and the Playwright Chromium browser is installed.
+23. The browser gate proves no horizontal overflow on a mobile landing viewport and verifies the default theme toggle.
+
+The maturity freeze is documented in `delivery/maturity-freeze.md`.
+The full V1 release gate is documented in `delivery/v1-release-gate.md`.
+
+## Boundaries
+
+- Cloud email, live billing, managed database, managed storage, and SSO are not required default assumptions.
+- The included Compose stack is local production-like acceptance, not a complete production deployment platform.
+- Production TLS, ingress or load balancing, secret management, backups, scaling, observability, and rollout strategy belong to the created project and target platform.
+- Add provider-specific services only through explicit adapters or extensions.
+- The neutral demo surfaces are replaceable. When building a real product, define product-specific workflows, data models, and business modules directly in the created project and keep their contracts and verification evidence aligned.
+- Keep APCC records aligned with this directory when `.apcc/` is present.

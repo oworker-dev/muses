@@ -1,0 +1,17 @@
+items:
+  - id: product-owner
+    name: Product Owner
+    kind: human
+    status: active
+    aliases:
+      - yueyouxin1
+      - yueyouxin
+    createdAt: 2026-07-24T18:27:46.877Z
+    updatedAt: 2026-07-24T18:27:46.877Z
+  - id: codex-main
+    name: Codex Main
+    kind: agent
+    status: active
+    aliases: []
+    createdAt: 2026-07-24T18:27:47.038Z
+    updatedAt: 2026-07-24T18:27:47.038Z

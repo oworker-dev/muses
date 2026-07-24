@@ -1,0 +1,13 @@
+{
+  "name": "saas-cli",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "saas": "node src/cli.mjs",
+    "check": "node src/cli.mjs --check && node --test ../../../tests/contracts/saas-cli-argv.test.mjs"
+  },
+  "dependencies": {
+    "@oworker/aclip": "^0.3.6"
+  }
+}

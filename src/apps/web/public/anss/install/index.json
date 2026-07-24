@@ -1,0 +1,29 @@
+{
+  "schema": "anss.adapter-install-index/0.1",
+  "service": "oworker.saas-starter",
+  "generatedFrom": "src/apps/api/src/capabilities.mjs",
+  "registryDependency": "none",
+  "adapters": {
+    "openapi": {
+      "status": "available",
+      "manifest": "/anss/install/openapi.json",
+      "publicPath": "/anss/openapi/saas.openapi.yaml"
+    },
+    "cli": {
+      "status": "development-local",
+      "manifest": "/anss/install/cli.json",
+      "protocolRuntime": "@oworker/aclip"
+    },
+    "mcp": {
+      "status": "available",
+      "manifest": "/anss/install/mcp.json",
+      "remoteStatus": "available",
+      "remoteEndpoint": "/mcp",
+      "remoteTransport": "streamable-http"
+    },
+    "skills": {
+      "status": "guide-only",
+      "manifest": "/anss/install/skills.json"
+    }
+  }
+}

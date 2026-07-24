@@ -1,0 +1,47 @@
+{
+  "name": "saas",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.0.0",
+  "workspaces": [
+    "src/apps/*",
+    "src/packages/*"
+  ],
+  "scripts": {
+    "health": "node scripts/health.mjs",
+    "dev": "pnpm --filter ./src/apps/web run dev",
+    "dev:api": "pnpm --filter ./src/apps/api run dev",
+    "dev:cli": "pnpm --filter ./src/apps/cli run saas --",
+    "dev:worker": "pnpm --filter ./src/apps/worker run dev",
+    "build": "pnpm --filter ./src/apps/web run build && pnpm --filter ./src/apps/api run check && pnpm --filter ./src/apps/cli run check && pnpm --filter ./src/apps/mcp run check",
+    "start": "pnpm --filter ./src/apps/web run start",
+    "start:api": "pnpm --filter ./src/apps/api run start",
+    "start:worker": "pnpm --filter ./src/apps/worker run start",
+    "anss:sync": "node scripts/sync-anss-service-map.mjs --write",
+    "anss:check": "node scripts/sync-anss-service-map.mjs --check",
+    "anss:conformance": "node scripts/anss-conformance.mjs",
+    "anss:agent-probe": "node scripts/anss-agent-probe.mjs",
+    "db:migrate": "pnpm --filter ./src/apps/api run db:migrate && pnpm --filter ./src/apps/web run db:migrate",
+    "typecheck": "pnpm --filter ./src/apps/web run typecheck && pnpm --filter ./src/apps/api run check && pnpm --filter ./src/apps/cli run check && pnpm --filter ./src/apps/mcp run check && pnpm --filter ./src/apps/worker run check",
+    "check": "pnpm run health && pnpm run anss:check && pnpm run typecheck",
+    "doctor:production": "node scripts/doctor-production.mjs",
+    "doctor:production:strict": "node scripts/doctor-production.mjs --strict",
+    "smoke": "node scripts/smoke.mjs",
+    "e2e:install": "playwright install chromium",
+    "e2e": "playwright test",
+    "docker:infra": "node scripts/docker-compose.mjs up -d db cache storage",
+    "docker:build": "node scripts/docker-compose.mjs build",
+    "docker:up": "node scripts/docker-compose.mjs up -d",
+    "docker:rebuild": "node scripts/docker-compose.mjs up -d --build",
+    "docker:down": "node scripts/docker-compose.mjs down",
+    "docker:reset": "node scripts/docker-compose.mjs down -v",
+    "turbo:build": "turbo build",
+    "turbo:check": "turbo check"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "pg": "^8.20.0",
+    "turbo": "^2.6.3"
+  }
+}

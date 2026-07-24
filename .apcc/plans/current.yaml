@@ -1,0 +1,92 @@
+endGoalRef: end-goal-ai
+items:
+  - id: establish-platform-architecture
+    name: 建立平台终局与架构基线
+    summary: 定义长期产品目标、稳定模块边界、核心协议、演进规则和首轮内核验证路线。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: 正式开发前必须保持可见的架构基线。
+    createdAt: 2026-07-24T18:27:47.205Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+  - id: value-foundation
+    name: Value Foundation：建立产品价值与体验基线
+    summary: 确认创始动机、目标用户、关键任务、差异化体验、开放原则、商业价值、指标与证据机制。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: Wave 0 前必须完成的当前阶段。
+    createdAt: 2026-07-24T19:00:24.937Z
+    updatedAt: 2026-07-24T19:06:29.000Z
+  - id: technical-discovery
+    name: Technical Discovery：验证关键技术路线
+    summary: 以价值和体验约束验证文档协作、画布渲染、媒体运行时、Job/Workflow、Schema 与一致性路线，不提前冻结完整技术栈。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: Value Foundation 完成后、Wave 0 契约冻结前的必要证据阶段。
+    createdAt: 2026-07-24T19:02:53.628Z
+    updatedAt: 2026-07-24T19:06:29.000Z
+  - id: wave-0-protocol-lab
+    name: Wave 0：建立创作协议实验室
+    summary: 验证 CreativeDocument、Command、Asset、Capability、Job、Provenance 与策略的最小稳定语义。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T19:05:22.645Z
+  - id: wave-1-document-canvas
+    name: Wave 1：交付创作文档与最小画布
+    summary: 建立可迁移创作文档、统一命令、空间投影、编辑交互、自动保存与版本恢复。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+  - id: wave-2-asset-job-image
+    name: Wave 2：连接资产、任务与图像能力
+    summary: 打通资产生命周期、异步任务、来源记录和首个可替换图像能力适配器。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+  - id: wave-3-agent-canvas
+    name: Wave 3：交付 Agent 与画布工具闭环
+    summary: 让 Agent 在预算、权限、确认与检查点约束下通过公共能力和命令操作真实创作对象。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+  - id: wave-4-workflow-composition
+    name: Wave 4：交付工作流与三入口复用证明
+    summary: 建立版本化工作流运行时，并证明同一能力可被界面、Agent 与工作流一致调用。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z
+  - id: wave-5-professional-media
+    name: Wave 5：扩展专业媒体与场景套件
+    summary: 在共享协议上增加视频、音频与音乐、演示、品牌、批量变体、发布与经验证的场景组合。
+    parentPlanId: null
+    versionRef: null
+    owner: null
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-07-24T18:30:21.000Z

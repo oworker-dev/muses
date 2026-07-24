@@ -1,0 +1,139 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: oworker_saas
+      POSTGRES_USER: oworker
+      POSTGRES_PASSWORD: oworker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oworker -d oworker_saas"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${OWORKER_DB_PORT:-5432}:5432"
+    volumes:
+      - oworker-saas-db:/var/lib/postgresql/data
+
+  cache:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${OWORKER_CACHE_PORT:-6379}:6379"
+    volumes:
+      - oworker-saas-cache:/data
+
+  storage:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-oworker}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-oworker-local-minio-secret}
+    ports:
+      - "${OWORKER_STORAGE_PORT:-9000}:9000"
+      - "${OWORKER_STORAGE_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - oworker-saas-storage:/data
+
+  api:
+    build:
+      context: ../..
+      dockerfile: src/apps/api/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+      storage:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://oworker:oworker@db:5432/oworker_saas
+      REDIS_URL: redis://cache:6379
+      S3_ENDPOINT: http://storage:9000
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      S3_BUCKET: oworker-saas
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-oworker}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-oworker-local-minio-secret}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-local-test}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
+      LOG_FORMAT: json
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${OWORKER_API_PORT:-3001}:3001"
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: src/apps/worker/Dockerfile
+    depends_on:
+      cache:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      REDIS_URL: redis://cache:6379
+      LOG_FORMAT: json
+
+  web:
+    build:
+      context: ../..
+      dockerfile: src/apps/web/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      DATABASE_URL: postgresql://oworker:oworker@db:5432/oworker_saas
+      REDIS_URL: redis://cache:6379
+      S3_ENDPOINT: http://storage:9000
+      S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}
+      S3_BUCKET: oworker-saas
+      S3_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-oworker}
+      S3_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-oworker-local-minio-secret}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-oworker-saas-starter-dev-secret-change-before-production}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_TRUSTED_ORIGINS: ${BETTER_AUTH_TRUSTED_ORIGINS:-}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:3001}
+      API_BASE_URL: ${API_BASE_URL:-http://api:3001}
+      SITE_ADMIN_EMAILS: ${SITE_ADMIN_EMAILS:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GITHUB_AUTH_ENABLED: ${GITHUB_AUTH_ENABLED:-false}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_AUTH_ENABLED: ${GOOGLE_AUTH_ENABLED:-false}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-local-test}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM: ${RESEND_FROM:-}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-en}
+    ports:
+      - "${OWORKER_WEB_PORT:-3000}:3000"
+
+volumes:
+  oworker-saas-db:
+  oworker-saas-cache:
+  oworker-saas-storage:

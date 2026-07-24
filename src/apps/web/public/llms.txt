@@ -1,0 +1,38 @@
+# OWorker SaaS Starter
+
+> This is the starter-maintained minimal Agent index for the generated SaaS project. Projects that need a full documentation site can add the optional docs-site extension.
+
+## Agent Discovery
+
+- Agent Service Guide: /agent-guide.md
+- ANSS discovery manifest: /.well-known/anss.json
+- Service capability map: /anss/saas.service-map.yaml
+- Adapter install index: /anss/install/index.json
+
+## Runtime Surfaces
+
+- Human Web UI: /
+- Hono API health: http://localhost:3001/health
+- Hono API capabilities: http://localhost:3001/anss/capabilities
+- Hono API auth status: http://localhost:3001/auth/status
+- Remote MCP: /mcp
+
+## Adapter Install State
+
+- OpenAPI: available
+- CLI: development-local
+- MCP local: development-local
+- MCP remote: available
+- Skills: guide-only
+
+## Repository Interface Contracts
+
+- OpenAPI: interfaces/openapi/saas.openapi.yaml
+- ACLIP-ready CLI: interfaces/aclip/saas.md
+- MCP: interfaces/mcp/saas.md
+- Skills: interfaces/skills/
+- ANSS service skill: interfaces/skills/anss-service.md
+
+## Safety
+
+ANSS declares safety metadata and adapter entrypoints. The product service remains responsible for authentication, authorization, confirmation, and audit behavior.

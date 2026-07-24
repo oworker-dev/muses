@@ -1,0 +1,17 @@
+{
+  "name": "OWorker SaaS Starter",
+  "short_name": "OWorker SaaS",
+  "description": "A production-minded SaaS starter with Agent-readable service interfaces.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

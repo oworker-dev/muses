@@ -1,0 +1,363 @@
+{
+  "schema": "oworker.starter.lock/0.2",
+  "starter": "saas",
+  "resolvedStarter": "saas",
+  "version": "0.1.0",
+  "source": "builtin snapshot",
+  "digest": null,
+  "capabilities": [
+    "starter:saas",
+    "monorepo:pnpm",
+    "build:turbo",
+    "app:web",
+    "api:hono",
+    "agent-discovery:anss",
+    "agent-cli:aclip",
+    "agent-api:mcp",
+    "worker:node",
+    "framework:next",
+    "i18n:next-intl",
+    "auth:better-auth",
+    "auth:email-verification",
+    "auth:oauth",
+    "account:console",
+    "admin:site",
+    "analytics:first-party",
+    "audit:logs",
+    "database:pg",
+    "database:pgvector",
+    "db:drizzle",
+    "cache:valkey",
+    "queue:bullmq",
+    "storage:minio",
+    "storage:avatar-upload",
+    "email:resend-compatible",
+    "billing:stripe-compatible",
+    "billing:payment-records",
+    "observability:logs"
+  ],
+  "verify": {
+    "requiredFiles": [],
+    "requiredAny": [],
+    "contentIncludes": [],
+    "capabilities": {
+      "monorepo:pnpm": {
+        "requiredFiles": [
+          "pnpm-workspace.yaml",
+          "package.json"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "build:turbo": {
+        "requiredFiles": [
+          "turbo.json"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "app:web": {
+        "requiredFiles": [
+          "src/apps/web"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "api:hono": {
+        "requiredFiles": [
+          "src/apps/api/package.json",
+          "src/apps/api/scripts/migrate.mjs",
+          "src/apps/api/src/capabilities.mjs",
+          "src/apps/api/src/server.mjs",
+          "interfaces/openapi/saas.openapi.yaml"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "agent-discovery:anss": {
+        "requiredFiles": [
+          "interfaces/service-map/saas.service-map.json",
+          "interfaces/service-map/saas.service-map.yaml",
+          "scripts/sync-anss-service-map.mjs",
+          "scripts/anss-conformance.mjs",
+          "scripts/anss-agent-probe.mjs",
+          "docs/anss-v0.1.md",
+          "src/apps/web/app/api/anss/manifest/route.ts",
+          "src/apps/web/app/mcp/route.ts",
+          "src/apps/web/public/agent-guide.md",
+          "src/apps/web/public/llms.txt",
+          "src/apps/web/public/anss/saas.service-map.yaml",
+          "src/apps/web/public/anss/openapi/saas.openapi.yaml",
+          "src/apps/web/public/anss/install/index.json",
+          "src/apps/web/public/anss/install/cli.json",
+          "src/apps/web/public/anss/install/mcp.json",
+          "src/apps/web/public/anss/install/skills.json",
+          "src/apps/web/public/anss/install/openapi.json",
+          "interfaces/skills/anss-service.md"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "agent-cli:aclip": {
+        "requiredFiles": [
+          "interfaces/aclip/saas.md",
+          "src/apps/cli/package.json",
+          "src/apps/cli/src/cli.mjs"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "agent-api:mcp": {
+        "requiredFiles": [
+          "src/apps/mcp/src/server.mjs",
+          "src/apps/web/app/mcp/route.ts",
+          "interfaces/mcp/saas.md"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "worker:node": {
+        "requiredFiles": [
+          "src/apps/worker/src/worker.mjs"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "framework:next": {
+        "requiredFiles": [
+          "src/apps/web/package.json"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "i18n:next-intl": {
+        "requiredFiles": [
+          "src/apps/web/components/i18n-provider.tsx",
+          "src/apps/web/i18n/config.ts",
+          "src/apps/web/i18n/messages.ts",
+          "src/apps/web/messages/en.json",
+          "src/apps/web/messages/zh-CN.json",
+          "src/providers/i18n/README.md"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "auth:better-auth": {
+        "requiredFiles": [
+          "src/features/auth",
+          "src/apps/web/app/api/auth/[...all]/route.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "auth:email-verification": {
+        "requiredFiles": [
+          "src/apps/web/app/api/email-verification/send/route.ts",
+          "src/apps/web/app/(auth)/verify-email/page.tsx",
+          "src/apps/web/components/verify-email-panel.tsx",
+          "src/apps/web/lib/email-verification.ts",
+          "src/apps/web/lib/email.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "auth:oauth": {
+        "requiredFiles": [
+          "src/apps/web/lib/oauth.ts",
+          "src/apps/web/components/oauth-buttons.tsx",
+          "src/apps/web/.env.example"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "account:console": {
+        "requiredFiles": [
+          "src/apps/web/app/(account)/account/page.tsx",
+          "src/apps/web/app/(account)/account/billing/page.tsx",
+          "src/apps/web/components/account-dashboard-shell.tsx",
+          "src/apps/web/components/account-profile-card.tsx",
+          "src/apps/web/lib/account.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "admin:site": {
+        "requiredFiles": [
+          "src/apps/web/app/(admin)/admin/layout.tsx",
+          "src/apps/web/app/(admin)/admin/page.tsx",
+          "src/apps/web/app/(admin)/admin/users/page.tsx",
+          "src/apps/web/app/(admin)/admin/revenue/page.tsx",
+          "src/apps/web/app/(admin)/admin/subscriptions/page.tsx",
+          "src/apps/web/app/(admin)/admin/analytics/page.tsx",
+          "src/apps/web/app/(admin)/admin/health/page.tsx",
+          "src/apps/web/app/(admin)/admin/audit-logs/page.tsx",
+          "src/apps/web/app/(admin)/admin/diagnostics/page.tsx",
+          "src/apps/web/lib/admin.ts",
+          "interfaces/skills/site-admin.md"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "analytics:first-party": {
+        "requiredFiles": [
+          "src/apps/web/app/api/analytics/event/route.ts",
+          "src/apps/web/components/analytics-tracker.tsx",
+          "src/apps/web/lib/analytics.ts",
+          "docs/site-admin.md"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "audit:logs": {
+        "requiredFiles": [
+          "src/apps/web/lib/audit.ts",
+          "src/apps/web/app/(admin)/admin/audit-logs/page.tsx"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "database:pg": {
+        "requiredFiles": [
+          "src/packages/db",
+          "src/providers/database"
+        ],
+        "requiredAny": [
+          {
+            "id": "ops",
+            "paths": [
+              "ops/docker/compose.yaml",
+              "ops/database/postgres.md"
+            ],
+            "summary": "Database runtime or integration docs exist."
+          }
+        ],
+        "contentIncludes": []
+      },
+      "database:pgvector": {
+        "requiredFiles": [],
+        "requiredAny": [],
+        "contentIncludes": [
+          {
+            "id": "ops",
+            "path": "ops/docker/compose.yaml",
+            "includes": "pgvector/pgvector",
+            "fallbackPath": "src/providers/database/README.md",
+            "summary": "PostgreSQL runtime includes pgvector or database docs explain the pgvector default."
+          }
+        ]
+      },
+      "db:drizzle": {
+        "requiredFiles": [
+          "src/packages/db/src/schema.ts",
+          "src/packages/db/migrations/0001_initial.sql"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "cache:valkey": {
+        "requiredFiles": [
+          "src/packages/cache/src/index.ts",
+          "src/providers/cache"
+        ],
+        "requiredAny": [],
+        "contentIncludes": [
+          {
+            "id": "ops",
+            "path": "ops/docker/compose.yaml",
+            "includes": "valkey/valkey",
+            "fallbackPath": "ops/cache/valkey.md",
+            "summary": "Valkey runtime or integration docs exist."
+          }
+        ]
+      },
+      "queue:bullmq": {
+        "requiredFiles": [
+          "src/packages/queue/src/index.ts",
+          "src/providers/queue"
+        ],
+        "requiredAny": [
+          {
+            "id": "runtime",
+            "paths": [
+              "src/apps/worker/Dockerfile",
+              "ops/queue/bullmq.md"
+            ],
+            "summary": "BullMQ runtime or integration docs exist."
+          }
+        ],
+        "contentIncludes": []
+      },
+      "storage:minio": {
+        "requiredFiles": [
+          "src/packages/storage/src/index.ts",
+          "src/providers/storage"
+        ],
+        "requiredAny": [],
+        "contentIncludes": [
+          {
+            "id": "ops",
+            "path": "ops/docker/compose.yaml",
+            "includes": "minio/minio",
+            "fallbackPath": "ops/storage/minio.md",
+            "summary": "MinIO runtime or integration docs exist."
+          }
+        ]
+      },
+      "storage:avatar-upload": {
+        "requiredFiles": [
+          "src/apps/web/app/api/account/avatar/upload/route.ts",
+          "src/apps/web/app/api/account/avatar/confirm/route.ts",
+          "src/apps/web/app/api/account/avatar/image/route.ts",
+          "src/apps/web/components/account-profile-card.tsx",
+          "src/apps/web/lib/avatar-storage.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "email:resend-compatible": {
+        "requiredFiles": [
+          "src/packages/email/src/index.ts",
+          "src/providers/email",
+          "src/apps/web/lib/email.ts",
+          "src/apps/web/app/api/email-verification/send/route.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "billing:stripe-compatible": {
+        "requiredFiles": [
+          "src/packages/billing/src/index.ts",
+          "src/providers/billing",
+          "src/apps/web/app/api/billing/checkout/route.ts",
+          "src/apps/web/app/api/billing/portal/route.ts",
+          "src/apps/web/app/api/billing/webhook/route.ts"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "billing:payment-records": {
+        "requiredFiles": [
+          "src/apps/web/app/(account)/account/billing/page.tsx",
+          "src/apps/web/app/(admin)/admin/revenue/page.tsx",
+          "src/packages/billing/src/index.ts",
+          "src/packages/db/migrations/0001_initial.sql"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      },
+      "observability:logs": {
+        "requiredFiles": [
+          "src/packages/observability/src/logger.ts",
+          "src/providers/observability"
+        ],
+        "requiredAny": [],
+        "contentIncludes": []
+      }
+    }
+  },
+  "copiedStarters": [
+    "saas"
+  ],
+  "requestedRef": "saas",
+  "extensions": []
+}

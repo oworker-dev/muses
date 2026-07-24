@@ -1,0 +1,11 @@
+{
+  "name": "saas-mcp",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.mjs",
+    "start": "node src/server.mjs",
+    "check": "node src/server.mjs --check"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "saas-worker",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node src/worker.mjs",
+    "start": "node src/worker.mjs",
+    "check": "node src/worker.mjs --check"
+  },
+  "dependencies": {
+    "bullmq": "^5.64.1",
+    "ioredis": "^5.8.2"
+  }
+}

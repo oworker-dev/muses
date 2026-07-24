@@ -1,0 +1,47 @@
+items:
+  - id: 0-1-0-architecture-ai
+    version: 0.1.0-architecture
+    title: AI 创作操作系统架构基线
+    summary: 确立长期产品终局、核心内核边界、统一协议、演进规则与 Wave 0–5 组合验证路线。
+    docPath: internal/长期架构.md
+    status: recorded
+    decisionRefs:
+      - ai
+      - decision
+    highlights: []
+    breakingChanges: []
+    migrationNotes: []
+    validationSummary: null
+    createdAt: 2026-07-24T18:39:30.091Z
+    recordedAt: 2026-07-24T18:40:09.278Z
+  - id: 0-2-0-value-foundation
+    version: 0.2.0-value-foundation
+    title: 价值、开放与跨媒体闭环基线
+    summary: 确立产品价值宪法、完全开源与 Build in Public 原则、创始人真实业务验证机制、AI 音频与音乐模块，以及 Value Foundation 到 Technical Discovery 再到 Wave 0 的执行顺序。
+    docPath: shared/价值宪法.md
+    status: recorded
+    decisionRefs:
+      - ai-2
+      - build-in-public
+      - decision-2
+      - wave-0
+    highlights: []
+    breakingChanges: []
+    migrationNotes: []
+    validationSummary: null
+    createdAt: 2026-07-24T19:11:34.837Z
+    recordedAt: 2026-07-24T19:11:45.605Z
+  - id: 0-3-0-public-source-preview-muses
+    version: 0.3.0-public-source-preview
+    title: Muses 首个公开源码预览
+    summary: 首次将 Muses 的 SaaS 基础、长期架构、价值宪法、开放原则与 APCC 控制面公开到 GitHub；许可证尚未确定，因此本版本仅为公开源码预览，不构成开源许可发行。
+    docPath: public/首个公开源码版本.md
+    status: recorded
+    decisionRefs:
+      - muses
+    highlights: []
+    breakingChanges: []
+    migrationNotes: []
+    validationSummary: null
+    createdAt: 2026-07-24T19:20:47.189Z
+    recordedAt: 2026-07-24T19:20:47.342Z

@@ -1,0 +1,12 @@
+workspaceSchemaVersion: 11
+apccVersion: 0.5.0
+workspaceName: ai-design-platform
+docsRoot: docs
+workspaceRoot: .apcc
+bootstrapMode: init
+templateVersion: 2026-06-06.progressive-disclosure-and-ownership-1
+projectKind: service
+docsMode: standard
+docsLanguage: zh-CN
+createdAt: 2026-07-24T18:27:46.720Z
+lastUpgradedAt: null

@@ -1,0 +1,106 @@
+items:
+  - id: ai
+    name: 确立开放 AI 创作操作系统为长期终局
+    description: 将项目长期目标从通用 SaaS 模板升级为统一承载人、团队与 Agent 跨媒体创作的开放 AI 创作操作系统。
+    docPath: shared/目标.md
+    category: goal
+    proposedBy: product-owner
+    context: 项目即将进入正式开发，需要一个不随首个业务场景或模型供应商变化的终局坐标。
+    impactOfNoAction: 各功能可能按局部场景独立生长，最终形成无法共享资产、上下文、执行记录与编辑能力的工具集合。
+    expectedOutcome: 所有阶段规划都能以可编辑、可追溯、可复用、可组合、可发布的跨媒体创作闭环为共同目标。
+    boundary: 定义产品长期成功状态与原则；不承诺一次性实现所有媒体、渠道、模型或企业能力。
+    status: approved
+    decisionSummary: 该终局准确覆盖统一创作空间、Agent 驱动、跨媒体资产和长期开放演进，同时避免把首个场景误当成产品边界。
+    revisitCondition: 只有当产品主体不再是人机协同跨媒体创作平台，或核心用户价值发生根本变化时重审。
+    createdAt: 2026-07-24T18:28:44.028Z
+    decidedAt: 2026-07-24T18:28:56.359Z
+  - id: decision
+    name: 采用内核优先、契约优先、组合验证的架构
+    description: 先构建可独立运行的创作文档、画布、Agent、工作流、任务与媒体能力内核，通过稳定协议连接，并用跨入口组合链路验证复用。
+    docPath: internal/长期架构.md
+    category: architecture
+    proposedBy: product-owner
+    context: 用户明确要求先确认通用可复用模块，避免从具体业务场景切入导致深度耦合。
+    impactOfNoAction: 画布、Agent、工作流与媒体能力会重复实现状态、任务、权限和来源追踪，场景扩展成本持续上升。
+    expectedOutcome: 每项能力可被人机界面、Agent、工作流和开放接口一致调用，业务场景仅负责编排而不侵入内核。
+    boundary: 规定逻辑边界、协议和验证门；不提前拆分微服务，不冻结具体框架、模型厂商或 UI 形态。
+    status: approved
+    decisionSummary: 平台级产品需要稳定内核与协议，但抽象必须由独立运行和跨入口组合验证约束，避免空泛平台化。
+    revisitCondition: 若至少两个独立内核经过真实组合验证后仍无法共享核心协议，或性能与一致性证据证明边界必须调整时重审。
+    createdAt: 2026-07-24T18:28:44.188Z
+    decidedAt: 2026-07-24T18:28:56.527Z
+  - id: ai-2
+    name: 将 AI 音频与音乐纳入跨媒体创作闭环
+    description: 把音乐、配音、音效与音频处理定义为一等媒体能力，与图像、视频和演示共享资产、任务、来源、权限与成本协议。
+    docPath: internal/长期架构.md
+    category: scope
+    proposedBy: product-owner
+    context: AI 短剧、短视频、广告和演示的完整交付离不开配音、音效与音乐，现有范围只显式覆盖图像和视频。
+    impactOfNoAction: 平台仍需依赖外部音频工具搬运素材，无法形成从创意到成片的闭环，也无法统一版权、时间轴和来源记录。
+    expectedOutcome: 音频成为可独立运行且可组合的专业媒体模块，并能与镜头、角色、场景、品牌主题及发布流程关联。
+    boundary: 纳入音频与音乐领域边界和长期路线；当前阶段不承诺自研音乐基础模型、完整 DAW 或立即实现全部音频能力。
+    status: approved
+    decisionSummary: 音频、音乐、配音和音效是短剧、视频、广告与演示的必要组成，应作为一等媒体能力共享平台协议并保留专业时间语义。
+    revisitCondition: 只有真实用户证据长期表明音频不属于主要交付闭环，或独立产品边界明显更合理时重审。
+    createdAt: 2026-07-24T19:00:05.763Z
+    decidedAt: 2026-07-24T19:00:24.315Z
+  - id: build-in-public
+    name: 采用完全开源与 Build in Public 治理模式
+    description: 核心产品、内核、协议、路线、决策与贡献过程默认公开，保障自托管、可迁移和可验证的用户自由，同时严格保护用户数据与安全秘密。
+    docPath: shared/开放原则.md
+    category: policy
+    proposedBy: product-owner
+    context: AI 时代编程实现不再是主要壁垒，项目希望以用户价值、开放自由、社区信任和真实创新建立长期竞争力。
+    impactOfNoAction: 项目可能复制封闭平台的数据锁定和不透明决策，失去创始动机、社区协作优势与用户信任。
+    expectedOutcome: 形成源码开放、建设透明、数据私密、标准开放、商业可持续的公开开发模式。
+    boundary: 公开产品建设与可公开运营事实；不公开用户私有内容、凭证、个人数据、安全利用细节及受第三方许可限制的材料。
+    status: approved
+    decisionSummary: 项目以用户自由、公开验证和社区共同创造建立长期信任；开放建设必须与用户数据私密、安全责任和可持续商业并存。
+    revisitCondition: 若许可证或公开粒度妨碍用户自由、安全、第三方合规或项目可持续性，应通过新政策决策调整具体实施而非放弃开放原则。
+    createdAt: 2026-07-24T19:00:05.916Z
+    decidedAt: 2026-07-24T19:00:24.470Z
+  - id: decision-2
+    name: 以创始人真实业务作为首批价值验证场
+    description: 优先以 AI 短剧和 PPT 定制业务中的真实付费交付验证产品价值，同时持续引入外部用户证据纠偏。
+    docPath: shared/价值宪法.md
+    category: scope
+    proposedBy: product-owner
+    context: 项目源于创始人在 AI 短剧和 PPT 定制生产中遭遇工具割裂、价格高、自由不足和成果不可持续编辑的真实问题。
+    impactOfNoAction: 平台可能从抽象技术兴趣出发，陷入无止境完美主义，开发大量不改善真实交付的基础设施。
+    expectedOutcome: 每个内核和体验改进都能关联真实任务、时间、质量、成本与自由度指标，并由实际交付证明价值。
+    boundary: 创始人业务是首证据而非永久唯一市场；场景仅作为价值和组合验收夹具，不向内核注入场景特例。
+    status: approved
+    decisionSummary: 创始人的 AI 短剧与 PPT 付费业务提供高频、跨媒体、可测量的真实需求，是防止技术自嗨的最佳首证据，同时必须接受外部用户纠偏。
+    revisitCondition: 当外部证据显示首批市场或关键任务不同，或创始人业务不再代表目标用户时调整验证组合。
+    createdAt: 2026-07-24T19:00:06.063Z
+    decidedAt: 2026-07-24T19:00:24.626Z
+  - id: wave-0
+    name: 在 Wave 0 前建立产品价值与体验基线
+    description: 先明确目标用户、关键任务、差异化体验、价值指标、商业假设和证据机制，再冻结关键技术路线与核心契约。
+    docPath: shared/价值宪法.md
+    category: change
+    proposedBy: product-owner
+    context: 长期正确要求技术与架构持续服务用户体验和实用价值，现有计划直接进入协议实验室，缺少防止跑偏和完美主义的产品判断基线。
+    impactOfNoAction: 团队可能把架构优雅、模块数量或技术先进性误当成成果，无法判断何时停止、删减或转向。
+    expectedOutcome: 建立可验证的价值宪法、体验承诺、北极星指标、护栏指标、假设台账与停止规则，成为技术决策的上游约束。
+    boundary: 建立价值判断与验证系统；不在此阶段完成全部市场研究、品牌定位、定价或正式功能开发。
+    status: approved
+    decisionSummary: 价值与体验基线必须成为技术路线和核心契约的上游约束，以可验证成果和停止规则抑制跑偏与无止境完美主义。
+    revisitCondition: 当价值基线已稳定且新证据仅影响局部功能时无需重开此阶段；若目标用户或核心价值主张根本变化则重审。
+    createdAt: 2026-07-24T19:00:06.212Z
+    decidedAt: 2026-07-24T19:00:24.780Z
+  - id: muses
+    name: 采用 Muses 作为项目公开代号
+    description: 将 AI Design Platform 的项目代号与公开仓库身份统一为 Muses，同时保留长期产品定义和架构目标。
+    docPath: shared/概览.md
+    category: policy
+    proposedBy: product-owner
+    context: 项目准备创建首个公开 GitHub 仓库，需要稳定、简洁、可传播的项目身份。
+    impactOfNoAction: 公开仓库继续沿用通用 saas 模板名称，难以形成清晰项目认知，并可能让开发者误解产品边界。
+    expectedOutcome: 公开文档、APCC 项目名、仓库名和首个版本统一使用 Muses。
+    boundary: 确定项目代号和公开身份；不在本次决策中重命名所有内部 SaaS 契约、端口、数据库或运行资源。
+    status: approved
+    decisionSummary: Muses 简洁地表达灵感、创作与多媒体协作，适合作为公开项目代号；技术内部标识可按后续兼容计划逐步迁移。
+    revisitCondition: 若出现明确商标、域名、社区混淆或目标用户认知风险时重审。
+    createdAt: 2026-07-24T19:13:21.299Z
+    decidedAt: 2026-07-24T19:13:33.754Z

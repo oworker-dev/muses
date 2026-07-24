@@ -1,0 +1,1064 @@
+{
+  "schema": "anss.adapter-install/0.1",
+  "adapter": "mcp",
+  "status": "available",
+  "service": "oworker.saas-starter",
+  "generatedFrom": "src/apps/api/src/capabilities.mjs",
+  "registryDependency": "none",
+  "install": {
+    "source": "canonical-root",
+    "userApprovalRequired": true,
+    "registryDependency": "none",
+    "note": "The service canonical root is the primary discovery source. Third-party registries may mirror this metadata, but are not required."
+  },
+  "securityBoundary": {
+    "scope": "metadata-only",
+    "adapterCallsUseSameServiceBoundary": true,
+    "credentialModel": "service-defined",
+    "userAgentIsAuthorization": false,
+    "anssDoesNotImplement": [
+      "authentication",
+      "authorization",
+      "confirmation-ui",
+      "audit-log-storage",
+      "agent-runtime",
+      "third-party-registry"
+    ],
+    "note": "ANSS declares safety metadata and adapter entrypoints. The product service remains responsible for authentication, authorization, confirmation, and audit behavior."
+  },
+  "authorization": {
+    "installRequiresUserApproval": true,
+    "note": "Adapter discovery is public, but installation and authenticated calls must follow user or organization policy."
+  },
+  "local": {
+    "status": "development-local",
+    "sourcePath": "src/apps/mcp",
+    "command": "pnpm --filter ./src/apps/mcp run start",
+    "transport": "executable-skeleton",
+    "environment": {
+      "apiBaseUrl": "SAAS_API_BASE_URL",
+      "token": "SAAS_API_TOKEN"
+    }
+  },
+  "remote": {
+    "status": "available",
+    "endpoint": "/mcp",
+    "transport": "streamable-http",
+    "auth": {
+      "mode": "same-service-boundary",
+      "bearerTokenEnv": "SAAS_API_TOKEN"
+    },
+    "clientConfiguration": {
+      "type": "streamable-http",
+      "url": "/mcp",
+      "headers": {
+        "authorization": "Bearer ${SAAS_API_TOKEN}"
+      }
+    },
+    "note": "Remote MCP is exposed from the service canonical root and forwards tool calls to the same Hono capability boundary."
+  },
+  "tools": [
+    {
+      "id": "saas.health.read",
+      "tool": "saas.health.read",
+      "safety": {
+        "access": "public-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "service",
+          "runtime"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "description": "Runtime service id."
+          },
+          "runtime": {
+            "type": "string",
+            "description": "Runtime implementation."
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "Service start timestamp."
+          },
+          "uptimeSeconds": {
+            "type": "integer",
+            "description": "Service uptime in seconds."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.integrations.read",
+      "tool": "saas.integrations.read",
+      "safety": {
+        "access": "public-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "status",
+          "service",
+          "integrations"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "description": "Runtime service id."
+          },
+          "integrations": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "database",
+              "cache",
+              "queue",
+              "storage",
+              "email",
+              "billing",
+              "observability"
+            ],
+            "properties": {
+              "database": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "cache": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "queue": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "storage": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "email": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "billing": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              },
+              "observability": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "provider",
+                  "status",
+                  "detail"
+                ],
+                "properties": {
+                  "provider": {
+                    "type": "string",
+                    "description": "Integration provider identifier."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "degraded",
+                      "error",
+                      "not_configured"
+                    ]
+                  },
+                  "detail": {
+                    "type": "string",
+                    "description": "Operational status detail."
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.auth.status.read",
+      "tool": "saas.auth.status.read",
+      "safety": {
+        "access": "public-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "service",
+          "authenticated",
+          "mode",
+          "principal",
+          "instructions"
+        ],
+        "properties": {
+          "schema": {
+            "type": "string",
+            "enum": [
+              "anss.auth-status/0.1"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "description": "Service id."
+          },
+          "authenticated": {
+            "type": "boolean",
+            "description": "Whether the supplied credential is accepted."
+          },
+          "mode": {
+            "type": "string",
+            "description": "Authentication check mode."
+          },
+          "principal": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true,
+            "required": [
+              "type",
+              "id"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "Principal type."
+              },
+              "id": {
+                "type": "string",
+                "description": "Principal id."
+              }
+            },
+            "description": "Authenticated principal, when present."
+          },
+          "instructions": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [],
+            "properties": {}
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.account.summary.read",
+      "tool": "saas.account.summary.read",
+      "safety": {
+        "access": "demo-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "account",
+          "subscription"
+        ],
+        "properties": {
+          "account": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Account id."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display label."
+              }
+            }
+          },
+          "subscription": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true,
+            "required": [
+              "plan",
+              "status"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "Plan id."
+              },
+              "status": {
+                "type": "string",
+                "description": "Subscription status."
+              },
+              "monthlyAmountCents": {
+                "type": "integer",
+                "description": "Monthly amount in cents."
+              },
+              "stripeCustomerId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe customer id."
+              },
+              "stripeSubscriptionId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe subscription id."
+              },
+              "stripePriceId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe price id."
+              },
+              "currentPeriodEnd": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Current period end timestamp."
+              }
+            },
+            "description": "Current subscription, when present."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.billing.plans.read",
+      "tool": "saas.billing.plans.read",
+      "safety": {
+        "access": "public-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "plans",
+          "provider",
+          "status"
+        ],
+        "properties": {
+          "plans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "name",
+                "monthlyAmountCents",
+                "benefits"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Plan id."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Plan name."
+                },
+                "monthlyAmountCents": {
+                  "type": "integer",
+                  "description": "Monthly amount in cents."
+                },
+                "benefits": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Replaceable benefit label."
+                  }
+                }
+              }
+            }
+          },
+          "provider": {
+            "type": "string",
+            "description": "Billing provider."
+          },
+          "status": {
+            "type": "string",
+            "description": "Billing provider configuration status."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.billing.state.read",
+      "tool": "saas.billing.state.read",
+      "safety": {
+        "access": "demo-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "account",
+          "subscription"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Billing provider."
+          },
+          "account": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": [
+              "id",
+              "label"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Account id."
+              },
+              "label": {
+                "type": "string",
+                "description": "Display label."
+              }
+            }
+          },
+          "subscription": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true,
+            "required": [
+              "plan",
+              "status"
+            ],
+            "properties": {
+              "plan": {
+                "type": "string",
+                "description": "Plan id."
+              },
+              "status": {
+                "type": "string",
+                "description": "Subscription status."
+              },
+              "monthlyAmountCents": {
+                "type": "integer",
+                "description": "Monthly amount in cents."
+              },
+              "stripeCustomerId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe customer id."
+              },
+              "stripeSubscriptionId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe subscription id."
+              },
+              "stripePriceId": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Stripe price id."
+              },
+              "currentPeriodEnd": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Current period end timestamp."
+              }
+            },
+            "description": "Current subscription, when present."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.billing.checkout.create",
+      "tool": "saas.billing.checkout.create",
+      "safety": {
+        "access": "authenticated-write",
+        "writes": true,
+        "requiresUserConfirmation": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "description": "Account id for checkout."
+          },
+          "email": {
+            "type": "string",
+            "description": "Optional customer email."
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "provider"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Billing provider."
+          },
+          "url": {
+            "type": "string",
+            "description": "Checkout redirect URL, when created."
+          },
+          "accountId": {
+            "type": "string",
+            "description": "Account id associated with checkout."
+          },
+          "status": {
+            "type": "string",
+            "description": "Provider status when checkout could not be created."
+          },
+          "detail": {
+            "type": "string",
+            "description": "Provider error detail."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.storage.presigned-upload.create",
+      "tool": "saas.storage.presignedUpload.create",
+      "safety": {
+        "access": "authenticated-write",
+        "writes": true,
+        "requiresUserConfirmation": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fileName"
+        ],
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "description": "Original file name."
+          },
+          "contentType": {
+            "type": "string",
+            "description": "Upload content type."
+          }
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "bucket",
+          "key",
+          "method",
+          "url",
+          "headers",
+          "expiresInSeconds"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string",
+            "description": "Storage provider."
+          },
+          "bucket": {
+            "type": "string",
+            "description": "Storage bucket."
+          },
+          "key": {
+            "type": "string",
+            "description": "Object key."
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "PUT"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "Presigned upload URL."
+          },
+          "headers": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "content-type"
+            ],
+            "properties": {
+              "content-type": {
+                "type": "string",
+                "description": "Required content type header."
+              }
+            }
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "description": "URL expiration in seconds."
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    },
+    {
+      "id": "saas.anss.capabilities.read",
+      "tool": "saas.anss.capabilities.read",
+      "safety": {
+        "access": "public-read",
+        "writes": false,
+        "requiresUserConfirmation": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "outputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "schema",
+          "service",
+          "programmableServiceBoundary",
+          "capabilities"
+        ],
+        "properties": {
+          "schema": {
+            "type": "string",
+            "enum": [
+              "anss.capabilities/0.1"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "description": "Service id."
+          },
+          "programmableServiceBoundary": {
+            "type": "string",
+            "description": "Programmable service boundary type."
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true,
+              "required": [],
+              "properties": {}
+            }
+          }
+        }
+      },
+      "errorSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "status",
+          "detail"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "error"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "Human-readable error detail."
+          }
+        }
+      }
+    }
+  ]
+}
