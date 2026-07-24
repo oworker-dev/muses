@@ -314,7 +314,7 @@ items:
   - id: prepare-build-in-public-release
     name: 准备 Build in Public 首次公开发布
     summary: 完成 Muses 命名、密钥与内容审计、公开入口、Git 初始化、GitHub 公共仓库创建和首版推送。
-    status: in_progress
+    status: done
     planRef: value-foundation
     parentTaskId: null
     countedForProgress: true
@@ -322,5 +322,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:10:59.657Z
-    updatedAt: 2026-07-24T19:13:21.462Z
-    statusChangedAt: 2026-07-24T19:13:21.462Z
+    updatedAt: 2026-07-24T19:24:11.131Z
+    statusChangedAt: 2026-07-24T19:24:11.131Z
