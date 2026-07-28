@@ -173,6 +173,7 @@ function runSnapshot(): AgentRunSnapshot {
       },
     },
     permissions: ["canvas.write"],
+    metadata: { initiatedByUserId: "user-1" },
     pendingMessages: [],
     pendingToolCalls: [],
     createdAt: now,

@@ -58,6 +58,25 @@ describe("HeadlessAgentRuntime", () => {
       },
     });
     expect(result.checkpoint?.runRevision).toBe(result.revision);
+    expect(
+      result.context.messages.find(
+        (message) => message.role === "assistant" && message.toolCalls?.length,
+      ),
+    ).toMatchObject({
+      toolCalls: [
+        {
+          id: "tool-call-1",
+          name: "canvas.item.put",
+          input: { itemId: "asset-1" },
+        },
+      ],
+    });
+    expect(
+      result.context.messages.find((message) => message.role === "tool"),
+    ).toMatchObject({
+      toolCallId: "tool-call-1",
+      toolName: "canvas.item.put",
+    });
     expect(fixture.tools.executions).toEqual([
       expect.objectContaining({
         callId: "tool-call-1",
@@ -205,6 +224,21 @@ describe("HeadlessAgentRuntime", () => {
 
     expect(events[0]?.sequence).toBe(2);
     expect(events.at(-1)?.type).toBe("checkpoint.created");
+  });
+
+  it("replays an explicit run id without creating another run", async () => {
+    const fixture = createRuntime([stop("Done")]);
+    const first = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(first.runId);
+
+    const replay = await fixture.runtime.start(startInput());
+
+    expect(replay).toMatchObject({
+      runId: first.runId,
+      status: "completed",
+    });
+    const events = await fixture.store.readEvents(first.runId);
+    expect(events.filter(({ type }) => type === "run.created")).toHaveLength(1);
   });
 });
 

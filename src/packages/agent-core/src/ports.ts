@@ -23,6 +23,7 @@ export type AgentToolExecutionContext = {
   readonly sessionId: string;
   readonly runId: string;
   readonly permissions: readonly string[];
+  readonly metadata: Readonly<Record<string, unknown>>;
   readonly idempotencyKey: string;
 };
 

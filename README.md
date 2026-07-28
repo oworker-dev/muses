@@ -31,13 +31,23 @@ OAuth secrets, production credentials, or private telemetry. See
 
 The current APCC engineering phase is **Agent Core Alpha**. The professional
 image path has delivered reusable image, identity/credit, model-catalog,
-durable-runtime, and observability foundations. The active gate now separates
-`CreativeCanvas`, `ExecutionPlan`, and callable `WorkflowDefinition`, adds a
-server-authoritative Operation Gateway, and delivers an independently runnable
-Codex-level single-Agent core before orchestration or PPT scenario work. See
+durable-runtime, and observability foundations. The platform now separates
+`CreativeCanvas`, `ExecutionPlan`, and callable `WorkflowDefinition`, has a
+server-authoritative Operation Gateway and independently runnable Agent Core,
+and has verified the first authenticated natural-language-to-real-image Agent
+loop with PostgreSQL Run/Event persistence and Gateway-controlled canvas
+placement. Creative-mode projection, callable workflow publication and the A9
+reliability Gate remain ahead of orchestration or PPT scenario work. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
+
+The A7 engineering evidence is under
+`delivery/evidence/agent-core-alpha/a7-single-agent-loop/`. The image is visible
+in the restored Agent panel and its Asset is authoritative in
+`CreativeCanvas.items`; the current Studio still renders the professional
+workflow canvas as its main surface, so this evidence must not be described as
+the finished creative-canvas experience.
 
 The professional Studio now has protected Start/End nodes, typed Start inputs,
 a framework-independent publication validator, a pure

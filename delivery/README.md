@@ -22,6 +22,10 @@ The earlier PPT-first slice remains historical scenario-planning context in
 The corrected durable execution boundary, supported-node interpreter, and its
 remaining limitations are in
 `delivery/evidence/platform-core-alpha/gate-0/workflow-sdk-boundary/`.
+The first authenticated single-Agent real-image loop, PostgreSQL Agent state,
+Workflow SDK driver, Operation Gateway canvas placement, browser restoration,
+and explicit A7 limitations are in
+`delivery/evidence/agent-core-alpha/a7-single-agent-loop/`.
 
 This SaaS starter is acceptable when a newly created project can be run, verified, and extended without hidden OWorker platform dependencies.
 

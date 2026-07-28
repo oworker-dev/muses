@@ -233,6 +233,25 @@
     "title": "Muses Studio",
     "subtitle": "Professional workflow creation space",
     "alpha": "Alpha",
+    "agent": {
+      "title": "MusesAgent",
+      "ready": "Ready",
+      "running": "Creating",
+      "waiting": "Waiting for you",
+      "completed": "Result ready",
+      "failed": "Stopped",
+      "cancelled": "Cancelled",
+      "placeholder": "What would you like to create?",
+      "followUpPlaceholder": "Describe the next change",
+      "send": "Send",
+      "cancel": "Cancel Agent run",
+      "requestFailed": "MusesAgent could not complete this request.",
+      "stages": {
+        "understand": "Understand",
+        "create": "Generate",
+        "place": "Place"
+      }
+    },
     "modes": {
       "creative": "Creative",
       "professional": "Professional",

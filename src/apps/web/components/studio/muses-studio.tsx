@@ -87,6 +87,7 @@ import {
   type StudioActions,
 } from "./studio-actions"
 import { VariableBindingPicker } from "./variable-binding-picker"
+import { StudioAgentPanel } from "./studio-agent-panel"
 import {
   type CanvasInputBinding,
   type CanvasNodeData,
@@ -1276,6 +1277,10 @@ export function MusesStudio({
                 onRetry={() => void retryDurableRun()}
               />
             ) : null}
+            <StudioAgentPanel
+              workspaceId={initialContext.workspace.id}
+              projectId={initialOperationGatewaySnapshot.project.id}
+            />
             <Canvas<MusesFlowNode>
               nodes={canvasNodes}
               edges={flowEdges}

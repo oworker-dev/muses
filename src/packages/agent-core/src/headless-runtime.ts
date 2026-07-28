@@ -51,6 +51,13 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
 
   async start(input: StartAgentRun): Promise<AgentRunRef> {
     validateBudget(input.budget);
+    if (input.runId) {
+      const existing = await this.dependencies.store.read(input.runId);
+      if (existing) {
+        assertIdempotentStart(existing, input);
+        return toRunRef(existing);
+      }
+    }
     if (this.closedSessions.has(input.session.sessionId)) {
       throw new AgentRuntimeError(
         "run-state-invalid",
@@ -92,6 +99,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         usage: zeroUsage(now),
       },
       permissions: [...input.permissions],
+      metadata: structuredClone(input.metadata || {}),
       pendingMessages: [],
       pendingToolCalls: [],
       createdAt: now,
@@ -117,7 +125,18 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         }),
       );
     }
-    await this.dependencies.store.create(snapshot, events);
+    try {
+      await this.dependencies.store.create(snapshot, events);
+    } catch (error) {
+      if (input.runId && isRevisionConflict(error)) {
+        const existing = await this.dependencies.store.read(input.runId);
+        if (existing) {
+          assertIdempotentStart(existing, input);
+          return toRunRef(existing);
+        }
+      }
+      throw error;
+    }
     return toRunRef(snapshot);
   }
 
@@ -386,7 +405,9 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         return;
       }
       now = this.now();
-      const assistant = this.message("assistant", modelResult.content, now);
+      const assistant = this.message("assistant", modelResult.content, now, {
+        toolCalls: modelResult.toolCalls,
+      });
       const nextPlan = modelResult.plan
         ? {
             ...structuredClone(modelResult.plan),
@@ -582,6 +603,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         sessionId: run.session.sessionId,
         runId: run.runId,
         permissions: run.permissions,
+        metadata: run.metadata,
         idempotencyKey: `${run.runId}:${pending.call.id}`,
       });
     } catch (error) {
@@ -719,14 +741,22 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     role: AgentMessage["role"],
     content: string,
     createdAt: string,
-    toolCallId?: string,
+    options: {
+      toolCallId?: string;
+      toolName?: string;
+      toolCalls?: readonly AgentToolCall[];
+    } = {},
   ): AgentMessage {
     return {
       id: this.ids.create("amsg"),
       role,
       content,
       createdAt,
-      toolCallId,
+      ...(options.toolCallId ? { toolCallId: options.toolCallId } : {}),
+      ...(options.toolName ? { toolName: options.toolName } : {}),
+      ...(options.toolCalls && options.toolCalls.length > 0
+        ? { toolCalls: structuredClone(options.toolCalls) }
+        : {}),
     };
   }
 
@@ -739,7 +769,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
       "tool",
       JSON.stringify(result.ok ? (result.output ?? null) : result.error),
       createdAt,
-      call.id,
+      { toolCallId: call.id, toolName: call.name },
     );
   }
 
@@ -918,6 +948,29 @@ function toRunRef(run: AgentRunSnapshot): AgentRunRef {
     status: run.status,
     revision: run.revision,
   };
+}
+
+function assertIdempotentStart(
+  existing: AgentRunSnapshot,
+  input: StartAgentRun,
+) {
+  if (
+    existing.session.sessionId !== input.session.sessionId ||
+    existing.session.workspaceId !== input.session.workspaceId ||
+    existing.session.projectId !== input.session.projectId ||
+    existing.session.canvasId !== input.session.canvasId ||
+    existing.profile.profileId !== input.profile.profileId ||
+    existing.profile.version !== input.profile.version
+  ) {
+    throw new AgentRuntimeError(
+      "revision-conflict",
+      `AgentRun "${existing.runId}" already belongs to another immutable start request.`,
+    );
+  }
+}
+
+function isRevisionConflict(error: unknown) {
+  return error instanceof AgentRuntimeError && error.code === "revision-conflict";
 }
 
 function isTerminal(status: AgentRunSnapshot["status"]) {

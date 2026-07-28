@@ -15,6 +15,8 @@ export type AgentMessage = {
   readonly content: string;
   readonly createdAt: string;
   readonly toolCallId?: string;
+  readonly toolName?: string;
+  readonly toolCalls?: readonly AgentToolCall[];
   readonly metadata?: Readonly<Record<string, unknown>>;
 };
 
@@ -149,6 +151,7 @@ export type AgentRunSnapshot = {
     readonly usage: AgentBudgetUsage;
   };
   readonly permissions: readonly string[];
+  readonly metadata: Readonly<Record<string, unknown>>;
   readonly pendingMessages: readonly AgentMessage[];
   readonly pendingToolCalls: readonly AgentPendingToolCall[];
   readonly pendingApproval?: AgentApprovalRequest;

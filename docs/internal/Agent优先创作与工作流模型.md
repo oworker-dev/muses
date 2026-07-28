@@ -153,13 +153,21 @@ Agent 可以构建包含 Agent 节点的工作流，但 Runtime 必须限制最�
 
 场景不得提前于 A9 和最小 A10。多 Agent 不得提前于单 Agent 可靠性 Gate。
 
-## 12. 当前实现迁移
+## 12. A7 当前工程状态
+
+截至 2026-07-29，A7 的第一个纵向切片已经用真实模型和真实图片通过工程验证：已登录用户可以在 Studio 用自然语言发起 `AgentRun`，Muses Agent Core 通过 AI SDK 完成模型工具循环，`image.generate` 复用模型目录、积分预留、Workflow SDK 图像解释器和对象存储，并只通过 Operation Gateway 把生成的 Asset 放入权威 `CreativeCanvas`。PostgreSQL 持久化 Run snapshot 与有序事件；Workflow SDK 只驱动可重试的 Node step；刷新后 Agent 面板恢复同一结果。
+
+这项证据证明的是最小 Agent 生图闭环，不是完整创作模式已经交付。当前专业工作流画布仍是 Studio 主画面，生成资产尚未作为可移动对象投影到创作模式画布；面板中的“理解、生成、放置”是运行阶段投影，不是完整 `ExecutionPlan` 编辑器；steering/follow-up 已有 Core 与 API 控制面，但尚未完成真实浏览器验收；审批 UI、子图像工作流联动取消、文本模型目录计价、压缩/重启/隔离 eval 仍属于 A9。
+
+可复核证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`。下一步先完成 `CreativeCanvas` 的用户可见投影与 Agent 计划/来源表达，再完成 A8 指定工作流发布调用，随后进入 A9，而不是提前增加多 Agent 或 PPT 场景。
+
+## 13. 当前实现迁移
 
 现有专业画布、Start/End、类型化变量、WorkflowDefinition 编译器和 Workflow SDK Runtime 保留，重新归类为专业模式基础。现有浏览器 `localStorage` 只能作为临时缓存，不能继续充当 Agent 可写的权威状态。
 
 迁移按纵向切片进行：先建立新对象和服务端端口，再让当前 Studio 通过 adapter 使用它们；不先删除可工作的首图链路，也不在没有替代路径时进行全量重写。
 
-## 13. 当前非目标
+## 14. 当前非目标
 
 - 不在 Agent Core Gate 内完成完整 Lovart UI、Coze 节点全集或通用 AI 应用平台。
 - 不允许 Agent 静默安装任意代码、MCP Server 或高权限节点。

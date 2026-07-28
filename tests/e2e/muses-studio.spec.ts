@@ -81,6 +81,88 @@ test("personal workspace and initial credit grant are idempotent", async ({
   await expect(page.getByText("100", { exact: true }).first()).toBeVisible();
 });
 
+test("MusesAgent generates a real image and restores it after refresh", async ({
+  page,
+}) => {
+  test.setTimeout(6 * 60_000);
+  await page.goto("/studio");
+  const panel = page.getByTestId("studio-agent-panel");
+  await expect(panel).toBeVisible();
+  await panel
+    .getByPlaceholder("What would you like to create?")
+    .fill("Create a minimal red product poster on a white background.");
+  await panel.getByRole("button", { name: "Send" }).click();
+
+  await expect(panel.getByText("Result ready", { exact: true })).toBeVisible({
+    timeout: 5 * 60_000,
+  });
+  const generatedImage = panel.locator("figure img");
+  await expect(generatedImage).toBeVisible();
+  const runId = await page.evaluate(
+    (currentWorkspaceId) => {
+      const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
+      const key = Object.keys(window.localStorage).find((candidate) =>
+        candidate.startsWith(prefix),
+      );
+      return key ? window.localStorage.getItem(key) : null;
+    },
+    workspaceId,
+  );
+  expect(runId).toBeTruthy();
+  const runResponse = await page.request.get(
+    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${runId}`,
+  );
+  expect(runResponse.ok()).toBeTruthy();
+  const runProjection = (await runResponse.json()) as {
+    run: {
+      context: {
+        messages: Array<{
+          role: string;
+          toolName?: string;
+          content: string;
+        }>;
+      };
+    };
+  };
+  const imageToolMessage = [...runProjection.run.context.messages]
+    .reverse()
+    .find(
+      (message) =>
+        message.role === "tool" && message.toolName === "image.generate",
+    );
+  expect(imageToolMessage).toBeTruthy();
+  const imageToolOutput = JSON.parse(imageToolMessage!.content) as {
+    assets?: Array<{ id: string }>;
+  };
+  const generatedAssetId = imageToolOutput.assets?.[0]?.id;
+  expect(generatedAssetId).toMatch(/^image_/);
+  await expect(generatedImage).toHaveAttribute(
+    "src",
+    new RegExp(generatedAssetId!),
+  );
+
+  const gatewayResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(gatewayResponse.ok()).toBeTruthy();
+  const gateway = (await gatewayResponse.json()) as {
+    creativeCanvas: {
+      items: Array<{ kind: string; refId: string }>;
+    };
+  };
+  expect(gateway.creativeCanvas.items).toContainEqual(
+    expect.objectContaining({ kind: "asset", refId: generatedAssetId }),
+  );
+
+  await page.reload();
+  await expect(page.getByTestId("studio-agent-panel")).toContainText(
+    "Result ready",
+  );
+  await expect(
+    page.getByTestId("studio-agent-panel").locator("figure img"),
+  ).toBeVisible();
+});
+
 test("Operation Gateway persists independent workflows with idempotent revisions", async ({
   page,
 }) => {

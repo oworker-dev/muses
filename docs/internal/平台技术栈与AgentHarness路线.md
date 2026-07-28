@@ -90,7 +90,7 @@ Muses 对象必须保持区分：
 
 现有执行适配已于 2026-07-27 从边界 Probe 推进为首批节点解释器：Next.js 服务端使用 `workflow@4.6.2`，自托管 Docker 使用 `@workflow/world-postgres@4.3.1`；当前浏览器 `WorkflowDocument` 在迁移期视为单定义专业编辑草稿，Muses 完成发布校验并编译独立 `WorkflowDefinition`，再由 SDK 创建可查询的耐久 `WorkflowRun`。后续必须把专业工作空间、定义身份和创作画布分离，Workflow SDK 不参与该产品对象迁移。
 
-`WorkflowDefinition 0.3.0-draft` 与 `WorkflowRuntimePort` 已冻结当前首图版本。默认图像路径已接真实 OpenAI Images Adapter；身份、积分和运行观测已经形成 Agent 可复用底座。下一门是冻结 Agent-first 产品对象、Node Type Registry 与 Operation Gateway，再进入独立 Agent Core；不继续以真实场景是否临时阻断来决定是否需要 Agent。
+`WorkflowDefinition 0.3.0-draft` 与 `WorkflowRuntimePort` 已冻结当前首图版本。默认图像路径已接真实 OpenAI Images Adapter；身份、积分和运行观测已经形成 Agent 可复用底座。Agent-first 产品对象、Node Type Registry、Operation Gateway、独立 Agent Core、Skill/MCP/沙盒端口与 Harness 对照已经完成；2026-07-29 的 A7 证据进一步证明单 Agent 可以复用这条路径生成真实图片并通过 Gateway 写入 `CreativeCanvas`。Workflow SDK 没有因此成为 Agent 或创作画布的权威状态。
 
 ## 5. 为什么 Agent 需要 Harness
 
@@ -211,10 +211,11 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 - 外层画布：AI Elements + XYFlow。
 - 耐久工作流：Workflow SDK。
-- Agent Runtime：Muses Agent Core headless 实现。
+- Agent Runtime：Muses Agent Core headless 实现；PostgreSQL 保存权威 Run/Event，Workflow SDK 驱动可恢复 Node step。
+- 模型工具协议：AI SDK 7；内部点分工具名通过可逆别名映射到供应商安全名称。
+- 首批 Agent 工具：`canvas.inspect`、`canvas.item.put`、`image.generate`，写操作统一经过 Operation Gateway。
 - 可选 Agent loop：Pi Agent Core Adapter。
 - 隔离耐久候选：Eve，当前延后。
-- 模型/流式 UI：AI SDK。
 
 ### 暂缓
 
@@ -225,13 +226,11 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 ## 10. 后续验证顺序
 
-1. 冻结 CreativeCanvas、ExecutionPlan、ProfessionalWorkspace、WorkflowDefinition、调用身份与 Node Type Registry。
-2. 建立服务端权威 Operation Gateway，使 UI、Agent 和 API 使用相同 Query、Command 与 Capability。
-3. 交付框架无关 Agent Core、headless Harness、Skill/MCP 端口和 Run 级沙盒边界。
-4. 已在隔离 Agent Lab 安装并完整读取 Eve 相关 bundled docs，以同一 Muses 工具和夹具完成 Pi 对照；结论是 Muses headless 主实现、Pi 可选 Loop、Eve 延后。`@workflow/ai@4.2.0` 因要求 AI SDK 6，而 Eve 要求 AI SDK 7，不进入同一 Adapter 包。
-5. 让单 Agent 在创作模式完成自然语言需求、计划、真实生图、结果入画布和中途 steering。
-6. 让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
-7. 通过恢复、压缩、费用、预算、审批、取消、隔离、追踪与 eval Gate 后，再进入 MusesAgent、领域 Agent 和 SubAgent 调度。
-8. 最小 Orchestration 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
+1. 已完成 Agent-first 对象、调用身份、Node Type Registry、Operation Gateway、独立 Agent Core、扩展/沙盒端口和 Eve/Pi 对照。
+2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
+3. 继续把权威 CreativeCanvas 投影成创作模式，显示 AgentRun、Asset、来源和可展开 ExecutionPlan，并完成 steering/follow-up 浏览器验收。
+4. 让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
+5. 通过恢复、压缩、费用、预算、审批、取消、隔离、追踪与 eval Gate 后，再进入 MusesAgent、领域 Agent 和 SubAgent 调度。
+6. 最小 Orchestration 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
 
 技术候选的新版本不会自动改变路线。升级、替换和正式采用必须由可复现证据与 APCC 决策驱动。

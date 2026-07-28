@@ -1,0 +1,87 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-07-29",
+  "gate": "a7-single-agent-image-loop",
+  "engineeringStatus": "verified-minimum-loop",
+  "environment": {
+    "studio": "http://127.0.0.1:4730/studio",
+    "agentRuntime": "muses-agent-core",
+    "durableDriver": "vercel-workflow-sdk",
+    "stateStore": "postgresql",
+    "assetStore": "s3-compatible-minio"
+  },
+  "realRun": {
+    "runId": "arun_6c7475d82a8d170db36b24775889adc2",
+    "driverRunId": "wrun_01KYNCEKW7G0V3B2C8HHP7EM13",
+    "imageWorkflowRunId": "wrun_01KYNCEV77N5HVEYBBQKW11GAW",
+    "status": "completed",
+    "revision": 6,
+    "driverStatus": "completed",
+    "modelRef": "openai/gpt-5.6-sol",
+    "turns": 2,
+    "modelCalls": 2,
+    "toolCalls": 1,
+    "inputTokens": 2271,
+    "outputTokens": 289,
+    "eventCount": 14,
+    "asset": {
+      "id": "image_7c75721e449544d0037d1140",
+      "mimeType": "image/png",
+      "width": 1024,
+      "height": 1536
+    },
+    "creativeCanvas": {
+      "revision": 1,
+      "itemKind": "asset",
+      "itemRefMatchesAsset": true,
+      "itemPosition": {
+        "x": 120,
+        "y": 120
+      },
+      "itemSize": {
+        "width": 320,
+        "height": 480
+      }
+    },
+    "restoredAfterRefresh": true
+  },
+  "verification": {
+    "domainTests": {
+      "passed": 39,
+      "failed": 0
+    },
+    "agentCoreTests": {
+      "passed": 9,
+      "failed": 0
+    },
+    "agentHarnessAdapterTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "repositoryTypecheck": "passed",
+    "workflowFilesScanned": 185,
+    "workflowEntries": 2,
+    "workflowSerdeIssues": 0,
+    "playwrightRealImage": {
+      "passed": 1,
+      "failed": 0,
+      "durationSeconds": 43.9,
+      "origin": "127.0.0.1:4730"
+    }
+  },
+  "limitations": {
+    "creativeCanvasVisualProjection": false,
+    "editableExecutionPlan": false,
+    "steeringBrowserEvidence": false,
+    "approvalUi": false,
+    "childWorkflowCancellation": false,
+    "agentModelCatalogPricing": false,
+    "a9ReliabilityGate": false
+  },
+  "artifacts": [
+    "README.md",
+    "results.json",
+    "studio-agent-result-desktop.png",
+    "studio-agent-result-mobile.png"
+  ]
+}

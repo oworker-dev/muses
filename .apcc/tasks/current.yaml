@@ -379,7 +379,7 @@ items:
   - id: build-single-agent-loop
     name: 交付单 Agent 驱动画布闭环
     summary: 让单 Agent 通过 Operation Gateway 驱动 CreativeCanvas、构建/运行指定 WorkflowDefinition，并支持 steering。
-    status: pending
+    status: in_progress
     planRef: agent-canvas-loop
     parentTaskId: null
     countedForProgress: false
@@ -387,8 +387,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.543Z
-    updatedAt: 2026-07-28T17:09:23.991Z
-    statusChangedAt: 2026-07-24T19:57:48.543Z
+    updatedAt: 2026-07-28T21:28:40.590Z
+    statusChangedAt: 2026-07-28T21:28:40.590Z
   - id: verify-agent-safety-recovery
     name: 验证 Agent 安全、成本与恢复
     summary: 验证刷新/Worker 重启恢复、压缩、幂等费用、预算、审批、取消、隔离、追踪与 eval。

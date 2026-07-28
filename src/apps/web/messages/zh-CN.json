@@ -233,6 +233,25 @@
     "title": "Muses Studio",
     "subtitle": "专业工作流创作空间",
     "alpha": "Alpha",
+    "agent": {
+      "title": "MusesAgent",
+      "ready": "就绪",
+      "running": "正在创作",
+      "waiting": "等待确认",
+      "completed": "结果已就绪",
+      "failed": "已停止",
+      "cancelled": "已取消",
+      "placeholder": "你想创作什么？",
+      "followUpPlaceholder": "描述下一步修改",
+      "send": "发送",
+      "cancel": "取消 Agent 运行",
+      "requestFailed": "MusesAgent 未能完成此请求。",
+      "stages": {
+        "understand": "理解",
+        "create": "生成",
+        "place": "放置"
+      }
+    },
     "modes": {
       "creative": "创作模式",
       "professional": "专业模式",

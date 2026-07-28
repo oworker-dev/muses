@@ -345,6 +345,52 @@ export const musesWorkflowRun = pgTable(
   ],
 );
 
+export const musesAgentRun = pgTable(
+  "muses_agent_run",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    canvasId: text("canvas_id"),
+    sessionId: text("session_id").notNull(),
+    profileId: text("profile_id").notNull(),
+    profileVersion: text("profile_version").notNull(),
+    modelRef: text("model_ref").notNull(),
+    status: text("status").notNull(),
+    revision: integer("revision").notNull().default(0),
+    snapshot: jsonb("snapshot").notNull(),
+    driverStatus: text("driver_status").notNull().default("unclaimed"),
+    driverRunId: text("driver_run_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("muses_agent_run_driver_idx").on(table.driverRunId),
+  ],
+);
+
+export const musesAgentEvent = pgTable(
+  "muses_agent_event",
+  {
+    runId: text("run_id").notNull(),
+    sequence: integer("sequence").notNull(),
+    eventId: text("event_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    type: text("type").notNull(),
+    data: jsonb("data").notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.runId, table.sequence] }),
+    uniqueIndex("muses_agent_event_id_idx").on(table.eventId),
+  ],
+);
+
 export const musesReferenceImage = pgTable(
   "muses_reference_image",
   {

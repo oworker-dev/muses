@@ -44,6 +44,7 @@ export function createPiMusesTools(
         sessionId: dependencies.run.session.sessionId,
         runId: dependencies.run.runId,
         permissions: dependencies.run.permissions,
+        metadata: dependencies.run.metadata,
         idempotencyKey: `${dependencies.run.runId}:${toolCallId}`,
       });
       if (!result.ok) {
