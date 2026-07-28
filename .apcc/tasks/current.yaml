@@ -364,43 +364,43 @@ items:
     updatedAt: 2026-07-27T19:22:20.797Z
     statusChangedAt: 2026-07-24T19:57:48.213Z
   - id: define-agent-runtime-contract
-    name: 定义通用 Agent Runtime 最小契约
-    summary: 定义上下文、Run/Step、工具循环、预算、权限、审批、流式事件、暂停恢复、压缩、沙箱和检查点，并为 Eve 主候选、Pi 对照候选及未来 Harness 保持 adapter 边界。
-    status: pending
-    planRef: agent-core-alpha
+    name: 冻结 Agent-first 产品与 Runtime 核心契约
+    summary: Muses-owned 0.1.0-draft contracts now cover Session, Run, Turn, Plan, Event, ToolCall, Approval, ContextSnapshot, Checkpoint, Budget and start/stream/steer/followUp/approve/cancel/resume/inspect controls.
+    status: done
+    planRef: agent-foundation-contracts
     parentTaskId: null
     countedForProgress: false
     owner: codex-main
-    pinned: false
-    pinnedReason: null
+    pinned: true
+    pinnedReason: 当前实现入口：先冻结 Agent 将要操作的稳定产品对象与端口。
     createdAt: 2026-07-24T19:57:48.378Z
-    updatedAt: 2026-07-27T19:22:21.000Z
-    statusChangedAt: 2026-07-24T19:57:48.378Z
+    updatedAt: 2026-07-28T18:01:09.267Z
+    statusChangedAt: 2026-07-28T18:01:09.267Z
   - id: build-single-agent-loop
     name: 交付单 Agent 驱动画布闭环
-    summary: 单 Agent 通过 Query/Command/Capability 创建图像任务、组织结果分支、进入 DesignDocument 修改并接受用户确认或撤销。
+    summary: 让单 Agent 通过 Operation Gateway 驱动 CreativeCanvas、构建/运行指定 WorkflowDefinition，并支持 steering。
     status: pending
-    planRef: agent-core-alpha
+    planRef: agent-canvas-loop
     parentTaskId: null
     countedForProgress: false
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.543Z
-    updatedAt: 2026-07-27T19:22:21.394Z
+    updatedAt: 2026-07-28T17:09:23.991Z
     statusChangedAt: 2026-07-24T19:57:48.543Z
   - id: verify-agent-safety-recovery
     name: 验证 Agent 安全、成本与恢复
-    summary: 验证无写旁路、版本固定、预算耗尽、拒绝确认、取消、断线恢复、可追踪步骤和可撤销已提交修改。
+    summary: 验证刷新/Worker 重启恢复、压缩、幂等费用、预算、审批、取消、隔离、追踪与 eval。
     status: pending
-    planRef: agent-core-alpha
+    planRef: agent-reliability-gate
     parentTaskId: null
     countedForProgress: false
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.714Z
-    updatedAt: 2026-07-27T19:22:21.598Z
+    updatedAt: 2026-07-28T17:09:24.230Z
     statusChangedAt: 2026-07-24T19:57:48.714Z
   - id: define-delegation-protocol
     name: 定义 Agent 委托与调度协议
@@ -534,17 +534,17 @@ items:
     statusChangedAt: 2026-07-24T19:39:24.773Z
   - id: spike-agent-harness
     name: Spike Eve 与 Pi Agent Harness
-    summary: 平台操作端口稳定后，以相同单 Agent 任务比较 Eve 与 Pi：持久 Run/Step、上下文压缩、工具循环、暂停恢复、沙箱/审批、多 Agent 委托、可观测性、自托管和 adapter 隔离。
-    status: pending
-    planRef: agent-core-alpha
-    parentTaskId: define-agent-runtime-contract
+    summary: 安装 Eve 后先读 bundled docs；以同一 Muses 工具、恢复、安全和自托管夹具比较 Eve 与 Pi。
+    status: done
+    planRef: agent-harness-selection
+    parentTaskId: null
     countedForProgress: false
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T20:58:21.896Z
-    updatedAt: 2026-07-27T19:22:21.200Z
-    statusChangedAt: 2026-07-24T20:58:21.896Z
+    updatedAt: 2026-07-28T19:48:19.479Z
+    statusChangedAt: 2026-07-28T19:48:19.479Z
   - id: correct-workflow-execution-boundary
     name: 纠正 Workflow SDK 执行边界
     summary: 已纠正执行边界：Muses 领域层负责 WorkflowDocument、Start/End、变量与发布校验；XYFlow 仅负责交互投影；Vercel Workflow SDK 通过 Postgres World 承担后端 durable publication probe。生产 4730 已验证 wrun 持久化与完成态，完整动态图解释器明确延期。
@@ -805,3 +805,146 @@ items:
     createdAt: 2026-07-27T21:23:05.150Z
     updatedAt: 2026-07-27T22:02:02.460Z
     statusChangedAt: 2026-07-27T22:02:02.460Z
+  - id: document-agent-first-product-model
+    name: 记录 Agent-first 产品模型与交付改序
+    summary: 更新长期架构、Harness、核心 Alpha、成果计划和交付说明，废止 PPT 先于 Agent 的旧顺序。
+    status: done
+    planRef: agent-foundation-contracts
+    parentTaskId: define-agent-runtime-contract
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:24.439Z
+    updatedAt: 2026-07-28T17:18:40.602Z
+    statusChangedAt: 2026-07-28T17:18:40.602Z
+  - id: freeze-workflow-call-identity
+    name: 冻结工作流身份、版本与调用契约
+    summary: 定义 ProfessionalWorkspace、WorkflowDefinition、Deployment、Run 和 UI/Agent/API 精确调用语义。
+    status: done
+    planRef: agent-foundation-contracts
+    parentTaskId: define-agent-runtime-contract
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:24.655Z
+    updatedAt: 2026-07-28T17:22:00.991Z
+    statusChangedAt: 2026-07-28T17:22:00.991Z
+  - id: define-node-type-registry
+    name: 冻结 Node Type Registry 契约
+    summary: 让节点 Schema、端口、执行器、权限、政策与计价目录驱动，并区分实例化和注册新节点类型。
+    status: done
+    planRef: agent-foundation-contracts
+    parentTaskId: define-agent-runtime-contract
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:24.870Z
+    updatedAt: 2026-07-28T17:22:01.198Z
+    statusChangedAt: 2026-07-28T17:22:01.198Z
+  - id: build-agent-operation-gateway
+    name: 交付 Agent Operation Gateway
+    summary: Authenticated GET/POST Operation Gateway enforces Workspace/Project scope, server-authored actors, expected revisions, transaction locks, receipt replay and accepted-write audit.
+    status: done
+    planRef: agent-operation-gateway
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:25.088Z
+    updatedAt: 2026-07-28T17:50:51.424Z
+    statusChangedAt: 2026-07-28T17:50:51.424Z
+  - id: persist-authoritative-creative-state
+    name: 持久化服务端权威创作状态
+    summary: PostgreSQL now owns Project, CreativeCanvas, ProfessionalWorkspace, independent WorkflowDefinition drafts and idempotent command receipts; Studio normal mode restores and mutates through the authenticated Gateway.
+    status: done
+    planRef: agent-operation-gateway
+    parentTaskId: build-agent-operation-gateway
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:25.341Z
+    updatedAt: 2026-07-28T17:50:51.224Z
+    statusChangedAt: 2026-07-28T17:50:51.224Z
+  - id: build-framework-neutral-agent-core
+    name: 交付框架无关 Agent Core
+    summary: Published @muses/agent-core with a framework-neutral state machine and no React, Next.js, Workflow SDK, Eve, Pi or provider dependency.
+    status: done
+    planRef: agent-runtime-kernel
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:25.559Z
+    updatedAt: 2026-07-28T18:01:09.663Z
+    statusChangedAt: 2026-07-28T18:01:09.663Z
+  - id: verify-headless-agent-core
+    name: 验证 Agent Core 可独立运行
+    summary: Independent injected model/tool/policy/store Harness passes tool-loop, approval, budget, follow-up, checkpoint and cursor-stream tests.
+    status: done
+    planRef: agent-runtime-kernel
+    parentTaskId: build-framework-neutral-agent-core
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:25.786Z
+    updatedAt: 2026-07-28T18:01:09.463Z
+    statusChangedAt: 2026-07-28T18:01:09.463Z
+  - id: implement-agent-extension-ports
+    name: 交付 Skill 与 MCP 扩展端口
+    summary: Versioned Skill snapshots and pinned MCP connection/tool schemas now have Muses-owned registry and gateway ports; extension snapshots cannot grant permissions.
+    status: done
+    planRef: agent-extension-security
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:26.010Z
+    updatedAt: 2026-07-28T18:01:09.862Z
+    statusChangedAt: 2026-07-28T18:01:09.862Z
+  - id: implement-agent-sandbox-boundary
+    name: 交付逻辑与计算沙盒边界
+    summary: AgentRun-scoped logical sandboxes default-deny network access, use ephemeral run namespaces and expose a replaceable compute sandbox port; SubAgentRun scope reuse is rejected.
+    status: done
+    planRef: agent-extension-security
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:26.238Z
+    updatedAt: 2026-07-28T18:01:10.080Z
+    statusChangedAt: 2026-07-28T18:01:10.080Z
+  - id: publish-callable-workflows
+    name: 交付指定工作流调用与发布入口
+    summary: 支持一个专业空间管理多个独立定义，并由 UI、Agent、API 按稳定 ID 和版本调用。
+    status: pending
+    planRef: agent-canvas-loop
+    parentTaskId: build-single-agent-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:26.500Z
+    updatedAt: 2026-07-28T17:09:26.500Z
+    statusChangedAt: 2026-07-28T17:09:26.500Z
+  - id: project-agent-plan-to-creative-canvas
+    name: 投影 Agent 计划到创作画布
+    summary: 创作模式隐藏 Input/Output，以 AgentRun、资产、结果、来源和可展开执行计划为中心。
+    status: pending
+    planRef: agent-canvas-loop
+    parentTaskId: build-single-agent-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:09:26.727Z
+    updatedAt: 2026-07-28T17:09:26.727Z
+    statusChangedAt: 2026-07-28T17:09:26.727Z

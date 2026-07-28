@@ -4,7 +4,7 @@
 > operating system. Start with
 > `docs/shared/概览.md`, `docs/shared/目标.md`,
 > `docs/shared/价值宪法.md`, `docs/shared/开放原则.md`, and
-> `docs/internal/平台核心Alpha路线.md`. Use `apcc status` for the current goal, phase,
+> `docs/internal/Agent优先创作与工作流模型.md`. Use `apcc status` for the current goal, phase,
 > tasks, decisions, and handoff state. The starter documentation below remains
 > the operational baseline for the existing SaaS foundation.
 
@@ -29,14 +29,13 @@ OAuth secrets, production credentials, or private telemetry. See
 
 ## Current Stage
 
-The current APCC phase is **Platform Core Alpha: a workflow-native creation
-space**. The current value gate is narrower than the full platform-core list:
-first let a user generate, inspect, and continue using one real image through
-the professional-mode `Start → image.generate → End` path. Existing canvas,
-document, asset, job, and durable-runtime work remains available as a gap pool;
-it is pulled only when this user task or the next real PPT task exposes a
-blocker. MusesPPT remains the first scenario MVP but does not determine current
-canvas contracts, PPTX, or image-to-editable-SVG choices. See
+The current APCC engineering phase is **Agent Core Alpha**. The professional
+image path has delivered reusable image, identity/credit, model-catalog,
+durable-runtime, and observability foundations. The active gate now separates
+`CreativeCanvas`, `ExecutionPlan`, and callable `WorkflowDefinition`, adds a
+server-authoritative Operation Gateway, and delivers an independently runnable
+Codex-level single-Agent core before orchestration or PPT scenario work. See
+`docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
 

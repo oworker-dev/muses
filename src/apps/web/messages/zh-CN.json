@@ -258,6 +258,8 @@
       "ready": "描述你要的图片，确认模型设置，然后开始生成。",
       "restored": "已恢复上次保存的本地工作区版本。",
       "restoreFailed": "无法恢复已保存的工作区，将使用 Alpha 示例。",
+      "saved": "已保存到项目。",
+      "saveFailed": "项目已在其他位置发生变化，已恢复服务器状态。",
       "applied": "已应用 {count} 条命令。",
       "selectorMissing": "请先为此图像生成节点添加人工选择节点。",
       "imageCompleted": "本地图像夹具已完成：生成了 3 个可追溯方向。",

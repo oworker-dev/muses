@@ -1,13 +1,15 @@
 ---
 name: 平台核心 Alpha 路线
-description: Muses 工作流原生无限画布、专业文档节点、图像能力与 Agent 分阶段接入的当前工程关键路径。
+description: Muses 早期工作流画布、专业文档节点、图像能力与耐久运行底座的历史工程路线及 Agent-first 迁移边界。
 ---
 
 # 平台核心 Alpha 路线
 
-## 1. 当前目标
+## 1. 当前地位
 
-当前不先开发 MusesPPT，也不先开发 Agent。第一目标是交付一个不依赖具体场景、模型或 Agent 的 **Platform Core Alpha**：
+自 APCC 决策 `agent-first` 起，本文不再定义当前工程关键路径。它保留 Platform Core Alpha 的历史目标、首图证据和可复用底座；当前主 Gate 以[Agent-first 创作与工作流模型](Agent优先创作与工作流模型.md)和 `apcc status` 为准。
+
+此前 Platform Core Alpha 用以下人工链路建立了首个底座：
 
 ```text
 用户在工作流原生无限画布中放入输入
@@ -20,7 +22,7 @@ description: Muses 工作流原生无限画布、专业文档节点、图像能�
 → 保存、刷新、恢复并导出结构化项目
 ```
 
-这条链路先由人通过界面完成。它证明创作状态、工作流图、专业编辑、资产、长任务和能力执行能够可靠连接；同时必须暴露完整的 Query、Command 与 Capability 端口，使后续 Agent 无需模拟鼠标、操作 DOM 或绕过服务端权威状态。
+这条链路证明图像生成、身份计费、Workflow SDK 耐久运行、模型目录与观测可以连接，但没有证明默认设计体验应采用工作流画布，也没有完成服务端 CreativeCanvas/WorkflowDefinition 权威状态或 Codex 级 Agent Core。
 
 ## 2. 顶层产品形态
 
@@ -40,14 +42,7 @@ Muses Workflow Canvas
     └── FutureDocument：后续专业媒体
 ```
 
-外层工作流画布负责组织创作过程；专业文档节点负责深度编辑。二者共享标识、资产、命令信封、修订引用、来源、权限和审计，但不共享全部领域对象或交互语义。
-
-外层画布使用同一 `WorkflowDocument` 提供两种产品投影：
-
-- **创作模式**：面向 Codia/Lovart 类用户心智，内容与结果优先，使用智能默认值和自动连线隐藏复杂度。
-- **专业模式**：面向 Coze 类完整工作流编辑，显式展示节点、类型化输入输出、变量、人工审核、运行和调试。
-
-专业模式是完整无损视图并先行交付；创作模式只能隐藏或折叠复杂度，不能生成另一套权威工作流。超过创作模式表达范围的子图应显示为高级步骤并允许进入专业模式，不得静默丢失语义。
+该顶层产品假设已被 `agent-first` 决策纠正。默认创作模式投影独立 `CreativeCanvas`，以 AgentRun、资产、结果和来源为中心；专业模式投影 `ProfessionalWorkspace` 中的独立 `WorkflowDefinition`，显式展示 Input/Output、节点、变量、运行和调试。二者共享标识、资产、命令、Capability、来源、权限和审计，但不共享根文档 Schema。
 
 专业模式先行首先是 DSL、完整节点语义和可靠执行的验证顺序，不表示用户应先理解内部 Schema 或 Runtime。每个节点的产品理由、用户心智、优先级、目标契约、完成定义和强制同步规则以[专业模式节点产品目录](专业模式节点产品目录.md)为准。Coze/Dify 的节点或 Workflow SDK 原语不得因技术上已有实现而直接成为 Muses 产品节点。
 
@@ -196,7 +191,7 @@ Spike 必须测量：
 
 ## 9. 实施顺序与退出门
 
-自 APCC 决策 `decision-5` 起，以下 Slice 不再作为按组件串行完成的时间顺序，而是用户成果暴露缺口后的能力池。当前唯一价值 Gate、观察方法和拉取规则以[用户成果驱动交付计划](用户成果驱动交付计划.md)为准：先在专业模式跑通用户友好的真实首图，再由真实 PPT 任务逐项扩展边界。
+以下 Slice 继续作为 Platform Core 缺口池，不再作为按组件串行完成的时间顺序。自 APCC 决策 `agent-first` 起，当前主 Gate 是服务端 Operation Gateway、独立 Agent Core 和单 Agent 可靠性；首图产品验收保持并行，PPT 位于最小 Orchestration 之后。
 
 ### Slice 1：工作流无限画布
 
@@ -226,13 +221,13 @@ Spike 必须测量：
 
 每个内核必须具有独立 Harness、版本化契约、故障测试、真实适配器和组合证据。Query、Command 与 Capability 必须足以让外部程序完整操作两层画布，且没有 DOM、鼠标模拟或数据库写旁路。
 
-这个 Gate 用于宣称 Platform Core Alpha 达到完整独立与组合成熟度，不是开始 PPT 真实任务走查的前置条件。若首图或 PPT 在此之前暴露 Agent 需求，Agent 只能调用已经通过直接 UI/Capability 路径验证的操作；未验证能力不能由 Agent 包装后绕过本 Gate。
+这个 Gate 现在作为底座成熟度缺口池保留，不再决定 PPT 或 Agent 的排序。Agent 只能调用具备服务端 Query/Command/Capability、授权、费用和失败语义的操作；当前真实图像 Capability 是首个工具闭环。
 
 ## 10. Agent 分阶段接入
 
 ### Agent Core Alpha
 
-先定义可替换的 AgentRuntimePort，再用同一任务比较 Eve 平台级 Harness 与 Pi 轻量 Harness：上下文装配与压缩、计划、工具循环、预算、权限、确认、流式事件、steering、暂停恢复、沙箱和检查点。AI SDK 只作为模型/流式适配，Workflow SDK 只作为耐久执行候选。单 Agent 只通过 Query、Command 与 Capability 操作外层 WorkflowDocument 和内层 DesignDocument。
+Agent Core Alpha 是当前主 Gate。先冻结 CreativeCanvas、ExecutionPlan、WorkflowDefinition、Node Type Registry 和 AgentRuntimePort，再交付服务端 Operation Gateway、框架无关 Agent Core、Skill/MCP/沙盒端口以及 Eve/Pi 对照。单 Agent 只通过 Query、Command 与 Capability 操作权威状态。
 
 ### Agent Orchestration
 
@@ -247,26 +242,20 @@ MusesAgent 可以决定委托什么，领域 Agent 可以细化专业任务，�
 
 ## 11. 场景用于拉动边界
 
-首图 Gate 通过后立即用一个真实 MusesPPT 任务运行当前平台，不等待 Platform Core 和 Agent 层按组件清单全部完成。该任务先暴露首个成果阻断，再决定是否拉动 WorkflowDocument、专业文档、Asset、Job、Capability、Agent、设计或导出能力。
+PPT 不再紧接首图工程 Gate。只有单 Agent 驱动画布闭环通过 Codex 级可靠性 Gate，并完成最小 MusesAgent/领域 Agent/SubAgent 调度后，才进入真实 MusesPPT。
 
 - 当前不以 PPTX、模板或 SVG 路线预先决定平台核心契约。
 - MusesPPT 只能消费当轮已证明的公共接口；缺失能力先以最小纵向切片验证，再判断是否形成通用契约。
 - 页面模型、模板方法、视觉生成和可编辑重建路线在真实任务中重新探索，不受历史项目默认方案约束。
-- Agent 不是 PPT 的固定前置层；只有直接 Capability 与人工工作流不足时才拉取单 Agent，多 Agent 必须晚于单 Agent 可靠闭环。
+- Agent Core 是 PPT 的固定平台前置层；多 Agent 仍必须晚于单 Agent 可靠闭环。
 - AI 短剧用于验证跨场景复用，并只扩展真实缺失的时间线、视频、配音、音效与音乐专业节点。
 
 真实业务证据持续用于排序、抽象升级和停止判断。场景不得绕过权威状态、权限、幂等、来源或迁移边界。
 
 ## 12. 当前下一步
 
-当前唯一下一步是[用户成果驱动交付计划](用户成果驱动交付计划.md)中的 Gate 1：
+当前下一步按 A0-A9 推进：产品与调用契约 → Operation Gateway → 独立 Agent Core → Skill/MCP/沙盒 → Harness Spike → 单 Agent 创作与工作流调用闭环 → 可靠性 Gate。完整退出条件见[Agent-first 创作与工作流模型](Agent优先创作与工作流模型.md)。
 
-1. 冻结首图用户任务、观察指标、硬护栏和停止规则。
-2. 用当前 Studio 完整走查模板与空白路径，先形成按成果阻断排序的缺口表。
-3. 只补 `Start → image.generate → End` 真实首图需要的 DSL、一个真实适配器、结果体验和最小权威状态。
-4. 由产品负责人无讲解完成真实生图；未通过时回到具体缺口，不转向无关技术任务。
-5. 首图 Gate 通过后，用一个真实 PPT 任务运行现有能力，再逐项拉动文本、Agent、PresentationDocument、设计或导出等实际缺口。
-
-正式发布持久化、SDK `start()`/receipt 崩溃窄窗口、A1 规模、DesignDocument 完整度和其他 Runtime 工作保留为缺口池；只有首图或后续真实场景实际阻塞时才拉取，不再自动排在用户成果之前。
+首图产品负责人无讲解验收、SDK `start()`/receipt 崩溃窄窗口、A1 规模和 DesignDocument 完整度继续作为并行证据或缺口池，不反向阻塞 Agent 主线。
 
 当前任务、负责人和实时状态以 `apcc status` 为准。

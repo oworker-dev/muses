@@ -2,27 +2,26 @@
 
 ## Outcome
 
-Deliver the smallest workflow-native creation capabilities required by observable user outcomes. The current outcome is one user-friendly real image in professional mode; after it passes, a real PPT task pulls the next missing boundary.
+Platform Core Alpha has delivered the first reusable image, identity/credit, durable-runtime, model-catalog, and observability foundation. APCC decision `agent-first` moves the engineering critical path to Agent Core before any PPT scenario MVP; product-owner first-image acceptance remains parallel evidence.
 
 The measurable product contract is `docs/internal/平台核心Alpha需求与体验预算.md`. Candidate stacks and implementations must use its shared fixture, scale profiles, reference environment, and failure cases.
 The authoritative professional-node product catalog is `docs/internal/专业模式节点产品目录.md`; it separates user-facing definition nodes from result projections and Workflow SDK primitives, and it must be updated with every node semantic change.
-APCC decision `decision-5` changes the delivery order from component completion
-to user-outcome gates. The current critical path is
-`docs/internal/用户成果驱动交付计划.md`: first prove a user-friendly real-image
-loop in professional mode, then let a real PPT task pull the next missing
-capabilities. The technical slices below remain gap pools rather than an
-automatic serial queue.
+APCC decision `agent-first` supersedes the earlier post-image sequencing in
+`decision-5`. The current critical path is documented in
+`docs/internal/Agent优先创作与工作流模型.md`: freeze the product/call contracts,
+deliver the Operation Gateway and independent Agent Core, then pass the
+single-Agent reliability gate before orchestration and scenario MVP work.
 The candidate matrix is `docs/internal/画布Alpha最小技术栈基线.md`; the executable comparison plan is `docs/internal/两层画布技术Spike计划.md`.
 The cross-layer SDK and future Agent Harness boundaries are recorded in `docs/internal/平台技术栈与AgentHarness路线.md`.
 
 ## Critical Path
 
-1. Freeze the first-image user task, observable outcome, hard guardrails, and stop rules.
-2. Run the current Studio through template and blank-workflow paths before changing code; rank observed gaps by whether they block or confuse the outcome.
-3. Deliver only the minimum vertical correction for `Start → image.generate → End`: single-owner input sources, a versioned model/price control plane, one real text/image adapter, authenticated workspace ownership, credit reservation/settlement, result-first UI, and the idempotency continuity that the task exposes.
-4. Have the product owner complete both paths without guidance and record a pass, correction, deletion, or stop decision.
-5. After the first-image gate passes, run one privacy-safe real PPT task against current capabilities and pull one missing capability at a time.
-6. Use the workflow-canvas, DesignDocument, image-capability, Runtime, and Agent plans only when a current user outcome exposes their gap.
+1. Preserve the verified real-image, identity/credit, model-catalog, and Workflow SDK paths as reusable Agent tools.
+2. Separate `CreativeCanvas`, `ExecutionPlan`, `ProfessionalWorkspace`, and `WorkflowDefinition` identities.
+3. Replace browser authority with a revisioned server-side Query/Command/Capability gateway.
+4. Deliver a framework-neutral, independently runnable Agent Core with Skill, MCP, sandbox, budget, approval, and recovery ports.
+5. Pass the single-Agent canvas and reliability gates, then add minimum orchestration.
+6. Enter PPT only after those gates; keep product-owner first-image acceptance as a parallel evidence task.
 
 ## Alpha Gate
 
@@ -35,7 +34,7 @@ The cross-layer SDK and future Agent Harness boundaries are recorded in `docs/in
 
 ## Deferred
 
-Agent Harness selection, an arbitrary/plugin-extensible workflow interpreter, PPTX, image-to-editable-SVG, video/audio timelines, realtime collaboration, general workflow automation UI, plugin markets, and service splitting are not precommitted Platform Core work. MusesPPT begins as a real-task probe after the first-image gate and pulls only observed gaps. A narrow supported-node Workflow SDK interpreter Harness remains evidence because it prevents the browser fixture from being mistaken for durable execution and proves real human waiting/resume.
+PPTX, image-to-editable-SVG, video/audio timelines, realtime collaboration, arbitrary code plugins, plugin markets, and service splitting remain deferred. Agent Harness selection is no longer deferred from the overall roadmap, but it remains outside Platform Core and behind Muses-owned Agent contracts. The narrow Workflow SDK interpreter remains reusable evidence rather than the default creative-canvas model.
 
 ## Current implementation evidence
 
@@ -169,4 +168,4 @@ product-owner's unguided first-image acceptance remain open.
 
 ## Handoff
 
-Audit and pass the first-image value gate, then run one real PPT task. Introduce a single-Agent runtime only when that task demonstrates a need for non-deterministic planning or tool use; add MusesAgent, domain-agent profiles, and multi-Agent scheduling only after the single-Agent loop is safe and recoverable.
+Continue with APCC decision `agent-first`: freeze Agent-first product/call contracts, deliver the server-authoritative Operation Gateway and independent Agent Core, then pass the single-Agent canvas and reliability gates. Add MusesAgent, domain profiles, and SubAgent scheduling only after that; do not enter PPT first.

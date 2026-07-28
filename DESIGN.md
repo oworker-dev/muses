@@ -18,15 +18,15 @@ This project uses the production-minded SaaS foundation as the platform base for
 - Treat `docs/internal/长期架构.md` as the canonical architecture and require an APCC architecture decision before changing its core boundaries.
 - Let observable user outcomes pull the smallest required kernel work; require independent, protocol, composition, and scenario evidence before calling a module reusable.
 - Keep scenarios above kernel contracts; never add ecommerce, PPT, social, or other scenario types to a kernel solely for one delivery.
-- Use a workflow-native infinite canvas as the top-level creation space; treat `DesignDocument` and future presentation, video, and audio editors as enterable professional-document nodes with their own authoritative state.
+- Use an Agent-first `CreativeCanvas` as the default creation space and an independent `ProfessionalWorkspace` for callable `WorkflowDefinition` editing; treat Design, Presentation, Video, and Audio documents as professional states with their own authority.
 - Distinguish exploratory/context/provenance relationships from executable typed workflow edges; a canvas graph is not automatically a published workflow.
-- Prove each operation through a direct human or Capability path before allowing an Agent to orchestrate it; complete the single-Agent safety loop before adding MusesAgent, domain-agent profiles, or multi-Agent scheduling.
+- Expose every Agent operation through the same server-authoritative Query, Command, and Capability boundary as UI/API callers; complete the single-Agent safety loop before adding MusesAgent, domain-agent profiles, or multi-Agent scheduling.
 - Use AI Elements + XYFlow only as the first outer-canvas projection candidate, Workflow SDK only as a durable execution candidate, and Eve/Pi only behind a replaceable Agent Harness port; Muses documents, commands, assets, provenance, jobs, and policies remain authoritative.
 - Route human, Agent, workflow, and API mutations through shared Command, Capability, Job, policy, and provenance boundaries.
 - Start as a modular monolith with isolated workers; split services only from measured scaling, fault-domain, security, data-sovereignty, deployment, or ownership evidence.
 - Treat audio, music, voice, and sound as first-class media capabilities with professional time, track, licensing, and provenance semantics.
 - Use `docs/shared/价值宪法.md` as the value gate: architecture elegance alone never justifies implementation or continued investment.
-- Use `docs/internal/用户成果驱动交付计划.md` as the current delivery order: first prove one user-friendly real image, then let a real PPT task expose the next missing capability.
+- Use `docs/internal/Agent优先创作与工作流模型.md` as the current delivery order: complete Agent Core and its reliability/orchestration gates before entering PPT.
 - Keep the core product, protocols, formats, and migration paths open and self-hostable; protect private user data and security material from Build in Public disclosure.
 
 - Keep `src/` as the implementation root.

@@ -31,4 +31,4 @@ The project is now governed as an open, composable AI creation operating system 
 
 ## Next Handoff
 
-Follow `docs/internal/用户成果驱动交付计划.md` and APCC decision `decision-5`. First audit and deliver the user-friendly real-image path, then run one privacy-safe real PPT task and pull one missing capability at a time. Keep technical plans as gap pools, prove an operation directly before exposing it to an Agent, and keep single-Agent safety ahead of orchestration. Record any change to architecture ownership or protocol semantics as an APCC decision first.
+Follow `docs/internal/Agent优先创作与工作流模型.md` and APCC decision `agent-first`. The real-image path is now the first reusable Agent tool foundation. Separate the creative canvas, Agent plan, and callable workflow identities; deliver the Operation Gateway and independent Agent Core; pass single-Agent safety and recovery before orchestration, then enter PPT. Record any change to architecture ownership or protocol semantics as an APCC decision first.

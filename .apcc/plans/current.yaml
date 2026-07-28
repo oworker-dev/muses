@@ -12,24 +12,24 @@ items:
     updatedAt: 2026-07-24T18:30:21.000Z
   - id: platform-core-alpha
     name: Platform Core Alpha：工作流原生创作空间
-    summary: 以用户成果 Gate 拉动工作流原生创作空间：当前先验证专业模式真实首图，只补实际暴露的画布、DSL、Asset/Job/Capability、持久化与 Runtime 缺口。
+    summary: 已形成可复用的图像、身份计费、耐久运行与观测底座；首图产品验收保留并行，但不再阻塞 Agent Core 主线。
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: true
+    pinned: false
     pinnedReason: 当前唯一工程关键路径。
     createdAt: 2026-07-24T19:56:41.199Z
-    updatedAt: 2026-07-27T19:17:06.773Z
+    updatedAt: 2026-07-28T17:08:46.580Z
   - id: first-image-value-gate
     name: 价值 Gate 1：用户友好的真实生图闭环
-    summary: 先让目标用户在专业模式中理解 Start→image.generate→End，并通过真实模型获得、检查和继续使用一张图片；只补齐这条路径实际暴露的最小缺口，通过后再进入 PPT 场景扩展。
+    summary: 工程闭环已完成，产品负责人无讲解验收继续作为并行证据，不再决定下一项工程组件。
     parentPlanId: platform-core-alpha
     versionRef: null
     owner: codex-main
-    pinned: true
+    pinned: false
     pinnedReason: 当前唯一工程关键路径；阻止无用户结果证据的组件堆叠。
     createdAt: 2026-07-27T19:12:15.517Z
-    updatedAt: 2026-07-27T19:12:15.517Z
+    updatedAt: 2026-07-28T17:08:46.814Z
   - id: core-gate-0
     name: Gate 0：最小技术基线与核心契约
     summary: 通过场景无关 Spike 选择画布 Alpha 技术基线，并定义工作流图、专业文档引用、Command、Revision、Asset、Job 与 Capability 最小契约。
@@ -92,14 +92,14 @@ items:
     updatedAt: 2026-07-24T19:56:40.723Z
   - id: agent-core-alpha
     name: Agent Core Alpha：单 Agent 驱动创作空间
-    summary: 当首图或后续真实场景证明直接 Capability 与人工工作流不足时，接入单 Agent Runtime，并仅通过公共 Query、Command 与 Capability 端口驱动创作空间。
+    summary: 先冻结创作空间、工作流调用和 Agent Runtime 契约，再交付服务端 Operation Gateway、扩展安全边界、Harness 对照与单 Agent 驱动画布闭环。
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: false
-    pinnedReason: null
+    pinned: true
+    pinnedReason: 当前工程主 Gate：场景 MVP 前完成独立、可恢复、可控的 Codex 级单 Agent 内核。
     createdAt: 2026-07-24T19:56:42.138Z
-    updatedAt: 2026-07-27T19:17:06.981Z
+    updatedAt: 2026-07-28T17:08:47.022Z
   - id: agent-orchestration-alpha
     name: Agent Orchestration：MusesAgent、领域 Agent 与多 Agent
     summary: 在单 Agent 可靠闭环后建立平台级 MusesAgent、领域 Agent 和受 Runtime 管理的执行型 SubAgents 委托架构。
@@ -112,14 +112,14 @@ items:
     updatedAt: 2026-07-24T19:56:42.295Z
   - id: scenario-mvp
     name: Scenario MVP：用真实场景验证通用层
-    summary: 首图价值 Gate 通过后立即以 MusesPPT 真实任务发现并逐项补齐能力；随后用 AI 短剧验证跨场景复用，不等待预设的全部通用层与 Agent 层完成。
+    summary: 仅在 Agent Core 可靠性 Gate 和最小 Orchestration 通过后进入 PPT；场景用于验证通用层，不定义内核。
     parentPlanId: null
     versionRef: null
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:56:42.464Z
-    updatedAt: 2026-07-27T19:17:07.184Z
+    updatedAt: 2026-07-28T17:08:47.235Z
   - id: muses-ppt-mvp
     name: MusesPPT：首个真实场景 MVP
     summary: 首图价值 Gate 通过后，用一个真实 PPT 任务运行现有平台，先记录成果与缺口，再逐项拉动文本、Agent、PresentationDocument、设计、导出等能力。
@@ -140,3 +140,73 @@ items:
     pinnedReason: null
     createdAt: 2026-07-24T19:56:42.832Z
     updatedAt: 2026-07-24T19:56:42.832Z
+  - id: agent-foundation-contracts
+    name: A0-A2：Agent-first 产品与调用契约
+    summary: 分离 CreativeCanvas、ExecutionPlan、WorkflowDefinition 和 Run 身份，冻结 Node Type Registry 与调用协议。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:47.451Z
+    updatedAt: 2026-07-28T17:08:47.451Z
+  - id: agent-operation-gateway
+    name: A3：Agent Operation Gateway
+    summary: 建立服务端权威文档、revision、Query、Command、Capability、授权和审计边界。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:47.668Z
+    updatedAt: 2026-07-28T17:08:47.668Z
+  - id: agent-runtime-kernel
+    name: A4：独立 Agent Core
+    summary: 交付不依赖 Studio、Eve 或 Pi 的 Agent 契约、事件、状态、控制和独立运行 Harness。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:47.911Z
+    updatedAt: 2026-07-28T17:08:47.911Z
+  - id: agent-extension-security
+    name: A5：Skill、MCP 与沙盒
+    summary: 交付版本化 Skill、受控 MCP Gateway、逻辑沙盒和按 Run 计算沙盒端口。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:48.135Z
+    updatedAt: 2026-07-28T17:08:48.135Z
+  - id: agent-harness-selection
+    name: A6：Agent Harness 对照选型
+    summary: 用同一 Muses 工具与可靠性夹具比较 Eve、Pi 及 Workflow SDK 耐久集成基线。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:48.363Z
+    updatedAt: 2026-07-28T17:08:48.363Z
+  - id: agent-canvas-loop
+    name: A7-A8：单 Agent 驱动画布与工作流发布
+    summary: 让单 Agent 驱动创作空间、构建可调用工作流，并由 UI、Agent 和 API 精确运行指定定义。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:48.583Z
+    updatedAt: 2026-07-28T17:08:48.583Z
+  - id: agent-reliability-gate
+    name: A9：Codex 级可靠性 Gate
+    summary: 验证恢复、steering、压缩、幂等费用、审批、取消、隔离、追踪和固定 eval。
+    parentPlanId: agent-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T17:08:48.806Z
+    updatedAt: 2026-07-28T17:08:48.806Z

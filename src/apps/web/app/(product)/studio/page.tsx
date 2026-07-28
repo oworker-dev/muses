@@ -8,6 +8,7 @@ import {
   serializeStudioContext,
 } from "@/lib/studio-access"
 import { getStudioModelCatalog } from "@/lib/model-catalog"
+import { getOrCreateOperationGatewaySnapshot } from "@/lib/operation-gateway-store"
 
 export const metadata: Metadata = {
   title: "Muses Studio Alpha",
@@ -32,10 +33,15 @@ export default async function StudioPage() {
     await ensurePersonalStudioWorkspace(session.user)
   )
   const modelCatalog = await getStudioModelCatalog(context.workspace.id)
+  const operationGatewaySnapshot = await getOrCreateOperationGatewaySnapshot({
+    workspaceId: context.workspace.id,
+    userId: session.user.id,
+  })
   return (
     <MusesStudio
       initialContext={context}
       initialModelCatalog={modelCatalog}
+      initialOperationGatewaySnapshot={operationGatewaySnapshot}
       user={{ name: session.user.name, email: session.user.email }}
     />
   )

@@ -81,6 +81,140 @@ test("personal workspace and initial credit grant are idempotent", async ({
   await expect(page.getByText("100", { exact: true }).first()).toBeVisible();
 });
 
+test("Operation Gateway persists independent workflows with idempotent revisions", async ({
+  page,
+}) => {
+  const initialResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(initialResponse.ok()).toBeTruthy();
+  const initial =
+    (await initialResponse.json()) as OperationGatewayTestSnapshot;
+  expect(initial.workspaceId).toBe(workspaceId);
+  expect(initial.workflowDefinitions).toHaveLength(1);
+
+  const first = initial.workflowDefinitions[0];
+  const commandId = `command_${randomBytes(10).toString("hex")}`;
+  const moveCommand = {
+    schemaVersion: "0.1.0-draft",
+    commandId,
+    idempotencyKey: commandId,
+    workspaceId,
+    projectId: initial.project.id,
+    target: { type: "workflow-definition", id: first.definitionId },
+    expectedRevision: first.revision,
+    issuedAt: new Date().toISOString(),
+    payload: {
+      type: "workflow.definition.command",
+      command: {
+        type: "workflow.node.move",
+        nodeId: "image-generator-1",
+        position: { x: 640, y: 320 },
+      },
+    },
+  };
+  const acceptedResponse = await page.request.post(
+    "/api/studio/operation-gateway",
+    { data: moveCommand },
+  );
+  expect(acceptedResponse.ok()).toBeTruthy();
+  const accepted =
+    (await acceptedResponse.json()) as OperationGatewayTestResult;
+  expect(accepted).toMatchObject({
+    accepted: true,
+    duplicate: false,
+    resultingRevision: first.revision + 1,
+  });
+  expect(
+    accepted.snapshot.workflowDefinitions[0].document.workflow.nodes.find(
+      ({ id }) => id === "image-generator-1",
+    )?.position,
+  ).toEqual({ x: 640, y: 320 });
+
+  const replayResponse = await page.request.post(
+    "/api/studio/operation-gateway",
+    { data: moveCommand },
+  );
+  expect(replayResponse.ok()).toBeTruthy();
+  expect(await replayResponse.json()).toMatchObject({
+    accepted: true,
+    duplicate: true,
+    resultingRevision: first.revision + 1,
+  });
+
+  const staleResponse = await page.request.post(
+    "/api/studio/operation-gateway",
+    {
+      data: {
+        ...moveCommand,
+        commandId: `${commandId}_stale`,
+        idempotencyKey: `${commandId}_stale`,
+        expectedRevision: first.revision,
+        payload: {
+          ...moveCommand.payload,
+          command: {
+            ...moveCommand.payload.command,
+            position: { x: 700, y: 400 },
+          },
+        },
+      },
+    },
+  );
+  expect(staleResponse.status()).toBe(409);
+  expect(await staleResponse.json()).toMatchObject({
+    accepted: false,
+    code: "revision-conflict",
+    resultingRevision: first.revision + 1,
+  });
+
+  const professional = accepted.snapshot.professionalWorkspace;
+  const secondDefinitionId = `mwfd_${randomBytes(10).toString("hex")}`;
+  const createResponse = await page.request.post(
+    "/api/studio/operation-gateway",
+    {
+      data: {
+        schemaVersion: "0.1.0-draft",
+        commandId: `${commandId}_create`,
+        idempotencyKey: `${commandId}_create`,
+        workspaceId,
+        projectId: initial.project.id,
+        target: {
+          type: "professional-workspace",
+          id: professional.professionalWorkspaceId,
+        },
+        expectedRevision: professional.revision,
+        issuedAt: new Date().toISOString(),
+        payload: {
+          type: "professional.workflow.create",
+          definitionId: secondDefinitionId,
+          name: "Second image workflow",
+          position: { x: 720, y: 160 },
+          collapsed: false,
+        },
+      },
+    },
+  );
+  expect(createResponse.ok()).toBeTruthy();
+  const created = (await createResponse.json()) as OperationGatewayTestResult;
+  expect(created.snapshot.workflowDefinitions).toHaveLength(2);
+  expect(
+    created.snapshot.workflowDefinitions.map(
+      ({ definitionId }) => definitionId,
+    ),
+  ).toEqual(expect.arrayContaining([first.definitionId, secondDefinitionId]));
+
+  const denied = await page.request.post("/api/studio/operation-gateway", {
+    data: {
+      ...moveCommand,
+      commandId: `${commandId}_cross_workspace`,
+      idempotencyKey: `${commandId}_cross_workspace`,
+      workspaceId: "mws_not_authorized",
+    },
+  });
+  expect(denied.status()).toBe(404);
+  expect(await denied.json()).toMatchObject({ error: "workspace-not-found" });
+});
+
 test("Studio consumes a published versioned image model catalog", async ({
   page,
 }) => {
@@ -416,6 +550,11 @@ test("the default professional workflow produces and restores one image result",
   await expect(page.getByTestId("durable-run-panel")).toContainText(
     "Completed",
   );
+  await page.getByTestId("workflow-node-image-generator-1").click();
+  await expect(page.getByTestId("image-prompt-input")).toHaveValue(
+    "A precise launch visual for Muses",
+  );
+  await expect(page.getByLabel("Aspect ratio")).toHaveValue("2:3");
 });
 
 test("reference image confirmation keeps storage misses retryable", async ({
@@ -1472,6 +1611,31 @@ test("insufficient credits reject a real image run before provider execution", a
 function studioWorkspaceStorageKey(id: string, harness: boolean) {
   return `muses.platform-core-alpha.workspace.${id}${harness ? ".harness" : ""}`;
 }
+
+type OperationGatewayTestSnapshot = {
+  workspaceId: string;
+  project: { id: string };
+  professionalWorkspace: {
+    professionalWorkspaceId: string;
+    revision: number;
+  };
+  workflowDefinitions: Array<{
+    definitionId: string;
+    revision: number;
+    document: {
+      workflow: {
+        nodes: Array<{ id: string; position: { x: number; y: number } }>;
+      };
+    };
+  }>;
+};
+
+type OperationGatewayTestResult = {
+  accepted: boolean;
+  duplicate: boolean;
+  resultingRevision: number;
+  snapshot: OperationGatewayTestSnapshot;
+};
 
 function studioLastRunStorageKey(id: string, harness: boolean) {
   return `muses.platform-core-alpha.last-durable-run.${id}${harness ? ".harness" : ""}`;

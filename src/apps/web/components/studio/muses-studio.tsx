@@ -56,11 +56,15 @@ import {
   createInitialWorkspace,
   createNodeDraft,
   formatVariableReference,
+  OPERATION_COMMAND_SCHEMA_VERSION,
   resolveImageOutputSize,
   type ModelCatalogProjection,
   type JobDraft,
   type MusesCommandPayload,
   type MusesWorkspaceDraft,
+  type OperationCommandEnvelope,
+  type OperationCommandResponse,
+  type OperationGatewaySnapshot,
   type PortValueType,
   type WorkflowNodeDraft,
   type WorkflowNodeKind,
@@ -285,10 +289,12 @@ const paletteItems: Array<{
 export function MusesStudio({
   initialContext,
   initialModelCatalog,
+  initialOperationGatewaySnapshot,
   user,
 }: {
   initialContext: StudioContextProjection
   initialModelCatalog: ModelCatalogProjection
+  initialOperationGatewaySnapshot: OperationGatewaySnapshot
   user: { name?: string | null; email: string }
 }) {
   const t = useTranslations("Studio")
@@ -297,7 +303,8 @@ export function MusesStudio({
   const createWorkspace = useCallback(() => {
     const initial = harnessTemplate
       ? createHarnessWorkspace()
-      : createInitialWorkspace()
+      : initialOperationGatewaySnapshot.workflowDefinitions[0]?.document ||
+        createInitialWorkspace()
     const availableModelRefs = new Set(
       initialModelCatalog.offerings.map((offering) => offering.modelRef)
     )
@@ -324,6 +331,7 @@ export function MusesStudio({
     harnessTemplate,
     initialContext.workspace.id,
     initialModelCatalog.offerings,
+    initialOperationGatewaySnapshot.workflowDefinitions,
   ])
   const workspaceStorageKey = `${STORAGE_KEY}.${initialContext.workspace.id}${
     harnessTemplate ? ".harness" : ""
@@ -363,8 +371,34 @@ export function MusesStudio({
   const nodeCounter = useRef(10)
   const draggingNodeIds = useRef(new Set<string>())
   const publishWorkflowRef = useRef<() => Promise<void>>(async () => {})
+  const operationGatewaySnapshotRef = useRef(initialOperationGatewaySnapshot)
+  const operationGatewayQueue = useRef<Promise<void>>(Promise.resolve())
+  const pendingGatewayWrites = useRef(0)
 
   useEffect(() => {
+    if (!harnessTemplate) {
+      setWorkspace(createWorkspace())
+      try {
+        const storedRun = window.localStorage.getItem(lastRunStorageKey)
+        if (storedRun) {
+          const parsedRun = JSON.parse(storedRun) as {
+            workspaceId?: unknown
+            runId?: unknown
+          }
+          if (
+            parsedRun.workspaceId === createWorkspace().id &&
+            typeof parsedRun.runId === "string" &&
+            parsedRun.runId.startsWith("wrun_")
+          ) {
+            setLastRunId(parsedRun.runId)
+          }
+        }
+      } catch {
+        setNotice(t("status.restoreFailed"))
+      }
+      setHydrated(true)
+      return
+    }
     const timer = window.setTimeout(() => {
       try {
         let restoredWorkspaceId = createWorkspace().id
@@ -401,7 +435,13 @@ export function MusesStudio({
       }
     }, 0)
     return () => window.clearTimeout(timer)
-  }, [createWorkspace, lastRunStorageKey, t, workspaceStorageKey])
+  }, [
+    createWorkspace,
+    harnessTemplate,
+    lastRunStorageKey,
+    t,
+    workspaceStorageKey,
+  ])
 
   useEffect(() => {
     if (!hydrated) return
@@ -426,6 +466,97 @@ export function MusesStudio({
     if (!response.ok) return
     setStudioContext((await response.json()) as StudioContextProjection)
   }, [workspace.id])
+
+  const enqueueGatewayPayloads = useCallback(
+    (definitionId: string, payloads: OperationCommandEnvelope["payload"][]) => {
+      if (harnessTemplate || payloads.length === 0) return
+      pendingGatewayWrites.current += 1
+
+      const refreshGatewaySnapshot = async () => {
+        const current = operationGatewaySnapshotRef.current
+        const query = new URLSearchParams({
+          workspaceId: current.workspaceId,
+          projectId: current.project.id,
+        })
+        const response = await fetch(`/api/studio/operation-gateway?${query}`)
+        if (!response.ok) throw new Error("Operation Gateway refresh failed.")
+        const snapshot = (await response.json()) as OperationGatewaySnapshot
+        operationGatewaySnapshotRef.current = snapshot
+        return snapshot
+      }
+
+      const submit = async (payload: OperationCommandEnvelope["payload"]) => {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          const snapshot = operationGatewaySnapshotRef.current
+          const definition = snapshot.workflowDefinitions.find(
+            (candidate) => candidate.definitionId === definitionId
+          )
+          if (!definition) {
+            throw new Error("WorkflowDefinition is no longer available.")
+          }
+          const commandId = `command_${crypto.randomUUID().replaceAll("-", "")}`
+          const response = await fetch("/api/studio/operation-gateway", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
+              commandId,
+              idempotencyKey: commandId,
+              workspaceId: snapshot.workspaceId,
+              projectId: snapshot.project.id,
+              target: { type: "workflow-definition", id: definitionId },
+              expectedRevision: definition.revision,
+              issuedAt: new Date().toISOString(),
+              payload,
+            }),
+          })
+          const result =
+            (await response.json()) as Partial<OperationCommandResponse> & {
+              message?: string
+            }
+          if (result.snapshot) {
+            operationGatewaySnapshotRef.current = result.snapshot
+          }
+          if (response.status === 409 && attempt === 0) {
+            if (!result.snapshot) await refreshGatewaySnapshot()
+            continue
+          }
+          if (!response.ok || !result.accepted || !result.snapshot) {
+            throw new Error(result.message || "Operation Gateway write failed.")
+          }
+          return
+        }
+      }
+
+      const persist = async () => {
+        try {
+          for (const payload of payloads) await submit(payload)
+        } catch (error) {
+          await refreshGatewaySnapshot().catch(() => undefined)
+          throw error
+        }
+      }
+      const run = operationGatewayQueue.current.then(persist, persist)
+      operationGatewayQueue.current = run.catch(() => undefined)
+      void run
+        .then(() => {
+          setNotice(t("status.saved"))
+        })
+        .catch(() => {
+          setNotice(t("status.saveFailed"))
+        })
+        .finally(() => {
+          pendingGatewayWrites.current -= 1
+          if (pendingGatewayWrites.current !== 0) return
+          const authoritative =
+            operationGatewaySnapshotRef.current.workflowDefinitions.find(
+              (candidate) => candidate.definitionId === definitionId
+            )?.document
+          if (authoritative) setWorkspace(authoritative)
+        })
+    },
+    [harnessTemplate, t]
+  )
 
   useEffect(() => {
     if (!lastRunId) return
@@ -484,6 +615,7 @@ export function MusesStudio({
     (payload: MusesCommandPayload | MusesCommandPayload[]) => {
       const payloads = Array.isArray(payload) ? payload : [payload]
       if (payloads.length === 0) return
+      const definitionId = workspace.workflow.id
       setWorkspace((current) => {
         const result = applyCommandSequence(current, payloads)
         if (!result.accepted) {
@@ -493,8 +625,15 @@ export function MusesStudio({
         setNotice(t("status.applied", { count: payloads.length }))
         return result.workspace
       })
+      enqueueGatewayPayloads(
+        definitionId,
+        payloads.map((command) => ({
+          type: "workflow.definition.command" as const,
+          command,
+        }))
+      )
     },
-    [t]
+    [enqueueGatewayPayloads, t, workspace.workflow.id]
   )
 
   const runImageGenerator = useCallback(
@@ -685,54 +824,43 @@ export function MusesStudio({
 
   const selectResult = useCallback(
     (resultNodeId: string) => {
-      setWorkspace((current) => {
-        const resultNode = current.workflow.nodes.find(
-          (node) => node.id === resultNodeId
-        )
-        const selector = current.workflow.nodes.find(
-          (node) =>
-            node.data.kind === "selector" &&
-            node.data.candidateNodeIds.includes(resultNodeId)
-        )
-        const designNode = current.workflow.nodes.find(
-          (node) => node.data.kind === "design-document"
-        )
-        if (
-          !resultNode ||
-          resultNode.data.kind !== "image-result" ||
-          !selector ||
-          !designNode ||
-          designNode.data.kind !== "design-document"
-        ) {
-          setNotice(t("status.selectionIncomplete"))
-          return current
-        }
-        const result = applyCommandSequence(
-          current,
-          [
-            {
-              type: "workflow.result.select",
-              selectorNodeId: selector.id,
-              resultNodeId,
-              designNodeId: designNode.id,
-            },
-            {
-              type: "design.background.set",
-              documentId: designNode.data.documentId,
-              assetId: resultNode.data.assetId,
-            },
-          ],
-          `select-${resultNodeId}`
-        )
-        if (!result.accepted) {
-          setNotice(result.message)
-          return current
-        }
-        setNotice(t("status.directionSelected"))
-        return result.workspace
-      })
+      const resultNode = workspace.workflow.nodes.find(
+        (node) => node.id === resultNodeId
+      )
+      const selector = workspace.workflow.nodes.find(
+        (node) =>
+          node.data.kind === "selector" &&
+          node.data.candidateNodeIds.includes(resultNodeId)
+      )
+      const designNode = workspace.workflow.nodes.find(
+        (node) => node.data.kind === "design-document"
+      )
+      if (
+        !resultNode ||
+        resultNode.data.kind !== "image-result" ||
+        !selector ||
+        !designNode ||
+        designNode.data.kind !== "design-document"
+      ) {
+        setNotice(t("status.selectionIncomplete"))
+        return
+      }
+      dispatch([
+        {
+          type: "workflow.result.select",
+          selectorNodeId: selector.id,
+          resultNodeId,
+          designNodeId: designNode.id,
+        },
+        {
+          type: "design.background.set",
+          documentId: designNode.data.documentId,
+          assetId: resultNode.data.assetId,
+        },
+      ])
+      setNotice(t("status.directionSelected"))
     },
-    [t]
+    [dispatch, t, workspace.workflow.nodes]
   )
 
   const exportWorkspace = useCallback(() => {
@@ -1082,6 +1210,11 @@ export function MusesStudio({
     window.localStorage.removeItem(workspaceStorageKey)
     window.localStorage.removeItem(lastRunStorageKey)
     setWorkspace(createWorkspace())
+    if (!harnessTemplate) {
+      enqueueGatewayPayloads(workspace.workflow.id, [
+        { type: "workflow.definition.reset" },
+      ])
+    }
     setLastRunId(null)
     setDurableRun(null)
     setResumingAssetId(null)

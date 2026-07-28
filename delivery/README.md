@@ -8,14 +8,14 @@ The current value, open-development, and real-work validation boundary is
 recorded in `delivery/value-foundation.md`.
 
 The current engineering critical path is recorded in
-`delivery/platform-core-alpha.md` and `docs/internal/平台核心Alpha路线.md`.
-Its measurable acceptance contract is
-`docs/internal/平台核心Alpha需求与体验预算.md`.
+`docs/internal/Agent优先创作与工作流模型.md`. The completed and remaining
+Platform Core foundation is recorded in `delivery/platform-core-alpha.md` and
+`docs/internal/平台核心Alpha路线.md`.
 The product reasons, priorities, target contracts, and mandatory maintenance
 rules for professional-mode nodes are recorded in
 `docs/internal/专业模式节点产品目录.md`.
-The current outcome-first sequence, first-image value gate, gap-pull rules, and
-PPT expansion gate are recorded in
+The current outcome-first sequence, parallel first-image evidence, Agent gate,
+and later PPT expansion rules are recorded in
 `docs/internal/用户成果驱动交付计划.md`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.

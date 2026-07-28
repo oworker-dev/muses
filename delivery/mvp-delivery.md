@@ -1,19 +1,18 @@
 # Muses MVP Delivery
 
 > Archived route: this file records the PPT-first estimate approved in an
-> earlier planning round. APCC decision `decision-5` supersedes its component
+> earlier planning round. APCC decision `agent-first` supersedes its component
 > sequence and fixed 25-37 day budget. The current route is
-> `docs/internal/用户成果驱动交付计划.md`: prove one user-friendly real image first,
-> then run one real PPT task and pull only the capability blocking its next
-> visible result. The value guardrails and scenario boundaries below remain
-> historical input, not the active task queue.
+> `docs/internal/Agent优先创作与工作流模型.md`: use the verified image foundation,
+> deliver Agent Core and its reliability/orchestration gates, then enter PPT.
+> The value guardrails below remain historical input, not the active queue.
 
 ## Current Handoff
 
-1. Freeze and audit the two first-image user paths before changing product code.
-2. Deliver the smallest `Start → image.generate → End` correction exposed by that audit.
-3. Have the product owner complete the paths without guidance and record the decision.
-4. After the image gate passes, run one privacy-safe PPT task and fill one observed gap at a time.
+1. Freeze the Agent-first product, workflow-call, node-registry, and runtime contracts.
+2. Deliver the server-authoritative Operation Gateway and independent Agent Core.
+3. Pass the single-Agent creative-canvas and reliability gates, then minimum orchestration.
+4. Keep first-image human acceptance parallel; enter PPT only after the Agent gates.
 
 ## Historical Outcome
 

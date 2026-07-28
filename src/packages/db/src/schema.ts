@@ -50,6 +50,180 @@ export const musesWorkspaceMember = pgTable(
   (table) => [primaryKey({ columns: [table.workspaceId, table.userId] })],
 );
 
+export const musesProject = pgTable(
+  "muses_project",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    name: text("name").notNull(),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("muses_project_workspace_name_idx").on(
+      table.workspaceId,
+      table.name,
+    ),
+  ],
+);
+
+export const musesCreativeCanvas = pgTable(
+  "muses_creative_canvas",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    revision: integer("revision").notNull().default(0),
+    document: jsonb("document").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("muses_creative_canvas_project_idx").on(
+      table.workspaceId,
+      table.projectId,
+    ),
+  ],
+);
+
+export const musesProfessionalWorkspace = pgTable(
+  "muses_professional_workspace",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    revision: integer("revision").notNull().default(0),
+    document: jsonb("document").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("muses_professional_workspace_project_idx").on(
+      table.workspaceId,
+      table.projectId,
+    ),
+  ],
+);
+
+export const musesWorkflowDefinitionDraft = pgTable(
+  "muses_workflow_definition_draft",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    professionalWorkspaceId: text("professional_workspace_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    schemaVersion: text("schema_version").notNull(),
+    revision: integer("revision").notNull().default(0),
+    lifecycleStatus: text("lifecycle_status").notNull().default("draft"),
+    document: jsonb("document").notNull(),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+);
+
+export const musesWorkflowDefinitionVersion = pgTable(
+  "muses_workflow_definition_version",
+  {
+    definitionId: text("definition_id").notNull(),
+    version: integer("version").notNull(),
+    workspaceId: text("workspace_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    definition: jsonb("definition").notNull(),
+    inputSchema: jsonb("input_schema").notNull().default({}),
+    outputSchema: jsonb("output_schema").notNull().default({}),
+    publishedByUserId: text("published_by_user_id").notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.definitionId, table.version] }),
+  ],
+);
+
+export const musesWorkflowDeployment = pgTable(
+  "muses_workflow_deployment",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    definitionId: text("definition_id").notNull(),
+    alias: text("alias").notNull(),
+    version: integer("version").notNull(),
+    status: text("status").notNull().default("active"),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("muses_workflow_deployment_alias_idx").on(
+      table.workspaceId,
+      table.definitionId,
+      table.alias,
+    ),
+  ],
+);
+
+export const musesOperationCommandReceipt = pgTable(
+  "muses_operation_command_receipt",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    targetType: text("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    commandId: text("command_id").notNull(),
+    actorKind: text("actor_kind").notNull(),
+    actorId: text("actor_id").notNull(),
+    expectedRevision: integer("expected_revision").notNull(),
+    resultingRevision: integer("resulting_revision"),
+    status: text("status").notNull().default("processing"),
+    response: jsonb("response"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({
+      columns: [
+        table.workspaceId,
+        table.targetType,
+        table.targetId,
+        table.idempotencyKey,
+      ],
+    }),
+    uniqueIndex("muses_operation_command_receipt_command_idx").on(
+      table.workspaceId,
+      table.commandId,
+    ),
+  ],
+);
+
 export const creditAccount = pgTable(
   "credit_account",
   {

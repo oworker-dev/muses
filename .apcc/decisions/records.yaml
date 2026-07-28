@@ -209,3 +209,33 @@ items:
     revisitCondition: 当团队工作区、企业合同或按法币直接计费成为已验证需求时，扩展角色、发票和价格策略，不改变不可变账本与运行结算原则。
     createdAt: 2026-07-27T21:22:50.754Z
     decidedAt: 2026-07-27T21:22:58.633Z
+  - id: agent-first
+    name: 采用 Agent-first 创作空间与独立可调用工作流模型
+    description: 将 CreativeCanvas、Agent ExecutionPlan 与可发布 WorkflowDefinition 分离，并把 Agent Core Alpha 调整为场景 MVP 前的主 Gate。
+    docPath: internal/Agent优先创作与工作流模型.md
+    category: architecture
+    proposedBy: codex-main
+    context: 首图底座已经证明图像能力、耐久运行、认证计费与观测，但当前专业工作流画布无法表达 Lovart 类 Agent 驱动创作心智，且既有计划错误地把 PPT 排在 Codex 级 Agent 内核之前。
+    impactOfNoAction: MusesAgent 将被实现成操作 Coze 式单一工作流图的机器人，创作画布、外部 API 调用身份、Agent 任务边界和多工作流版本会持续混淆。
+    expectedOutcome: 创作模式以 AgentRun、资产和结果为中心，专业模式以稳定 WorkflowDefinition 身份、版本和输入输出契约为中心；UI、Agent 与 API 共用服务端 Query、Command 和 Capability，Agent Core 在 PPT 前完成可靠性 Gate。
+    boundary: 本决策冻结产品对象、调用身份和交付顺序；不预先实现完整创作 UI、全部节点、任意插件市场、PPT 页面模型或最终 Eve/Pi 选型。
+    status: approved
+    decisionSummary: 用户已明确确认 Codex 级 Agent 是场景 MVP 前置；创作画布、Agent 执行计划和可发布工作流必须分离，Workflow SDK 只承担耐久执行，Eve/Pi 只作为可替换 Harness。
+    revisitCondition: 只有真实 Agent 闭环证明对象拆分导致不可接受的用户复杂度或同一操作无法通过共享 Command/Capability 复用时重新评估。
+    createdAt: 2026-07-28T17:07:58.576Z
+    decidedAt: 2026-07-28T17:08:07.626Z
+  - id: agent-core-alpha-harness
+    name: 确定 Agent Core Alpha Harness 选型
+    description: 以 Muses Agent Core 为当前权威 Runtime，Pi 作为可选循环 Adapter，Eve 因运行时与隔离不兼容暂缓。
+    docPath: internal/平台技术栈与AgentHarness路线.md
+    category: architecture
+    proposedBy: codex-main
+    context: A6 已按安装版本文档和同一安全夹具完成 Muses、Pi 与 Eve 对照。
+    impactOfNoAction: 继续把 Eve 视为当前主候选会把 Node 24、Workflow 5 beta 和 per-session sandbox 冲突带入产品运行时。
+    expectedOutcome: A7 可在当前 Node 22 与 Workflow 4 基线上使用 Muses 权威状态推进，并保留可删除的 Pi/Eve Adapter。
+    boundary: 只决定 Agent Core Alpha 的 Harness 分层；不承诺长期唯一 Harness，不提前实现多 Agent。
+    status: approved
+    decisionSummary: 同版文档与可执行夹具证明 Muses Core 最符合权威状态和 Run 隔离要求；Pi 可提供低耦合循环能力；Eve 当前与 Node 22、Workflow 4 和 Run 级沙盒契约不兼容。
+    revisitCondition: Muses 升级到 Node 24 且 Eve 能以独立 Workflow World 和每 Run 沙盒 Adapter 通过恢复、审批、FIFO 与删除成本 Gate。
+    createdAt: 2026-07-28T19:48:04.538Z
+    decidedAt: 2026-07-28T19:48:19.287Z
