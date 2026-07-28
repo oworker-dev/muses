@@ -246,6 +246,7 @@
       "send": "发送",
       "cancel": "取消 Agent 运行",
       "requestFailed": "MusesAgent 未能完成此请求。",
+      "modelFailed": "模型服务未能完成本轮创作，请稍后重试。",
       "plan": "执行计划",
       "planProgress": "{completed}/{total}",
       "planSteps": {

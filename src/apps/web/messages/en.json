@@ -246,6 +246,7 @@
       "send": "Send",
       "cancel": "Cancel Agent run",
       "requestFailed": "MusesAgent could not complete this request.",
+      "modelFailed": "The model service could not complete this turn. Try again in a moment.",
       "plan": "Execution plan",
       "planProgress": "{completed}/{total}",
       "planSteps": {

@@ -231,8 +231,8 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 1. 已完成 Agent-first 对象、调用身份、Node Type Registry、Operation Gateway、独立 Agent Core、扩展/沙盒端口和 Eve/Pi 对照。
 2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
-3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据和可展开最小 ExecutionPlan；继续完成 steering/follow-up 浏览器验收。
-4. 让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
+3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据、可展开最小 ExecutionPlan 和真实 steering/follow-up 浏览器验收。
+4. 当前让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
 5. 通过恢复、压缩、费用、预算、审批、取消、隔离、追踪与 eval Gate 后，再进入 MusesAgent、领域 Agent 和 SubAgent 调度。
 6. 最小 Orchestration 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
 

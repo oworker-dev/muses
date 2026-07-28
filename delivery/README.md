@@ -25,7 +25,9 @@ remaining limitations are in
 The first authenticated single-Agent real-image loop, PostgreSQL Agent state,
 Workflow SDK driver, Operation Gateway canvas placement, browser restoration,
 and explicit A7 limitations are in
-`delivery/evidence/agent-core-alpha/a7-single-agent-loop/`.
+`delivery/evidence/agent-core-alpha/a7-single-agent-loop/`; the completed real
+follow-up, single-charge placement and refresh evidence is in
+`delivery/evidence/agent-core-alpha/a7-steering-loop/`.
 
 This SaaS starter is acceptable when a newly created project can be run, verified, and extended without hidden OWorker platform dependencies.
 

@@ -161,9 +161,9 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 
 生成图片同时写入 Muses 自有 `muses_generated_asset` 记录，保存对象键、媒体类型、字节数、尺寸、Prompt、Provider、Model 和 Workflow/Node/Step 来源。图片读取先经过 Muses Workspace 与 WorkflowRun 授权，再按 Asset 记录访问对象存储，不再把 Workflow SDK `returnValue` 当成 Asset 权威；因此 Workflow World 清理、过期或切换不能让已确认 Asset 失去产品身份。
 
-可复核证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`。这项证据仍不等于 A7 或完整创作模式全部通过：steering/follow-up 尚未完成真实浏览器验收；审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。下一步先完成 steering 用户链路，再推进 A8 指定工作流调用与 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
+首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它仍不等于完整创作模式或 Codex 级可靠性全部通过：审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。下一步推进 A8 指定工作流调用与 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
 
-首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。真实重试随后到达模型适配器，但被上游模型账户预授权额度阻断；Muses 积分、图像调用和 Canvas 修订均未变化。该失败还暴露了供应商原始诊断不应进入产品状态，现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录；再次受控重试证明客户端快照与事件不再暴露余额或 request id，且仍无模型用量、图像、积分或画布副作用。因此 steering 任务继续保持进行中，非重叠结果放置当前只有单元证据，不能写成真实闭环已通过。部分证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。
+首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。供应商额度不足期间的重试均保持零模型用量、零图像、零积分与零画布副作用；供应商原始诊断现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录。额度恢复后，同一 Run 完成计划修订，Agent 在一次无效参考 Asset 的无副作用失败后自纠，只创建一个真实图像 Workflow、新增一个 Asset 并扣费一次；新图在旧图右侧非重叠放置，中文浏览器刷新恢复 Run、两张图片和位置。A7 因而通过，后续缺口转入 A8/A9。
 
 ## 13. 当前实现迁移
 

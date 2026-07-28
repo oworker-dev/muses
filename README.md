@@ -38,20 +38,23 @@ and has verified the first authenticated natural-language-to-real-image Agent
 loop with PostgreSQL Run/Event persistence and Gateway-controlled canvas
 placement. Studio now defaults to a creative-mode projection where the real
 Asset is visible and movable, its position survives refresh, and the persisted
-three-step ExecutionPlan can be expanded from the Agent panel. Steering,
-callable workflow publication and the A9 reliability Gate remain ahead of
+three-step ExecutionPlan can be expanded from the Agent panel. A real
+follow-up now revises that plan, generates one charged image, places it beside
+the previous Asset and survives refresh. Callable workflow publication and the
+A9 reliability Gate remain ahead of
 orchestration or PPT scenario work. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
 
 The A7 engineering evidence is under
-`delivery/evidence/agent-core-alpha/a7-single-agent-loop/`. The image is visible
+`delivery/evidence/agent-core-alpha/a7-single-agent-loop/` and
+`delivery/evidence/agent-core-alpha/a7-steering-loop/`. The images are visible
 in both the restored Agent panel and the default creative canvas; its Asset and
 position are authoritative through the Operation Gateway. Muses also records
 generated-image identity and storage provenance independently from Workflow
-SDK `returnValue`. This is a verified single-image slice, not the finished
-steering, reliability or multi-media creative experience.
+SDK `returnValue`. A7 now covers the first image and follow-up steering, but it
+does not claim the A8 publication, A9 reliability or multi-media experience.
 
 The professional Studio now has protected Start/End nodes, typed Start inputs,
 a framework-independent publication validator, a pure

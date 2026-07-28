@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "recordedAt": "2026-07-29",
   "gate": "a7-agent-steering-loop",
-  "engineeringStatus": "partial-external-provider-blocked",
+  "engineeringStatus": "passed",
   "runId": "arun_bfc91961a02854e28caa7bf26ccc2394",
   "probe": {
     "baselineRevision": 6,
@@ -36,6 +36,29 @@
       "imageCallsAdded": 0,
       "musesCreditMicrosChanged": "0",
       "canvasRevisionChanged": false
+    },
+    "afterProviderCreditRestore": {
+      "baselineRevision": 17,
+      "terminalRevision": 31,
+      "status": "completed",
+      "turn": 6,
+      "executionPlanRevision": 5,
+      "executionPlanStatuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "modelCallsAdded": 4,
+      "toolAttemptsAdded": 3,
+      "imageToolAttemptsAdded": 2,
+      "preflightImageFailuresAdded": 1,
+      "imageWorkflowRunsAdded": 1,
+      "assetsAdded": 1,
+      "musesCreditMicrosChanged": "-1000000",
+      "reservedCreditMicrosAtEnd": "0",
+      "canvasRevisionBefore": 2,
+      "canvasRevisionAfter": 3,
+      "projectedEventCount": 67
     }
   },
   "deliveredLocally": {
@@ -43,6 +66,12 @@
     "cumulativeModelToolTokenAndCreditBudgetPreserved": true,
     "nonOverlappingFollowUpPlacementPolicy": true,
     "modelProviderFailuresSanitized": true,
+    "realFollowUpModelCompletion": true,
+    "realRevisedImage": true,
+    "singleSuccessfulImageWorkflowAndCharge": true,
+    "incrementalCanvasPlacement": true,
+    "refreshRestoration": true,
+    "endToEndBillingContinuity": true,
     "webUnitTests": {
       "passed": 5,
       "failed": 0
@@ -52,16 +81,38 @@
       "failed": 0
     }
   },
-  "notProven": {
-    "realFollowUpModelCompletion": true,
-    "realRevisedImage": true,
-    "incrementalCanvasPlacement": true,
-    "refreshRestoration": true,
-    "endToEndBillingContinuity": true
+  "browserAcceptance": {
+    "locale": "zh-CN",
+    "runStatus": "completed",
+    "runRevision": 31,
+    "canvasRevision": 3,
+    "assetCount": 2,
+    "assetsDecoded": 2,
+    "naturalImageSize": {
+      "width": 1024,
+      "height": 1536
+    },
+    "canvasItemSize": {
+      "width": 320,
+      "height": 480
+    },
+    "positions": [
+      {
+        "x": 193.67441860465112,
+        "y": 156.8372093023256
+      },
+      {
+        "x": 577.6744186046511,
+        "y": 156.8372093023256
+      }
+    ],
+    "overlap": false,
+    "positionsStableAfterRefresh": true,
+    "restoredAfterRefresh": true
   },
-  "blocker": {
-    "kind": "external-provider-credit",
-    "scope": "agent-language-model",
-    "musesSideEffects": "none"
-  }
+  "blocker": null,
+  "remainingBeyondA7": [
+    "a8-callable-workflow-publication",
+    "a9-agent-reliability-gate"
+  ]
 }

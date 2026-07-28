@@ -924,8 +924,8 @@ items:
     statusChangedAt: 2026-07-28T18:01:10.080Z
   - id: publish-callable-workflows
     name: 交付指定工作流调用与发布入口
-    summary: 支持一个专业空间管理多个独立定义，并由 UI、Agent、API 按稳定 ID 和版本调用。
-    status: pending
+    summary: A8 当前入口：在既有 ProfessionalWorkspace 多定义与 WorkflowDefinition 编译/运行底座上，补齐稳定 definition id + published version 调用身份，让 UI、Agent、API 经同一授权、幂等、费用与观测边界精确运行指定定义；只做首个可验收纵向切片。
+    status: in_progress
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
     countedForProgress: true
@@ -933,8 +933,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T17:09:26.500Z
-    updatedAt: 2026-07-28T17:09:26.500Z
-    statusChangedAt: 2026-07-28T17:09:26.500Z
+    updatedAt: 2026-07-28T23:50:38.553Z
+    statusChangedAt: 2026-07-28T23:50:38.553Z
   - id: project-agent-plan-to-creative-canvas
     name: 投影 Agent 计划到创作画布
     summary: 已交付默认创作模式、可移动 Asset 投影、三步持久 ExecutionPlan、Muses 生成 Asset 权威记录与 Workflow World 生命周期解耦；真实 Run、拖动刷新、桌面移动视觉、Domain 39/39、Agent Core 9/9、Harness 3/3、类型检查、定向 lint、Workflow validate、生产构建和 APCC doctor 均有证据。
@@ -950,8 +950,8 @@ items:
     statusChangedAt: 2026-07-28T23:07:30.533Z
   - id: verify-agent-steering-loop
     name: 验证 Agent steering 与 follow-up 创作链路
-    summary: 真实 follow-up 已修复空闲期错误计入 maxDurationMs：终态重开刷新连续执行时间窗并保留累计预算；新增结果使用非重叠比较布局。受控重试两次均到达模型适配器，但上游模型账户预授权额度不足；模型/图像调用、Muses 积分和 Canvas 均无新增副作用。供应商异常现于 Agent Core 提交前稳定化，Web API 同时脱敏历史 Run/Event；Agent Core 11/11、Web 5/5。完整 steering 仍待外部额度恢复后复验。
-    status: in_progress
+    summary: A7 steering 闭环已通过真实恢复验收：同一 AgentRun 完成 follow-up，ExecutionPlan 修订为 r5 且三步完成；一次无效参考 Asset 在创建工作流前失败，Agent 自纠后只创建 1 个真实图像 Workflow、1 个新 Asset 并扣费 1 次。CreativeCanvas r2→r3，新图位于旧图右侧且不重叠；中文浏览器刷新恢复 Run、两张 1024×1536 图片与稳定位置。累计预算、权限、错误脱敏和失败无副作用均有证据；Agent Core 11/11、Web 5/5、类型/lint/Workflow validate/生产构建通过。
+    status: done
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
     countedForProgress: true
@@ -959,5 +959,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T23:07:30.752Z
-    updatedAt: 2026-07-28T23:41:36.475Z
-    statusChangedAt: 2026-07-28T23:08:49.064Z
+    updatedAt: 2026-07-28T23:50:38.336Z
+    statusChangedAt: 2026-07-28T23:50:38.336Z

@@ -319,7 +319,9 @@ export function StudioAgentPanel({
           ) : null}
           {run.failure ? (
             <p className="mt-3 rounded-md border border-destructive/25 bg-destructive/5 px-2.5 py-2 text-[9px] leading-4 text-destructive">
-              {run.failure.message}
+              {run.failure.code === "model-failed"
+                ? t("modelFailed")
+                : run.failure.message}
             </p>
           ) : null}
         </div>

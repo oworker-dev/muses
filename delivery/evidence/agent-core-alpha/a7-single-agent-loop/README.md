@@ -83,8 +83,9 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
 
 - The persisted three-step plan proves plan ownership and projection for the
   image loop; it is not yet a general editable planning interface.
-- Steering/follow-up and approval have API/Core support, but the real browser
-  gate does not yet cover them and Studio has no approval decision UI.
+- At this capture, steering/follow-up and approval had API/Core support but no
+  real browser coverage. The later `../a7-steering-loop/` evidence completes
+  steering; Studio approval UI remains pending.
 - Cancelling an Agent Run does not yet cancel an already-running child image
   workflow.
 - Text-model credit rates default to zero until Agent model pricing is sourced

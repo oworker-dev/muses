@@ -96,7 +96,8 @@
   "limitations": {
     "creativeCanvasVisualProjection": true,
     "editableExecutionPlan": false,
-    "steeringBrowserEvidence": false,
+    "steeringBrowserEvidenceAtCapture": false,
+    "laterSteeringBrowserEvidence": "../a7-steering-loop/results.json",
     "approvalUi": false,
     "childWorkflowCancellation": false,
     "agentModelCatalogPricing": false,

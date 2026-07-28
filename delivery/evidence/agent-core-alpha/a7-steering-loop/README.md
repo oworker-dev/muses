@@ -34,8 +34,23 @@ unchanged.
 The static canvas issue exposed during review was also corrected: generated
 follow-up Assets now use a collision-aware placement policy that prefers the
 right side of the latest result, preserving a comparison row instead of
-reusing `(120, 120)`. This policy has unit evidence but not yet real-image
-evidence.
+reusing `(120, 120)`.
+
+After provider credit was restored, the same Run resumed from revision 17 and
+completed at revision 31 with ExecutionPlan revision 5. The Agent first
+inspected the canvas, then made one `image.generate` attempt with an invalid
+reference Asset id. That attempt failed before a WorkflowRun, reservation,
+provider image call or canvas mutation existed. The Agent corrected its own
+input and made one successful image request. Exactly one image WorkflowRun,
+one generated Asset, one canvas item and one 1,000,000-microcredit charge were
+created.
+
+The new `1024 x 1536` Asset was placed at `(577.67, 156.84)`, immediately to
+the right of the existing Asset at `(193.67, 156.84)`. A real Chinese-locale
+browser session decoded both images, found no overlap, refreshed Studio and
+restored the completed Run, both Assets, CreativeCanvas revision 3 and the
+same positions. Prompt content and the ignored local screenshot are not stored
+in this evidence package.
 
 ## Verification
 
@@ -47,16 +62,22 @@ pnpm --filter ./src/apps/web run typecheck
 
 - Agent Core: 11/11 tests passed.
 - Web projection and creative placement: 5/5 tests passed.
-- Web typecheck and targeted lint passed.
+- Web typecheck, targeted lint, Workflow validation and production build
+  passed.
+- Real browser follow-up and refresh acceptance passed against
+  `http://127.0.0.1:4730/studio`.
 
-## Remaining Gate
+## Gate Result
 
-After upstream model credit is available, rerun the same user path and require
-all of the following before completing this task:
+A7 steering is complete. The evidence proves:
 
-1. the follow-up revises and completes the persisted ExecutionPlan;
-2. one real revised image is generated and charged once;
-3. the new Asset appears beside the previous result without overlap;
-4. refresh restores both Assets, their positions and the completed Run;
-5. the evidence records model/image usage and Muses credit continuity without
-   provider secrets.
+1. the follow-up revised and completed the persisted ExecutionPlan;
+2. one real revised image was generated and charged once;
+3. the new Asset appeared beside the previous result without overlap;
+4. refresh restored both Assets, their positions and the completed Run;
+5. model/image usage, Muses credit, authorization and error-sanitization
+   continuity remained intact.
+
+A8 callable workflow publication and the A9 reliability Gate remain separate
+tasks. This evidence does not claim context compression, process-failure
+recovery, approval UI, cancellation propagation, full tracing or fixed evals.
