@@ -179,17 +179,25 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
           "A cancelled AgentRun cannot accept follow-up work.",
         );
       }
+      const now = this.now();
+      const reopening = isTerminal(run.status);
       await this.commit(
         run,
         {
           ...run,
-          status: isTerminal(run.status) ? "queued" : run.status,
-          completedAt: isTerminal(run.status) ? undefined : run.completedAt,
-          failure: isTerminal(run.status) ? undefined : run.failure,
+          status: reopening ? "queued" : run.status,
+          completedAt: reopening ? undefined : run.completedAt,
+          failure: reopening ? undefined : run.failure,
+          budget: reopening
+            ? {
+                ...run.budget,
+                usage: { ...run.budget.usage, startedAt: now },
+              }
+            : run.budget,
           pendingMessages: [...run.pendingMessages, structuredClone(message)],
         },
         [
-          this.event(runId, "message.follow-up", this.now(), {
+          this.event(runId, "message.follow-up", now, {
             messageId: message.id,
             role: message.role,
           }),

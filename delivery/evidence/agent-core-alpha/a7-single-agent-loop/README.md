@@ -15,13 +15,18 @@ Gateway. Studio opened in creative mode, rendered the Asset as a movable canvas
 object, persisted a drag through `creative.item.put`, and restored the run,
 image and position after refresh.
 
-The real run used two model calls, one tool call, 2,266 input tokens and 233
+At capture time, the real run used two model calls, one tool call, 2,266 input tokens and 233
 output tokens. It produced one `1024 x 1536` PNG. The Agent run reached revision
 6 with 16 ordered events and a completed three-step ExecutionPlan. The canvas
 reached revision 2 after the matching Asset item was moved.
 
 No provider credential, signed object URL, user email, or private model
 response is stored in this evidence package.
+
+`AgentRun` terminal state is intentionally reopenable by follow-up. A later
+steering probe reused this Run and changed its current status; the captured
+creative result remains valid, while the subsequent state is recorded in
+`../a7-steering-loop/` rather than being presented as a still-terminal Run.
 
 ## Proven
 

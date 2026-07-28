@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-07-29",
+  "gate": "a7-agent-steering-loop",
+  "engineeringStatus": "partial-external-provider-blocked",
+  "runId": "arun_bfc91961a02854e28caa7bf26ccc2394",
+  "probe": {
+    "baselineRevision": 6,
+    "firstAttempt": {
+      "terminalRevision": 9,
+      "status": "failed",
+      "failureCode": "duration-budget-exceeded",
+      "modelCallsAdded": 0,
+      "imageCallsAdded": 0,
+      "musesCreditMicrosChanged": "0",
+      "canvasRevisionChanged": false
+    },
+    "afterDurationFix": {
+      "terminalRevision": 13,
+      "status": "failed",
+      "failureCode": "model-failed",
+      "failureStage": "upstream-model-preauthorization",
+      "modelUsagePersisted": false,
+      "imageCallsAdded": 0,
+      "musesCreditMicrosChanged": "0",
+      "canvasRevisionChanged": false
+    }
+  },
+  "deliveredLocally": {
+    "idleTimeExcludedFromFollowUpDurationWindow": true,
+    "cumulativeModelToolTokenAndCreditBudgetPreserved": true,
+    "nonOverlappingFollowUpPlacementPolicy": true,
+    "webUnitTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "agentCoreTests": {
+      "passed": 10,
+      "failed": 0
+    }
+  },
+  "notProven": {
+    "realFollowUpModelCompletion": true,
+    "realRevisedImage": true,
+    "incrementalCanvasPlacement": true,
+    "refreshRestoration": true,
+    "endToEndBillingContinuity": true
+  },
+  "blocker": {
+    "kind": "external-provider-credit",
+    "scope": "agent-language-model",
+    "musesSideEffects": "none"
+  }
+}

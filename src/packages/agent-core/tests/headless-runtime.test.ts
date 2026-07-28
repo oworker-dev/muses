@@ -212,6 +212,43 @@ describe("HeadlessAgentRuntime", () => {
     );
   });
 
+  it("starts a fresh duration window for follow-up after an idle interval", async () => {
+    const fixture = createRuntime([
+      stop("Initial result"),
+      stop("Follow-up result"),
+    ]);
+    const ref = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(ref.runId);
+    const initial = await fixture.runtime.inspect(ref.runId);
+    fixture.clock.advanceSeconds(120);
+
+    await fixture.runtime.followUp(ref.runId, {
+      id: "follow-up-after-idle",
+      role: "user",
+      content: "Make it cooler.",
+      createdAt: "2026-07-29T00:02:00.000Z",
+    });
+    const reopened = await fixture.runtime.inspect(ref.runId);
+    await fixture.runtime.resume(ref.runId);
+    const completed = await fixture.runtime.inspect(ref.runId);
+
+    expect(reopened.budget.usage.startedAt).not.toBe(
+      initial.budget.usage.startedAt,
+    );
+    expect(completed).toMatchObject({
+      status: "completed",
+      turn: 2,
+      budget: {
+        usage: {
+          modelCalls: 2,
+          inputTokens: 20,
+          outputTokens: 10,
+          creditMicros: "20",
+        },
+      },
+    });
+  });
+
   it("streams a complete terminal event history from a cursor", async () => {
     const fixture = createRuntime([stop("Done")]);
     const completed = await new HeadlessAgentHarness(fixture.runtime).execute(
@@ -304,6 +341,10 @@ class FixtureClock implements AgentClockPort {
     this.tick += 1;
     return value;
   }
+
+  advanceSeconds(seconds: number) {
+    this.tick += seconds;
+  }
 }
 
 class FixtureIds implements AgentIdPort {
@@ -322,15 +363,16 @@ function createRuntime(
   const ids = new FixtureIds();
   const store = new InMemoryAgentStateStore(ids);
   const tools = new FixtureTools();
+  const clock = new FixtureClock();
   const runtime = new HeadlessAgentRuntime({
     model: new ScriptedModel(results),
     tools,
     policy,
     store,
-    clock: new FixtureClock(),
+    clock,
     ids,
   });
-  return { runtime, store, tools };
+  return { runtime, store, tools, clock };
 }
 
 function startInput(

@@ -950,8 +950,8 @@ items:
     statusChangedAt: 2026-07-28T23:07:30.533Z
   - id: verify-agent-steering-loop
     name: 验证 Agent steering 与 follow-up 创作链路
-    summary: 从已完成 AgentRun 发起自然语言修改，验证新的计划修订、真实图像结果、CreativeCanvas 增量放置、刷新恢复、权限与费用连续性；只补用户链路暴露的缺口。
-    status: pending
+    summary: 真实 follow-up 首次发现空闲期被错误计入 maxDurationMs，已修复为终态重开刷新连续执行时间窗且保留累计预算，Agent Core 10/10；新增结果非重叠放置策略 Web 单测 3/3。真实重试已到达模型适配器，但上游模型账户预授权额度不足；未产生模型用量、图像调用、Muses 积分变化或 Canvas 修订，完整 steering 仍待外部额度恢复后复验。
+    status: in_progress
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
     countedForProgress: true
@@ -959,5 +959,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T23:07:30.752Z
-    updatedAt: 2026-07-28T23:07:30.752Z
-    statusChangedAt: 2026-07-28T23:07:30.752Z
+    updatedAt: 2026-07-28T23:23:46.212Z
+    statusChangedAt: 2026-07-28T23:08:49.064Z

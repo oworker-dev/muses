@@ -14,7 +14,7 @@
     "runId": "arun_bfc91961a02854e28caa7bf26ccc2394",
     "driverRunId": "wrun_01KYNEQNKVD5B9F79GFHBKGJ94",
     "imageWorkflowRunId": "wrun_01KYNEQZJ4P488DP6BH59AQ7KT",
-    "status": "completed",
+    "statusAtCapture": "completed",
     "revision": 6,
     "driverStatus": "completed",
     "modelRef": "openai/gpt-5.6-sol",
@@ -52,7 +52,8 @@
       "dragPersisted": true
     },
     "restoredAfterRefresh": true,
-    "assetAuthority": "muses-generated-asset"
+    "assetAuthority": "muses-generated-asset",
+    "laterProbe": "../a7-steering-loop/results.json"
   },
   "verification": {
     "domainTests": {

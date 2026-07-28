@@ -25,6 +25,7 @@ import {
   failWorkflowStart,
   fingerprintWorkflowSubmission,
 } from "@/lib/credit-ledger"
+import { nextCreativeCanvasItemPosition } from "@/lib/creative-canvas-placement"
 import { getPgPool } from "@/lib/database"
 import {
   executeOperationCommand,
@@ -308,18 +309,21 @@ async function generateImageAndPlace(
     throw new Error("The image workflow completed without an image asset.")
   }
 
+  const canvasItems = [...(await gatewaySnapshot(context)).creativeCanvas.items]
   const placedItems = []
   for (const [index, asset] of assets.entries()) {
+    const size = fitCanvasSize(asset.width, asset.height)
     const item: CreativeCanvasItem = {
       id: stableId("canvas-image", `${context.idempotencyKey}:${asset.id}`),
       kind: "asset",
       refId: asset.id,
       title: input.title || `Generated image ${index + 1}`,
-      position: { x: 120 + index * 48, y: 120 + index * 48 },
-      size: fitCanvasSize(asset.width, asset.height),
+      position: nextCreativeCanvasItemPosition(canvasItems, size),
+      size,
     }
     const placed = await putCanvasItem(context, item, `image:${asset.id}`)
     placedItems.push(placed.item)
+    canvasItems.push(placed.item)
   }
 
   return {
