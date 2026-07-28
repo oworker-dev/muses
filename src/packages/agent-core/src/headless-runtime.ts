@@ -23,11 +23,15 @@ import type {
   AgentToolDefinition,
   AgentToolRegistryPort,
 } from "./ports";
+
 import {
   AgentRuntimeError,
   parseAgentEventCursor,
   type AgentRuntimePort,
 } from "./runtime-port";
+
+export const AGENT_MODEL_FAILURE_MESSAGE =
+  "The Agent model provider could not complete this turn.";
 
 export type HeadlessAgentRuntimeDependencies = {
   readonly model: AgentModelPort;
@@ -396,11 +400,10 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
           messages: run.context.messages,
           tools,
         });
-      } catch (error) {
+      } catch {
         await this.fail(run, {
           code: "model-failed",
-          message:
-            error instanceof Error ? error.message : "The model call failed.",
+          message: AGENT_MODEL_FAILURE_MESSAGE,
           retryable: true,
         });
         return;

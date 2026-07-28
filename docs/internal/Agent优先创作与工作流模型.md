@@ -163,7 +163,7 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 
 可复核证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`。这项证据仍不等于 A7 或完整创作模式全部通过：steering/follow-up 尚未完成真实浏览器验收；审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。下一步先完成 steering 用户链路，再推进 A8 指定工作流调用与 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
 
-首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。真实重试随后到达模型适配器，但被上游模型账户预授权额度阻断；Muses 积分、图像调用和 Canvas 修订均未变化。因此 steering 任务继续保持进行中，非重叠结果放置当前只有单元证据，不能写成真实闭环已通过。部分证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。
+首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。真实重试随后到达模型适配器，但被上游模型账户预授权额度阻断；Muses 积分、图像调用和 Canvas 修订均未变化。该失败还暴露了供应商原始诊断不应进入产品状态，现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录；再次受控重试证明客户端快照与事件不再暴露余额或 request id，且仍无模型用量、图像、积分或画布副作用。因此 steering 任务继续保持进行中，非重叠结果放置当前只有单元证据，不能写成真实闭环已通过。部分证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。
 
 ## 13. 当前实现迁移
 

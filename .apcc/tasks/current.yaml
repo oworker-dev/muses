@@ -950,7 +950,7 @@ items:
     statusChangedAt: 2026-07-28T23:07:30.533Z
   - id: verify-agent-steering-loop
     name: 验证 Agent steering 与 follow-up 创作链路
-    summary: 真实 follow-up 首次发现空闲期被错误计入 maxDurationMs，已修复为终态重开刷新连续执行时间窗且保留累计预算，Agent Core 10/10；新增结果非重叠放置策略 Web 单测 3/3。真实重试已到达模型适配器，但上游模型账户预授权额度不足；未产生模型用量、图像调用、Muses 积分变化或 Canvas 修订，完整 steering 仍待外部额度恢复后复验。
+    summary: 真实 follow-up 已修复空闲期错误计入 maxDurationMs：终态重开刷新连续执行时间窗并保留累计预算；新增结果使用非重叠比较布局。受控重试两次均到达模型适配器，但上游模型账户预授权额度不足；模型/图像调用、Muses 积分和 Canvas 均无新增副作用。供应商异常现于 Agent Core 提交前稳定化，Web API 同时脱敏历史 Run/Event；Agent Core 11/11、Web 5/5。完整 steering 仍待外部额度恢复后复验。
     status: in_progress
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
@@ -959,5 +959,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T23:07:30.752Z
-    updatedAt: 2026-07-28T23:23:46.212Z
+    updatedAt: 2026-07-28T23:41:36.475Z
     statusChangedAt: 2026-07-28T23:08:49.064Z

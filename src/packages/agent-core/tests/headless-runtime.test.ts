@@ -187,6 +187,26 @@ describe("HeadlessAgentRuntime", () => {
     expect(fixture.tools.executions).toHaveLength(0);
   });
 
+  it("does not persist raw model provider errors", async () => {
+    const fixture = createRuntime([]);
+
+    const result = await new HeadlessAgentHarness(fixture.runtime).execute(
+      startInput(),
+    );
+    const events = await fixture.store.readEvents(result.runId);
+    const failed = events.find(({ type }) => type === "run.failed");
+
+    expect(result.failure).toEqual({
+      code: "model-failed",
+      message: "The Agent model provider could not complete this turn.",
+      retryable: true,
+    });
+    expect(failed?.data).toEqual(result.failure);
+    expect(JSON.stringify({ result, failed })).not.toContain(
+      "Scripted model result is missing.",
+    );
+  });
+
   it("reopens a completed run for follow-up while preserving context", async () => {
     const fixture = createRuntime([
       stop("Initial result"),

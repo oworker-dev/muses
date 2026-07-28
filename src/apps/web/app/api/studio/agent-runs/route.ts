@@ -6,8 +6,13 @@ import {
   AGENT_CORE_SCHEMA_VERSION,
   AgentRuntimeError,
   type AgentMessage,
+  type AgentRunSnapshot,
 } from "@muses/agent-core"
 
+import {
+  toPublicAgentEvent,
+  toPublicAgentFailure,
+} from "@/lib/agent-client-projection"
 import { ensureAgentDriver } from "@/lib/agent-driver"
 import {
   createMusesAgentRuntime,
@@ -104,7 +109,7 @@ export async function POST(request: Request) {
     {
       accepted: true,
       schemaVersion: AGENT_CORE_SCHEMA_VERSION,
-      run: await runtime.inspect(ref.runId),
+      run: publicRun(await runtime.inspect(ref.runId)),
       driver,
     },
     { status: 202 }
@@ -129,8 +134,8 @@ export async function GET(request: Request) {
   )
   return Response.json({
     schemaVersion: AGENT_CORE_SCHEMA_VERSION,
-    run: owned.snapshot,
-    events,
+    run: publicRun(owned.snapshot),
+    events: events.map(toPublicAgentEvent),
     driver: {
       status: owned.driverStatus,
       runId: owned.driverRunId,
@@ -171,13 +176,13 @@ export async function PATCH(request: Request) {
         await runtime.cancel(parsed.data.runId, parsed.data.reason)
         return Response.json({
           accepted: true,
-          run: await runtime.inspect(parsed.data.runId),
+          run: publicRun(await runtime.inspect(parsed.data.runId)),
         })
     }
     const driver = await ensureAgentDriver(parsed.data.runId)
     return Response.json({
       accepted: true,
-      run: await runtime.inspect(parsed.data.runId),
+      run: publicRun(await runtime.inspect(parsed.data.runId)),
       driver,
     })
   } catch (error) {
@@ -198,6 +203,10 @@ function userMessage(content: string): AgentMessage {
     content,
     createdAt: new Date().toISOString(),
   }
+}
+
+function publicRun<T extends { failure?: AgentRunSnapshot["failure"] }>(run: T) {
+  return { ...run, failure: toPublicAgentFailure(run.failure) }
 }
 
 function deterministicRunId(workspaceId: string, idempotencyKey: string) {

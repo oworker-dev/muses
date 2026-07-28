@@ -24,18 +24,31 @@
       "imageCallsAdded": 0,
       "musesCreditMicrosChanged": "0",
       "canvasRevisionChanged": false
+    },
+    "afterErrorBoundaryFix": {
+      "terminalRevision": 17,
+      "status": "failed",
+      "failureCode": "model-failed",
+      "publicFailureMessageStable": true,
+      "providerDiagnosticsExposedByApi": false,
+      "projectedEventCount": 36,
+      "modelUsagePersisted": false,
+      "imageCallsAdded": 0,
+      "musesCreditMicrosChanged": "0",
+      "canvasRevisionChanged": false
     }
   },
   "deliveredLocally": {
     "idleTimeExcludedFromFollowUpDurationWindow": true,
     "cumulativeModelToolTokenAndCreditBudgetPreserved": true,
     "nonOverlappingFollowUpPlacementPolicy": true,
+    "modelProviderFailuresSanitized": true,
     "webUnitTests": {
-      "passed": 3,
+      "passed": 5,
       "failed": 0
     },
     "agentCoreTests": {
-      "passed": 10,
+      "passed": 11,
       "failed": 0
     }
   },

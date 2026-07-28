@@ -22,6 +22,15 @@ called, Muses credit remained unchanged and the canvas stayed at the same
 revision. Provider request ids, balances, credentials, email and prompt content
 are not stored here.
 
+That retry also exposed raw provider diagnostics in the persisted failure
+message. Agent Core now maps model-adapter exceptions to a stable public
+`model-failed` message before committing the Run or event, and the Web API
+redacts matching historical failures. A second controlled provider retry moved
+the Run from revision 13 to 17 and failed at the same external boundary. The
+public snapshot and all 36 projected events contained no provider balance or
+request id; model calls, image calls, Muses credit and canvas state again stayed
+unchanged.
+
 The static canvas issue exposed during review was also corrected: generated
 follow-up Assets now use a collision-aware placement policy that prefers the
 right side of the latest result, preserving a comparison row instead of
@@ -36,8 +45,8 @@ pnpm --filter ./src/apps/web run test:unit
 pnpm --filter ./src/apps/web run typecheck
 ```
 
-- Agent Core: 10/10 tests passed.
-- Creative placement: 3/3 tests passed.
+- Agent Core: 11/11 tests passed.
+- Web projection and creative placement: 5/5 tests passed.
 - Web typecheck and targeted lint passed.
 
 ## Remaining Gate
