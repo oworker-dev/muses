@@ -3,7 +3,7 @@
 import { NextIntlClientProvider } from "next-intl"
 import type { ReactNode } from "react"
 
-import type { AppLocale } from "@/i18n/config"
+import { defaultTimeZone, type AppLocale } from "@/i18n/config"
 import { getMessages } from "@/i18n/messages"
 
 export function I18nProvider({
@@ -17,6 +17,7 @@ export function I18nProvider({
     <NextIntlClientProvider
       locale={locale}
       messages={getMessages(locale)}
+      timeZone={defaultTimeZone}
     >
       {children}
     </NextIntlClientProvider>

@@ -12,4 +12,6 @@ export const defaultLocale: AppLocale = isAppLocale(configuredDefaultLocale)
   ? configuredDefaultLocale
   : "en"
 
+export const defaultTimeZone = "UTC"
+
 export const localeCookieName = "oworker-locale"

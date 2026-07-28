@@ -62,10 +62,14 @@ test("SaaS starter release path is reachable", async ({ page, request }) => {
     /Agent 友好|Agent-friendly/i
   )
   await expect(page.getByText("oworker starter create saas")).toBeVisible()
-  await page.getByRole("button", { name: /Change language/i }).click()
+  await page
+    .getByRole("button", { name: /Change language|App language|应用语言/i })
+    .click()
   await page.getByRole("menuitemradio", { name: "中文" }).click()
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Agent 友好/i)
-  await page.getByRole("button", { name: /Change language/i }).click()
+  await page
+    .getByRole("button", { name: /Change language|App language|应用语言/i })
+    .click()
   await page.getByRole("menuitemradio", { name: "English" }).click()
   await expect(page.getByRole("heading", { level: 1 })).toContainText(/Agent-friendly/i)
 
@@ -200,7 +204,9 @@ test("theme and mobile auth surfaces are stable", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     /Agent 友好|Agent-friendly/i
   )
-  await page.getByRole("button", { name: /Change color theme/i }).click()
+  await page
+    .getByRole("button", { name: /Change color theme|Theme/i })
+    .click()
   await page.getByRole("menuitemradio", { name: /Dark/i }).click()
   await expect(page.locator("html")).toHaveClass(/dark/)
 

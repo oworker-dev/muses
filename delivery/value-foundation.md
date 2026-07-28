@@ -18,12 +18,12 @@ This phase is intentionally not complete. The product owner must add privacy-saf
 
 ## Current Exit Gate
 
-- At least one AI short-drama project and one PPT customization project use the common baseline template.
+- PPT and AI short-drama projects use the common baseline template before their respective scenario gates; neither is required before Platform Core Alpha contracts freeze.
 - Repeated steps, tool switching, active work time, external cost, rework, adoption, consistency, and freedom constraints are measured where available.
 - Initial assumptions V-001, V-002, and V-005 are updated with evidence and a next decision.
-- External users have challenged or confirmed the initial task and value ordering.
-- A first experience prototype is selected from evidence, not architecture preference.
+- External users challenge or confirm the initial task and value ordering before the MVP is declared validated, not before low-cost technical spikes begin.
+- Platform Core Alpha uses a scenario-neutral two-level-canvas fixture. MusesPPT remains the first real scenario and must be corrected by evidence when its scenario phase begins.
 
 ## Next Handoff
 
-Continue with APCC task `collect-founder-workflow-baselines`. Do not start Technical Discovery or Wave 0 contract freezing until the Value Foundation exit evidence is reviewed.
+Continue value baselines and license selection as a parallel evidence/governance stream. Do not make PPT samples, PPTX, templates, or editable-reconstruction choices prerequisites for Platform Core Alpha. Bring the evidence back at the MusesPPT and AI-short-drama scenario gates, where it determines scenario scope and the continue/revise/stop decision.

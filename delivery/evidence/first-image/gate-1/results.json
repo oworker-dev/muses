@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-07-28",
+  "gate": "first-image-value-gate",
+  "engineeringStatus": "verified",
+  "productOwnerAcceptance": "pending",
+  "environment": {
+    "studio": "http://127.0.0.1:4730/studio",
+    "runtime": "muses-workflow-runtime",
+    "durableRuntime": "vercel-workflow-sdk"
+  },
+  "realRun": {
+    "runId": "wrun_01KYJK731P2ATC2F9GWJ0RT43K",
+    "completedNodeIds": [
+      "start-1",
+      "image-generator-1",
+      "end-1"
+    ],
+    "assetId": "image_3b3674ce69411d9b2b231d78",
+    "provider": "openai",
+    "model": "gpt-image-2",
+    "mimeType": "image/png",
+    "width": 1024,
+    "height": 1024,
+    "normalization": {
+      "operation": "cover-crop",
+      "originalWidth": 1024,
+      "originalHeight": 1536
+    },
+    "restoredAfterRefresh": true,
+    "restoredAfterRuntimeRestart": true,
+    "consoleErrorCount": 0
+  },
+  "download": {
+    "filename": "image_3b3674ce69411d9b2b231d78.png",
+    "contentType": "image/png",
+    "contentDisposition": "attachment",
+    "width": 1024,
+    "height": 1024,
+    "remainedInStudio": true,
+    "wrongWorkspaceStatus": 404,
+    "unknownAssetStatus": 404
+  },
+  "verification": {
+    "domainTests": {
+      "passed": 25,
+      "failed": 0
+    },
+    "studioTests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "webTypecheck": "passed",
+    "webProductionBuild": "passed"
+  },
+  "artifacts": [
+    "README.md",
+    "results.json",
+    "real-image-result.png",
+    "user-path-audit.md"
+  ]
+}

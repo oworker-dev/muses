@@ -1,4 +1,4 @@
-import { CreditCardIcon, ReceiptTextIcon } from "lucide-react"
+import { CoinsIcon, CreditCardIcon, ReceiptTextIcon } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createTranslator } from "next-intl"
@@ -20,6 +20,7 @@ import { getAccountConsoleData } from "@/lib/account"
 import { isSiteAdmin } from "@/lib/admin"
 import { getServerSession } from "@/lib/auth"
 import { billingPlans } from "@/lib/billing"
+import { ensurePersonalStudioWorkspace } from "@/lib/studio-access"
 
 export const dynamic = "force-dynamic"
 
@@ -36,10 +37,13 @@ export default async function AccountBillingPage({
     redirect("/login?callbackURL=/account/billing")
   }
 
-  const [account, params, siteAdmin] = await Promise.all([
+  const [account, params, siteAdmin, studio] = await Promise.all([
     getAccountConsoleData(session.user),
     searchParams,
     isSiteAdmin(session.user.id, session.user.email),
+    session.user.emailVerified
+      ? ensurePersonalStudioWorkspace(session.user)
+      : Promise.resolve(null),
   ])
   const t = createTranslator({
     locale,
@@ -87,6 +91,38 @@ export default async function AccountBillingPage({
           <Alert className="px-4 py-3">
             {t("billing.result", { state: billingState })}
           </Alert>
+        ) : null}
+
+        {studio ? (
+          <Card>
+            <CardHeader>
+              <div className="flex items-start gap-3">
+                <div className="rounded-md border bg-muted p-2">
+                  <CoinsIcon className="size-4" />
+                </div>
+                <div>
+                  <CardTitle>{t("billing.musesCredits")}</CardTitle>
+                  <CardDescription>
+                    {t("billing.musesCreditsDetail")}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-3">
+              <Metric
+                label={t("billing.availableCredits")}
+                value={formatCredits(studio.credits.availableMicros, locale)}
+              />
+              <Metric
+                label={t("billing.reservedCredits")}
+                value={formatCredits(studio.credits.reservedMicros, locale)}
+              />
+              <Metric
+                label={t("billing.workspace")}
+                value={studio.workspace.name}
+              />
+            </CardContent>
+          </Card>
         ) : null}
 
         <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
@@ -233,6 +269,16 @@ function formatMoney(cents: number, locale: string) {
     currency: "USD",
     maximumFractionDigits: 0,
   }).format(cents / 100)
+}
+
+function formatCredits(micros: bigint, locale: string) {
+  const million = BigInt(1_000_000)
+  const whole = micros / million
+  const hundredths = (micros % million) / BigInt(10_000)
+  const formattedWhole = new Intl.NumberFormat(locale).format(whole)
+  return hundredths === BigInt(0)
+    ? formattedWhole
+    : `${formattedWhole}.${hundredths.toString().padStart(2, "0")}`
 }
 
 function formatDate(value: string, locale: string) {

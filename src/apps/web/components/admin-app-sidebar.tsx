@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   BarChart3Icon,
+  BoxesIcon,
   HeartPulseIcon,
   LayoutDashboardIcon,
   ReceiptTextIcon,
@@ -28,6 +29,7 @@ import {
   SidebarRail,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
+import { useTranslations } from "next-intl"
 
 export type AdminNavItem = {
   href: string
@@ -60,6 +62,7 @@ export function AdminAppSidebar({
   }
 }) {
   const pathname = usePathname()
+  const t = useTranslations("AdminModels")
 
   return (
     <Sidebar collapsible="icon">
@@ -112,6 +115,23 @@ export function AdminAppSidebar({
           </SidebarMenu>
         </SidebarGroup>
         <SidebarSeparator />
+        <SidebarGroup>
+          <SidebarGroupLabel>{t("navGroup")}</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip={t("navModels")}
+                asChild
+                isActive={isItemActive(pathname, "/admin/models")}
+              >
+                <Link href="/admin/models">
+                  <BoxesIcon />
+                  <span>{t("navModels")}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

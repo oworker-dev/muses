@@ -1,10 +1,12 @@
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path"
+import { fileURLToPath } from "node:url"
+import { withWorkflow } from "workflow/next"
 
-const appDir = dirname(fileURLToPath(import.meta.url));
+const appDir = dirname(fileURLToPath(import.meta.url))
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ["@muses/domain"],
   turbopack: {
     root: join(appDir, "../../.."),
   },
@@ -53,4 +55,4 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+export default withWorkflow(nextConfig)

@@ -90,32 +90,6 @@ items:
     createdAt: 2026-07-24T19:00:25.608Z
     updatedAt: 2026-07-24T19:08:30.550Z
     statusChangedAt: 2026-07-24T19:08:30.550Z
-  - id: collect-founder-workflow-baselines
-    name: 采集创始人真实工作流基线
-    summary: 分别记录 AI 短剧和 PPT 定制当前工具链、步骤、耗时、成本、返工、交付与自由度基线。
-    status: pending
-    planRef: value-foundation
-    parentTaskId: null
-    countedForProgress: true
-    owner: product-owner
-    pinned: true
-    pinnedReason: 价值文档完成后必须用真实业务数据填充的下一步。
-    createdAt: 2026-07-24T19:05:22.311Z
-    updatedAt: 2026-07-24T19:05:22.311Z
-    statusChangedAt: 2026-07-24T19:05:22.311Z
-  - id: validate-external-user-needs
-    name: 验证外部同类用户需求
-    summary: 邀请外部 AI 短剧、PPT 或内容生产用户复现关键任务并修正创始人偏差。
-    status: pending
-    planRef: value-foundation
-    parentTaskId: null
-    countedForProgress: true
-    owner: product-owner
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:05:22.485Z
-    updatedAt: 2026-07-24T19:05:22.485Z
-    statusChangedAt: 2026-07-24T19:05:22.485Z
   - id: codify-audio-music-module
     name: 固化 AI 音频与音乐模块边界
     summary: 定义音乐、配音、音效、音频处理的对象、能力、版权来源、非目标与组合验收。
@@ -129,188 +103,6 @@ items:
     createdAt: 2026-07-24T19:07:35.906Z
     updatedAt: 2026-07-24T19:08:30.392Z
     statusChangedAt: 2026-07-24T19:08:30.392Z
-  - id: define-technical-requirements-matrix
-    name: 建立技术需求与体验约束矩阵
-    summary: 把用户体验、媒体闭环、协作、可编辑性、开放迁移和成本目标映射为技术约束。
-    status: pending
-    planRef: technical-discovery
-    parentTaskId: null
-    countedForProgress: true
-    owner: codex-main
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:02:53.801Z
-    updatedAt: 2026-07-24T19:02:53.801Z
-    statusChangedAt: 2026-07-24T19:02:53.801Z
-  - id: prototype-document-collaboration-model
-    name: 原型验证文档与协作模型
-    summary: 比较状态快照、操作日志、CRDT/OT 对命令、修订、冲突、撤销和离线恢复的影响。
-    status: pending
-    planRef: technical-discovery
-    parentTaskId: null
-    countedForProgress: true
-    owner: codex-main
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:02:53.973Z
-    updatedAt: 2026-07-24T19:02:53.973Z
-    statusChangedAt: 2026-07-24T19:02:53.973Z
-  - id: prototype-canvas-media-runtime
-    name: 原型验证画布与媒体运行时
-    summary: 验证 Canvas/SVG/WebGL、浏览器/Worker/媒体进程在图像、视频与音频编辑中的边界。
-    status: pending
-    planRef: technical-discovery
-    parentTaskId: null
-    countedForProgress: true
-    owner: codex-main
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:02:54.142Z
-    updatedAt: 2026-07-24T19:02:54.142Z
-    statusChangedAt: 2026-07-24T19:02:54.142Z
-  - id: prototype-durable-execution-model
-    name: 原型验证持久执行模型
-    summary: 验证 Job 与 Workflow 的暂停恢复、重试、幂等、长任务和供应商回调语义。
-    status: pending
-    planRef: technical-discovery
-    parentTaskId: null
-    countedForProgress: true
-    owner: codex-main
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:02:54.304Z
-    updatedAt: 2026-07-24T19:02:54.304Z
-    statusChangedAt: 2026-07-24T19:02:54.304Z
-  - id: record-technical-route-decisions
-    name: 记录关键技术路线决策
-    summary: 依据原型证据记录可逆选择、淘汰理由、适配边界与 Wave 0 契约约束。
-    status: pending
-    planRef: technical-discovery
-    parentTaskId: null
-    countedForProgress: true
-    owner: codex-main
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:02:54.463Z
-    updatedAt: 2026-07-24T19:02:54.463Z
-    statusChangedAt: 2026-07-24T19:02:54.463Z
-  - id: specify-wave-0-contracts
-    name: 规格化 Wave 0 核心契约
-    summary: 在实现前确定首批 Schema、状态机、端口、迁移规则、测试矩阵和包边界。
-    status: pending
-    planRef: wave-0-protocol-lab
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-    statusChangedAt: 2026-07-24T18:30:21.000Z
-  - id: implement-protocol-harness
-    name: 实现协议 Harness 与内存参考实现
-    summary: 为 CreativeDocument、Command、Capability 与 Job 提供可独立运行的最小参考实现。
-    status: pending
-    planRef: wave-0-protocol-lab
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-    statusChangedAt: 2026-07-24T18:30:21.000Z
-  - id: verify-protocol-adapters
-    name: 验证持久化与异步适配器
-    summary: 让 PostgreSQL、S3 和 Queue 适配器通过相同契约、迁移、幂等与故障测试。
-    status: pending
-    planRef: wave-0-protocol-lab
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-    statusChangedAt: 2026-07-24T18:30:21.000Z
-  - id: deliver-document-canvas-kernel
-    name: 交付创作文档与最小画布内核
-    summary: 通过文档迁移、统一命令、自动保存、撤销恢复和画布性能验收。
-    status: pending
-    planRef: wave-1-document-canvas
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:39:07.341Z
-    updatedAt: 2026-07-24T18:39:07.341Z
-    statusChangedAt: 2026-07-24T18:39:07.341Z
-  - id: deliver-asset-job-image-kernel
-    name: 交付资产、任务与图像能力内核
-    summary: 通过资产生命周期、Job 可靠性、来源记录和首个图像能力的 Gate A/B 验收。
-    status: pending
-    planRef: wave-2-asset-job-image
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:39:07.494Z
-    updatedAt: 2026-07-24T18:39:07.494Z
-    statusChangedAt: 2026-07-24T18:39:07.494Z
-  - id: deliver-agent-canvas-loop
-    name: 交付 Agent 画布操作闭环
-    summary: 证明 Agent 在权限、预算、确认和检查点约束下只通过公共能力与命令行动。
-    status: pending
-    planRef: wave-3-agent-canvas
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:39:07.646Z
-    updatedAt: 2026-07-24T18:39:07.646Z
-    statusChangedAt: 2026-07-24T18:39:07.646Z
-  - id: prove-three-entry-reuse
-    name: 证明三入口能力复用
-    summary: 证明同一图像能力由界面、Agent 和工作流调用且共享任务、资产与来源语义。
-    status: pending
-    planRef: wave-4-workflow-composition
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:39:07.790Z
-    updatedAt: 2026-07-24T18:39:07.790Z
-    statusChangedAt: 2026-07-24T18:39:07.790Z
-  - id: deliver-professional-media-composition
-    name: 交付专业媒体组合基线
-    summary: 验证视频、音频/音乐、演示和品牌能力保留专业语义并共享平台内核，完成至少两条场景组合链路。
-    status: pending
-    planRef: wave-5-professional-media
-    parentTaskId: null
-    countedForProgress: true
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:39:07.935Z
-    updatedAt: 2026-07-24T18:39:07.935Z
-    statusChangedAt: 2026-07-24T18:39:07.935Z
-  - id: select-open-source-license
-    name: 确定并落地开源许可证
-    summary: 评估 AGPLv3 等候选、依赖与贡献兼容、托管商业边界和法律风险，通过正式政策决策写入 LICENSE。
-    status: pending
-    planRef: value-foundation
-    parentTaskId: null
-    countedForProgress: true
-    owner: product-owner
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T19:10:59.493Z
-    updatedAt: 2026-07-24T19:10:59.493Z
-    statusChangedAt: 2026-07-24T19:10:59.493Z
   - id: prepare-build-in-public-release
     name: 准备 Build in Public 首次公开发布
     summary: 完成 Muses 命名、密钥与内容审计、公开入口、Git 初始化、GitHub 公共仓库创建和首版推送。
@@ -324,3 +116,692 @@ items:
     createdAt: 2026-07-24T19:10:59.657Z
     updatedAt: 2026-07-24T19:24:11.131Z
     statusChangedAt: 2026-07-24T19:24:11.131Z
+  - id: codify-platform-core-alpha
+    name: 固化 Platform Core Alpha 架构与路线
+    summary: 把工作流原生无限画布、专业文档节点、两级命令/修订、无 Agent 核心闭环和后续 Agent/场景顺序同步到权威文档与 APCC。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:45.315Z
+    updatedAt: 2026-07-24T20:06:53.043Z
+    statusChangedAt: 2026-07-24T20:06:53.043Z
+  - id: define-alpha-requirements
+    name: 定义 Platform Core Alpha 需求与体验预算
+    summary: 定义顶层画布对象规模、空间交互、节点状态、嵌套专业文档、保存恢复、性能、可访问性和故障体验的可测门槛。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:45.474Z
+    updatedAt: 2026-07-24T20:14:46.043Z
+    statusChangedAt: 2026-07-24T20:14:46.043Z
+  - id: confirm-minimum-stack
+    name: 确认画布 Alpha 最小技术栈基线
+    summary: 已确认 TypeScript/React/Next.js 产品基础；AI Elements + XYFlow 是外层工作流原生画布首选投影候选，Konva 是内层专业设计画布首个候选，Fabric 保留为对照；Workflow SDK 只承担耐久执行候选，Eve/Pi 只通过 AgentRuntimePort 接入，Muses 领域文档与命令始终保持权威。文档、APCC doctor、站点构建和仓库检查已通过。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:45.631Z
+    updatedAt: 2026-07-24T21:08:28.995Z
+    statusChangedAt: 2026-07-24T21:08:28.995Z
+  - id: spike-two-level-canvas
+    name: Spike 专业模式两层画布运行时
+    summary: 保留现有两层画布 Spike 证据；后续只在首图或 PPT 用户任务暴露画布/专业文档阻断时继续，不再作为独立技术关键路径。
+    status: pending
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:45.787Z
+    updatedAt: 2026-07-27T19:21:49.876Z
+    statusChangedAt: 2026-07-27T19:12:54.100Z
+  - id: freeze-core-alpha-contracts
+    name: 冻结 Platform Core Alpha 最小契约
+    summary: 只冻结被首图与后续真实场景证明的最小契约；当前节点目录与 WorkflowDefinition 证据保留，新增 DSL 语义必须由用户成果缺口触发。
+    status: pending
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:45.947Z
+    updatedAt: 2026-07-27T19:22:18.098Z
+    statusChangedAt: 2026-07-27T19:12:54.329Z
+  - id: build-workflow-graph-kernel
+    name: 交付工作流图内核 Harness
+    summary: 实现场景无关的节点、端口、边、分支、拓扑校验、命令、修订、迁移和内存参考实现。
+    status: pending
+    planRef: workflow-canvas-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.106Z
+    updatedAt: 2026-07-27T19:22:18.302Z
+    statusChangedAt: 2026-07-24T19:57:46.106Z
+  - id: build-infinite-workflow-canvas
+    name: 交付工作流无限画布交互壳
+    summary: 实现平移、缩放、选择、框选、拖放、连接、分支布局、运行状态与来源关系投影；连线语义必须可区分。
+    status: pending
+    planRef: workflow-canvas-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.261Z
+    updatedAt: 2026-07-27T19:22:18.516Z
+    statusChangedAt: 2026-07-24T19:57:46.261Z
+  - id: persist-workflow-canvas
+    name: 接通工作流画布保存、恢复与历史
+    summary: 接入 PostgreSQL 持久化、自动保存、刷新恢复、撤销/重做、过期修订和结构化导出。
+    status: pending
+    planRef: workflow-canvas-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.419Z
+    updatedAt: 2026-07-27T19:22:18.737Z
+    statusChangedAt: 2026-07-24T19:57:46.419Z
+  - id: build-design-document-kernel
+    name: 交付 DesignDocument 内核 Harness
+    summary: 定义场景无关专业设计文档的图层、文本、图片、形状、分组、资产引用、命令、修订和扩展模型。
+    status: pending
+    planRef: design-document-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.579Z
+    updatedAt: 2026-07-27T19:22:18.938Z
+    statusChangedAt: 2026-07-24T19:57:46.579Z
+  - id: embed-design-document-node
+    name: 交付可进入的 DesignDocument 节点
+    summary: 外层节点展示预览、版本和端口；聚焦后进入纯设计画布，退出后仍作为工作流节点参与连接、分支与执行。
+    status: pending
+    planRef: design-document-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.754Z
+    updatedAt: 2026-07-27T19:22:19.137Z
+    statusChangedAt: 2026-07-24T19:57:46.754Z
+  - id: verify-two-level-commands
+    name: 验证两级命令、版本与上下文边界
+    summary: 证明工作流级与文档级修改分别拥有权威状态和命令，同时共享 Asset、Revision 引用与可审计上下文，不把内部图层暴露为外层节点。
+    status: pending
+    planRef: design-document-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:46.921Z
+    updatedAt: 2026-07-27T19:22:19.332Z
+    statusChangedAt: 2026-07-24T19:57:46.921Z
+  - id: build-asset-provenance-alpha
+    name: 交付 Asset 与 Provenance Alpha
+    summary: 支持图像输入、派生资产、元数据、授权访问、来源与成本关联，并提供内存及 S3/PostgreSQL 适配器共享测试。
+    status: pending
+    planRef: image-capability-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.086Z
+    updatedAt: 2026-07-27T19:22:19.532Z
+    statusChangedAt: 2026-07-24T19:57:47.086Z
+  - id: build-job-capability-alpha
+    name: 交付 Job 与 Capability Alpha
+    summary: 实现版本化 Manifest、类型化输入输出、进度、取消、受限重试、幂等提交和结构化错误。
+    status: pending
+    planRef: image-capability-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.250Z
+    updatedAt: 2026-07-27T19:22:19.762Z
+    statusChangedAt: 2026-07-24T19:57:47.250Z
+  - id: integrate-image-generation
+    name: 接入首个图像生成能力
+    summary: 已接入真实 OpenAI Images 兼容适配器：AI SDK 位于 Workflow SDK 静态 Step，支持模型/比例/count 1-4/质量，count 默认 1；图片持久化到 MinIO并返回 Asset/provenance。真实运行 wrun_01KYJK731P2ATC2F9GWJ0RT43K 已验证，付费请求不自动重试。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.411Z
+    updatedAt: 2026-07-27T20:39:32.012Z
+    statusChangedAt: 2026-07-27T20:39:32.012Z
+  - id: integrate-image-processing
+    name: 接入首个图像处理能力
+    summary: 接入一个输入输出清晰的图像处理适配器，支持从输入节点到任务、派生结果和再次处理的链路。
+    status: pending
+    planRef: image-capability-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.569Z
+    updatedAt: 2026-07-27T19:22:19.977Z
+    statusChangedAt: 2026-07-24T19:57:47.569Z
+  - id: complete-no-agent-core-loop
+    name: 完成无 Agent 平台核心闭环
+    summary: 人工创建输入、生成/处理任务、结果分支、选择方案、进入 DesignDocument 编辑并保存恢复整个链路。
+    status: pending
+    planRef: image-capability-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.732Z
+    updatedAt: 2026-07-27T19:22:20.175Z
+    statusChangedAt: 2026-07-24T19:57:47.732Z
+  - id: verify-core-module-readiness
+    name: 验收 Platform Core Alpha 模块成熟度
+    summary: 逐项验证独立 Harness、公开契约、真实适配器、故障语义、性能预算、保存恢复和跨模块组合。
+    status: pending
+    planRef: core-alpha-gate
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:47.891Z
+    updatedAt: 2026-07-27T19:22:20.374Z
+    statusChangedAt: 2026-07-24T19:57:47.891Z
+  - id: expose-agent-operation-ports
+    name: 验收 Agent 操作端口
+    summary: 证明 Query、Command 与 Capability 可以完整读取和修改外层工作流及内层 DesignDocument，无需模拟鼠标或直接写库。
+    status: pending
+    planRef: core-alpha-gate
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.050Z
+    updatedAt: 2026-07-27T19:22:20.570Z
+    statusChangedAt: 2026-07-24T19:57:48.050Z
+  - id: record-core-alpha-decision
+    name: 记录 Platform Core Alpha 继续或修订决定
+    summary: 基于运行证据决定稳定边界、返工项、删除项和是否进入 Agent Core Alpha。
+    status: pending
+    planRef: core-alpha-gate
+    parentTaskId: null
+    countedForProgress: false
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.213Z
+    updatedAt: 2026-07-27T19:22:20.797Z
+    statusChangedAt: 2026-07-24T19:57:48.213Z
+  - id: define-agent-runtime-contract
+    name: 定义通用 Agent Runtime 最小契约
+    summary: 定义上下文、Run/Step、工具循环、预算、权限、审批、流式事件、暂停恢复、压缩、沙箱和检查点，并为 Eve 主候选、Pi 对照候选及未来 Harness 保持 adapter 边界。
+    status: pending
+    planRef: agent-core-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.378Z
+    updatedAt: 2026-07-27T19:22:21.000Z
+    statusChangedAt: 2026-07-24T19:57:48.378Z
+  - id: build-single-agent-loop
+    name: 交付单 Agent 驱动画布闭环
+    summary: 单 Agent 通过 Query/Command/Capability 创建图像任务、组织结果分支、进入 DesignDocument 修改并接受用户确认或撤销。
+    status: pending
+    planRef: agent-core-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.543Z
+    updatedAt: 2026-07-27T19:22:21.394Z
+    statusChangedAt: 2026-07-24T19:57:48.543Z
+  - id: verify-agent-safety-recovery
+    name: 验证 Agent 安全、成本与恢复
+    summary: 验证无写旁路、版本固定、预算耗尽、拒绝确认、取消、断线恢复、可追踪步骤和可撤销已提交修改。
+    status: pending
+    planRef: agent-core-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.714Z
+    updatedAt: 2026-07-27T19:22:21.598Z
+    statusChangedAt: 2026-07-24T19:57:48.714Z
+  - id: define-delegation-protocol
+    name: 定义 Agent 委托与调度协议
+    summary: 定义子任务图、角色、上下文包、能力/权限、依赖、预算、结果、失败隔离和汇总协议；固定组织层级不进入内核。
+    status: pending
+    planRef: agent-orchestration-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:48.883Z
+    updatedAt: 2026-07-27T19:22:21.796Z
+    statusChangedAt: 2026-07-24T19:57:48.883Z
+  - id: build-muses-agent
+    name: 交付平台级 MusesAgent
+    summary: 让 MusesAgent 负责跨领域意图梳理、澄清、计划和委托，但由 Runtime 可靠执行和记录调度状态。
+    status: pending
+    planRef: agent-orchestration-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.050Z
+    updatedAt: 2026-07-27T19:22:22.019Z
+    statusChangedAt: 2026-07-24T19:57:49.050Z
+  - id: build-domain-agent-profile
+    name: 交付首个领域 Agent 配置
+    summary: 以可版本化领域知识、工具、策略和验收规则配置专业 Agent，不复制通用 Agent Runtime。
+    status: pending
+    planRef: agent-orchestration-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.215Z
+    updatedAt: 2026-07-27T19:22:22.217Z
+    statusChangedAt: 2026-07-24T19:57:49.215Z
+  - id: build-multi-agent-execution
+    name: 交付受控多 Agent 执行
+    summary: 让执行型 SubAgents 在明确依赖和预算下并行工作，支持结果汇总、失败隔离、取消和成本归因。
+    status: pending
+    planRef: agent-orchestration-alpha
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.386Z
+    updatedAt: 2026-07-27T19:22:22.420Z
+    statusChangedAt: 2026-07-24T19:57:49.386Z
+  - id: collect-first-scenario-evidence
+    name: 准备首个真实场景验收样本
+    summary: 首图价值 Gate 通过后准备一个可脱敏真实 PPT 任务，记录 Brief、材料、旧流程、耗时、成本、返工和验收标准；先运行现有平台，不先列功能清单。
+    status: pending
+    planRef: muses-ppt-mvp
+    parentTaskId: null
+    countedForProgress: false
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.552Z
+    updatedAt: 2026-07-27T19:22:22.619Z
+    statusChangedAt: 2026-07-24T19:57:49.552Z
+  - id: discover-muses-ppt-route
+    name: 验证 MusesPPT 场景技术路线
+    summary: 基于已验证通用层探索模板、页面模型、视觉生成、可编辑重建与 PPTX 路线；不预设 HTML 或 image-to-editable-SVG 方案。
+    status: pending
+    planRef: muses-ppt-mvp
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.722Z
+    updatedAt: 2026-07-27T19:22:22.831Z
+    statusChangedAt: 2026-07-24T19:57:49.722Z
+  - id: deliver-muses-ppt-mvp
+    name: 交付并验证 MusesPPT MVP
+    summary: 让 MusesPPT 只通过平台公共内核完成一个真实端到端交付，并对照旧流程验证价值。
+    status: pending
+    planRef: muses-ppt-mvp
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:49.912Z
+    updatedAt: 2026-07-27T19:22:23.064Z
+    statusChangedAt: 2026-07-24T19:57:49.912Z
+  - id: validate-short-drama-reuse
+    name: 验证 AI 短剧跨场景复用
+    summary: 证明无需 PPT 特例即可复用工作流画布、专业文档、资产、任务、能力与 Agent 内核。
+    status: pending
+    planRef: muses-short-drama-mvp
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:50.084Z
+    updatedAt: 2026-07-27T19:22:23.272Z
+    statusChangedAt: 2026-07-24T19:57:50.084Z
+  - id: extend-timeline-media
+    name: 扩展视频、配音、音效与音乐链路
+    summary: 增加时间线专业节点与媒体能力，完成 AI 短剧最小端到端交付。
+    status: pending
+    planRef: muses-short-drama-mvp
+    parentTaskId: null
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:57:50.261Z
+    updatedAt: 2026-07-27T19:22:23.472Z
+    statusChangedAt: 2026-07-24T19:57:50.261Z
+  - id: select-open-source-license
+    name: 确定并落地开源许可证
+    summary: 评估 AGPLv3 等候选、依赖与贡献兼容、托管商业边界和法律风险，通过正式政策决策写入 LICENSE；与 Platform Core Alpha 并行，不进入当前工程关键路径。
+    status: pending
+    planRef: value-foundation
+    parentTaskId: null
+    countedForProgress: false
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:39:24.773Z
+    updatedAt: 2026-07-27T19:22:23.671Z
+    statusChangedAt: 2026-07-24T19:39:24.773Z
+  - id: spike-agent-harness
+    name: Spike Eve 与 Pi Agent Harness
+    summary: 平台操作端口稳定后，以相同单 Agent 任务比较 Eve 与 Pi：持久 Run/Step、上下文压缩、工具循环、暂停恢复、沙箱/审批、多 Agent 委托、可观测性、自托管和 adapter 隔离。
+    status: pending
+    planRef: agent-core-alpha
+    parentTaskId: define-agent-runtime-contract
+    countedForProgress: false
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T20:58:21.896Z
+    updatedAt: 2026-07-27T19:22:21.200Z
+    statusChangedAt: 2026-07-24T20:58:21.896Z
+  - id: correct-workflow-execution-boundary
+    name: 纠正 Workflow SDK 执行边界
+    summary: 已纠正执行边界：Muses 领域层负责 WorkflowDocument、Start/End、变量与发布校验；XYFlow 仅负责交互投影；Vercel Workflow SDK 通过 Postgres World 承担后端 durable publication probe。生产 4730 已验证 wrun 持久化与完成态，完整动态图解释器明确延期。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-26T16:12:30.470Z
+    updatedAt: 2026-07-26T16:58:42.157Z
+    statusChangedAt: 2026-07-26T16:58:42.157Z
+  - id: freeze-workflow-definition-compiler-contract
+    name: 冻结 WorkflowDefinition 编译与运行端口契约
+    summary: 已冻结 WorkflowDefinition 0.1.0-draft、纯 WorkflowDocument 编译器与 provider-neutral WorkflowRuntimePort。编译产物剥离画布/运行态且无半成品；production durable probe 已携带编译定义完成并持久化，运行 wrun_01KYFS44Y2F207HMZ3F9MYS9FY。正式发布仓库和任意节点解释器仍明确后置。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: freeze-core-alpha-contracts
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-26T16:58:55.254Z
+    updatedAt: 2026-07-26T17:57:14.733Z
+    statusChangedAt: 2026-07-26T17:57:14.733Z
+  - id: implement-supported-node-workflow-interpreter
+    name: 实现首批节点服务端 WorkflowDefinition 解释器
+    summary: 已完成首批节点服务端 WorkflowDefinition 解释器：纯领域执行状态与绑定/类型/顺序/暂停契约通过 25/25 测试；Vercel Workflow SDK + Postgres World 真实执行 Start→服务端图像 Harness→Selector Hook 等待/授权恢复→DesignDocument Harness→End；生产 4730 E2E 4/4，证据运行 wrun_01KYJ1Y59Y4TFPFXD3XR39ZYRZ。当前明确未接真实 Job/Capability、取消/重试与重启故障验证，不推进 A1。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-26T17:57:41.928Z
+    updatedAt: 2026-07-27T15:15:38.333Z
+    statusChangedAt: 2026-07-27T15:15:38.333Z
+  - id: verify-durable-selector-restart-recovery
+    name: 验证 Selector 耐久等待的重启与幂等恢复
+    summary: 在生产式 4730/Postgres World 环境创建等待中的 Selector 运行，重启 Web/Workflow 进程后验证 run、Hook metadata、muses:runtime 事件和 UI 投影仍可读取并成功恢复；同时验证非法候选、错误 workspace、重复恢复和已完成 Hook 的失败语义，必要时修复实现并形成自动化与数据库证据。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T15:46:29.578Z
+    updatedAt: 2026-07-27T16:09:19.276Z
+    statusChangedAt: 2026-07-27T16:09:19.276Z
+  - id: implement-durable-run-cancellation
+    name: 实现并验证等待中耐久运行的取消边界
+    summary: 为当前 supported-node Workflow SDK Harness 增加 Muses 授权取消入口和 Studio 操作；验证等待中的 Selector run 被取消后状态投影为 cancelled、Hook 被释放、后续恢复失败、历史事件保持可查询且重复取消具备持久化幂等语义。留在 Gate 0，不引入 Agent、真实图像 Capability 或通用重试。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T16:10:05.645Z
+    updatedAt: 2026-07-27T16:21:48.535Z
+    statusChangedAt: 2026-07-27T16:21:48.535Z
+  - id: verify-durable-failure-timeout-retry-semantics
+    name: 验证耐久失败、超时与受限重试语义
+    summary: 已按 Workflow SDK 4.6.2 固化并验证 supported-node Harness 失败语义：永久错误以 FatalError 在 attempt 1 停止；瞬时错误固定 2 次重试、3 次总尝试，既验证第 3 次恢复，也验证耗尽后不出现第 4 次；Selector 通过 Hook 与 durable sleep 竞速，超时进入结构化 failed 并释放 Hook；retryable failure 使用 World hydration 读取冻结参数创建带 retryOfRunId 的新 run，PostgreSQL retry receipt 保证精确请求幂等。Domain 25/25、Studio 6/6、typecheck/build/serde 通过，证据已写入 workflow-sdk-boundary。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T17:17:23.622Z
+    updatedAt: 2026-07-27T17:44:45.977Z
+    statusChangedAt: 2026-07-27T17:42:08.243Z
+  - id: define-professional-node-catalog
+    name: 定义专业模式节点产品目录
+    summary: 以用户任务和平台能力为依据记录专业模式节点目录、首图闭环、节点准入与同步维护规则，禁止测试夹具或 SDK 原语反向定义产品节点。
+    status: done
+    planRef: core-gate-0
+    parentTaskId: freeze-core-alpha-contracts
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T18:45:07.391Z
+    updatedAt: 2026-07-27T19:05:49.723Z
+    statusChangedAt: 2026-07-27T19:05:49.723Z
+  - id: audit-first-image-user-path
+    name: 按用户路径审计当前首图缺口
+    summary: 已通过浏览器完成当前首图路径审计：确认真实 provider 缺失、固定三结果/Selector/DesignDocument 错误默认、无首图模板或空白路径、结果仅浏览器本地等 G0-G2 缺口；证据进入首图 Gate 交付记录。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:33.358Z
+    updatedAt: 2026-07-27T19:29:45.920Z
+    statusChangedAt: 2026-07-27T19:29:45.920Z
+  - id: deliver-first-image-minimum-loop
+    name: 交付首张真实图片最小闭环
+    summary: 首图工程闭环和 Gate 1.1 边界已完成：默认 Start→image.generate→End 支持真实文生图/图生图、模型驱动尺寸与参数、工作区授权 Asset、积分预留/结算、结果恢复/下载和用户安全运行观测。Domain 32/32、Studio 12/12、pnpm check、生产构建与 Workflow/APCC 门禁通过。当前唯一剩余条件是 product-owner 无讲解完成真实首图验收并记录 Gate 通过、补缺口或停止决定；此前不进入 PPT、Agent 或新增节点。
+    status: in_progress
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前唯一 Gate：工程闭环已完成，等待产品负责人无讲解完成真实首图并决定通过、补缺口或停止；在此之前不进入 PPT 或新增节点。
+    createdAt: 2026-07-27T19:12:33.010Z
+    updatedAt: 2026-07-28T02:08:53.513Z
+    statusChangedAt: 2026-07-27T19:29:46.147Z
+  - id: define-first-image-value-gate
+    name: 冻结首图用户成果 Gate
+    summary: 定义专业模式首图任务、用户心智、成功/失败判据、观察方法和停止规则；不以代码量或 Runtime 完整度替代用户成果。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:33.086Z
+    updatedAt: 2026-07-27T19:20:01.450Z
+    statusChangedAt: 2026-07-27T19:20:01.450Z
+  - id: record-first-image-gate-decision
+    name: 记录首图 Gate 通过、修订或停止决定
+    summary: 根据用户任务证据决定通过、补缺口、删除复杂度或修订 DSL；只有通过后才激活真实 PPT 场景扩展。
+    status: pending
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: false
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:33.136Z
+    updatedAt: 2026-07-27T19:22:42.928Z
+    statusChangedAt: 2026-07-27T19:12:33.136Z
+  - id: validate-first-image-user-outcome
+    name: 验证用户无需讲解完成真实生图
+    summary: 由产品负责人按预设模板和空白图两条路径实际操作，记录首图时间、停顿、误解、结果可见性与继续操作，不通过则回到具体缺口。
+    status: pending
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: product-owner
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:33.243Z
+    updatedAt: 2026-07-27T19:12:33.243Z
+    statusChangedAt: 2026-07-27T19:12:33.243Z
+  - id: correct-first-image-dsl-template
+    name: 修正首图 DSL 与默认模板
+    summary: Workspace schema 0.4.0-draft 已将默认模板修正为 Start→image.generate→End，数量默认 1，End 直接接收 Image；原五节点链只保留在 /studio?template=harness。Domain 25/25 与默认首图 E2E 已通过。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:53.959Z
+    updatedAt: 2026-07-27T20:39:39.773Z
+    statusChangedAt: 2026-07-27T20:39:39.773Z
+  - id: deliver-first-image-result-experience
+    name: 交付以真实图片为中心的运行结果体验
+    summary: Studio 已提供 Prompt/模型/比例/数量/质量配置，以真实图片为首要完成结果，展示尺寸与归一化来源，折叠执行详情；结果可打开、通过受 Run/Workspace/Asset 校验的同源端点真实下载，并在刷新与 Runtime 重启后恢复。Studio 7/7 E2E 通过。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:54.384Z
+    updatedAt: 2026-07-27T20:39:56.364Z
+    statusChangedAt: 2026-07-27T20:39:56.364Z
+  - id: protect-first-image-minimum-boundaries
+    name: Gate 1.1：纠正首图配置、模型控制面与观测边界
+    summary: Gate 1.1 已完成：Studio 身份/工作区/积分账本、版本化 Model Offering/Capability Profile/PriceBook、单向变量/固定输入、参考图 Asset、文生图/图生图、模型驱动 1K/2K/4K 与合法尺寸、Workflow World + AI SDK usage + reservation 观测投影均已落地；默认界面移除开发者详情。Domain 32/32、Studio 12/12、生产构建、pnpm check、workflow validate、APCC doctor 和桌面/移动视觉检查通过。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T19:12:54.591Z
+    updatedAt: 2026-07-28T02:08:14.540Z
+    statusChangedAt: 2026-07-28T02:08:14.540Z
+  - id: codify-creative-workflow-control-plane
+    name: 固化创作工作流与模型控制面边界
+    summary: 更新长期架构、节点目录、技术路线和接口文档，明确 Muses 只吸收 AI 应用与工作流平台中服务于创作的基础能力，并定义平台管理员与工作区管理员的模型控制面。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: protect-first-image-minimum-boundaries
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T21:19:44.755Z
+    updatedAt: 2026-07-27T21:24:53.161Z
+    statusChangedAt: 2026-07-27T21:24:53.161Z
+  - id: implement-versioned-model-catalog
+    name: 交付版本化模型能力目录首个切片
+    summary: 建立 Provider、Model Offering、Capability Profile 与 Price Book 的稳定契约和种子目录，使 Studio 图像节点由模型规格驱动，并扩展 OWorker Site Admin 管理入口。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: protect-first-image-minimum-boundaries
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T21:19:49.675Z
+    updatedAt: 2026-07-27T22:36:36.964Z
+    statusChangedAt: 2026-07-27T22:36:36.964Z
+  - id: correct-image-input-resolution-contract
+    name: 纠正生图输入与分辨率契约
+    summary: 已完成单向变量/固定输入、参考图 Asset、文生图/图生图、模型驱动比例与 1K/2K/4K/自定义尺寸合法化，并同步 DSL、运行时、双语 UI、迁移、文档和浏览器测试。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: protect-first-image-minimum-boundaries
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T21:19:54.803Z
+    updatedAt: 2026-07-27T23:24:19.690Z
+    statusChangedAt: 2026-07-27T23:24:19.690Z
+  - id: integrate-mature-run-observability
+    name: 接入成熟运行观测投影
+    summary: 已复用 Workflow SDK World Run/Step/Event 与原生 OpenTelemetry 传播边界，组合 Muses 节点事件、AI SDK usage、不可变模型/Profile/PriceBook reservation 和积分结算为 observability 0.1.0 用户安全投影；Studio 默认展示实际输入输出、耗时、模型规格、图片/Token 用量、预计/实际积分与可读错误，World 失败可降级且不新增追踪存储。生产构建、Studio E2E 12/12、Domain 32/32、pnpm check、workflow validate 和 APCC doctor 均通过。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: protect-first-image-minimum-boundaries
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T21:20:00.033Z
+    updatedAt: 2026-07-28T02:06:41.750Z
+    statusChangedAt: 2026-07-28T02:06:41.750Z
+  - id: integrate-studio-identity-credit-ledger
+    name: 接通 Studio 身份、工作区与积分账本
+    summary: 要求 Studio 登录，按用户配置个人工作区并对所有 Studio API 做服务端授权；建立积分账户、不可变账本及付费运行的额度检查、预留、结算、释放和审计边界。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: protect-first-image-minimum-boundaries
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-27T21:23:05.150Z
+    updatedAt: 2026-07-27T22:02:02.460Z
+    statusChangedAt: 2026-07-27T22:02:02.460Z

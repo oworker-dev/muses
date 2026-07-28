@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { UserCircleIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
@@ -38,7 +39,10 @@ export function AdminDashboardShell({
   children: ReactNode
 }) {
   const pathname = usePathname()
-  const breadcrumbPage = getAdminBreadcrumbLabel(pathname)
+  const t = useTranslations("AdminModels")
+  const breadcrumbPage = pathname.startsWith("/admin/models")
+    ? t("navModels")
+    : getAdminBreadcrumbLabel(pathname)
 
   return (
     <SidebarProvider>

@@ -45,3 +45,31 @@ items:
     validationSummary: null
     createdAt: 2026-07-24T19:20:47.189Z
     recordedAt: 2026-07-24T19:20:47.342Z
+  - id: 0-4-0-mvp-route-ppt-mvp
+    version: 0.4.0-mvp-route
+    title: 通用内核与 PPT MVP 交付路线
+    summary: 采用双轨贯穿切片，以真实 PPT 验收样本、关键技术 Spike、三个能力切片和真实交付门尽快达到通用模块产品可复用与场景 MVP 可验证。
+    docPath: internal/MVP交付路线.md
+    status: recorded
+    decisionRefs:
+      - mvp
+    highlights: []
+    breakingChanges: []
+    migrationNotes: []
+    validationSummary: null
+    createdAt: 2026-07-24T19:39:24.926Z
+    recordedAt: 2026-07-24T19:39:32.480Z
+  - id: 0-5-0-platform-core-alpha-platform-core-alpha
+    version: 0.5.0-platform-core-alpha
+    title: 工作流原生 Platform Core Alpha 路线
+    summary: 确立工作流原生无限画布为顶层创作空间，DesignDocument 为可进入的专业节点，并按无 Agent 平台核心、单 Agent、Agent 编排、真实场景 MVP 的顺序推进。
+    docPath: internal/平台核心Alpha路线.md
+    status: recorded
+    decisionRefs:
+      - decision-3
+    highlights: []
+    breakingChanges: []
+    migrationNotes: []
+    validationSummary: null
+    createdAt: 2026-07-24T20:06:46.456Z
+    recordedAt: 2026-07-24T20:06:52.861Z

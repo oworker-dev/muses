@@ -1,0 +1,191 @@
+{
+  "collectedAt": "2026-07-27T17:36:36.000Z",
+  "runtime": {
+    "workflow": "4.6.2",
+    "world": "@workflow/world-postgres@4.3.1",
+    "next": "16.2.6",
+    "postgres": "17",
+    "studioUrl": "http://127.0.0.1:4730/studio"
+  },
+  "verification": {
+    "domainTests": { "passed": 25, "failed": 0 },
+    "studioE2E": { "passed": 6, "failed": 0 },
+    "workflowValidate": { "serdeIssues": 0 },
+    "webTypecheck": "passed",
+    "webLint": { "errors": 0, "knownGeneratedWarnings": 1 },
+    "webBuild": "passed"
+  },
+  "runs": {
+    "productionE2E": {
+      "runId": "wrun_01KYJ575GGDQ6V298ZF57ZNX86",
+      "status": "completed",
+      "hookReceivedEvents": 1,
+      "resumeReceipts": 1
+    },
+    "waitingResumeEvidence": {
+      "runId": "wrun_01KYJ1Y59Y4TFPFXD3XR39ZYRZ",
+      "waiting": {
+        "sdkStatus": "running",
+        "musesStatus": "waiting",
+        "activeHooks": 1,
+        "isWebhook": false,
+        "candidateCount": 3
+      },
+      "completed": {
+        "sdkStatus": "completed",
+        "activeHooks": 0,
+        "runtimeStreamChunks": 13,
+        "completedNodeIds": [
+          "start-1",
+          "image-generator-1",
+          "selector-1",
+          "design-1",
+          "end-1"
+        ],
+        "output": {
+          "valueType": "design-document",
+          "documentId": "design-1-document",
+          "revision": 0
+        }
+      }
+    },
+    "restartRecoveryEvidence": {
+      "runId": "wrun_01KYJ563TCQWKSA4MM7JN8T1XW",
+      "containerStartedAtBefore": "2026-07-27T16:03:50.858311191Z",
+      "containerStartedAtAfter": "2026-07-27T16:05:35.1186366Z",
+      "startupRecoveryLog": "[world-postgres] Re-enqueued 1 active run(s) on startup",
+      "browserProjectionRestored": true,
+      "waitingCandidateCount": 3,
+      "completed": {
+        "sdkStatus": "completed",
+        "activeHooks": 0,
+        "hookReceivedEvents": 1,
+        "runtimeStreamChunks": 13,
+        "steps": 15,
+        "minAttempt": 1,
+        "maxAttempt": 1,
+        "resumeReceipts": 1,
+        "output": {
+          "valueType": "design-document",
+          "documentId": "design-1-document",
+          "revision": 0
+        }
+      },
+      "sameIdempotencyKeyAfterCompletion": {
+        "httpStatus": 202,
+        "idempotentReplay": true,
+        "additionalHookReceivedEvents": 0
+      }
+    },
+    "preFixDuplicateObservation": {
+      "runId": "wrun_01KYJ44RVBA3NE7ERX4MG3WKTD",
+      "duplicatePatchResponses": [202, 202],
+      "hookReceivedEvents": 2,
+      "downstreamEffectsExecuted": 1,
+      "completedHookNewMutationStatus": 404,
+      "reasonForFix": "Workflow SDK resumeHook appends one hook_received per call and does not provide request idempotency keys."
+    },
+    "waitingCancellationEvidence": {
+      "runId": "wrun_01KYJ5Z426X9BCS4KST91EFWAY",
+      "sdkStatus": "cancelled",
+      "runCancelledEvents": 1,
+      "hookReceivedEvents": 0,
+      "activeHooks": 0,
+      "runtimeStreamChunks": 7,
+      "steps": 8,
+      "minAttempt": 1,
+      "maxAttempt": 1,
+      "cancelReceipts": 1,
+      "resumeReceipts": 0,
+      "historyRetained": true,
+      "suspensionProjectedAfterCancellation": false,
+      "sameIdempotencyKeyReplayStatus": 202,
+      "sameKeyDifferentReasonStatus": 409,
+      "newCancellationStatus": 409,
+      "resumeAfterCancellationStatus": 404
+    },
+    "permanentFailureEvidence": {
+      "runId": "wrun_01KYJAAGFSV4Z5CX4CKH208C7C",
+      "sdkStatus": "failed",
+      "musesFailure": {
+        "code": "node-permanent-failure",
+        "category": "permanent",
+        "retryable": false,
+        "attempts": 1,
+        "maxAttempts": 3
+      },
+      "stepAttempt": 1,
+      "stepFailedEvents": 1,
+      "stepRetryingEvents": 0,
+      "runtimeStreamChunks": 7,
+      "manualRetryStatus": 409
+    },
+    "transientRecoveryEvidence": {
+      "runId": "wrun_01KYJAAGWAGBPY8AF3GVEMVJ9A",
+      "executableStepStatus": "completed",
+      "stepAttempt": 3,
+      "stepRetryingEvents": 2,
+      "runtimeStreamChunks": 13,
+      "terminalRunStatusAfterTestCleanup": "cancelled"
+    },
+    "transientExhaustionEvidence": {
+      "runId": "wrun_01KYJASFQJ1PZ3ZYB80PK6PD21",
+      "sdkStatus": "failed",
+      "musesFailure": {
+        "code": "node-transient-retries-exhausted",
+        "category": "transient-exhausted",
+        "retryable": true,
+        "attempts": 3,
+        "maxAttempts": 3
+      },
+      "stepAttempt": 3,
+      "stepFailedEvents": 1,
+      "stepRetryingEvents": 2,
+      "runtimeStreamChunks": 11,
+      "fourthAttemptStarted": false
+    },
+    "selectorTimeoutEvidence": {
+      "runId": "wrun_01KYJAAKQG9VJNB976XTGD7RE6",
+      "sdkStatus": "failed",
+      "musesFailure": {
+        "code": "human-input-timeout",
+        "category": "timeout",
+        "retryable": true,
+        "nodeId": "selector-1"
+      },
+      "hookCreatedEvents": 1,
+      "hookDisposedEvents": 1,
+      "activeHooks": 0,
+      "runtimeStreamChunks": 10,
+      "suspensionProjectedAfterTimeout": false
+    },
+    "manualRetryEvidence": {
+      "sourceRunId": "wrun_01KYJAAKQG9VJNB976XTGD7RE6",
+      "targetRunId": "wrun_01KYJAAQ44YXBN9J1JET89C72J",
+      "sourceStatusAfterRetry": "failed",
+      "targetRetryOfRunId": "wrun_01KYJAAKQG9VJNB976XTGD7RE6",
+      "retryReceipts": 1,
+      "sameIdempotencyKeyReplayStatus": 202,
+      "sameIdempotencyKeyReturnedSameTarget": true,
+      "activeHooksAfterTargetTimeout": 0
+    }
+  },
+  "boundaries": {
+    "imageEffect": "server-harness-fixture",
+    "designDocumentEffect": "server-harness-fixture",
+    "browserFixtureCalledByWorkflow": false,
+    "rawHookTokenReturnedToClient": false,
+    "realCapabilityJobExecutionProven": false,
+    "restartFaultInjectionProven": true,
+    "persistentResumeIdempotencyProven": true,
+    "waitingRunCancellationProven": true,
+    "persistentCancellationIdempotencyProven": true,
+    "boundedStepRetryProven": true,
+    "permanentFailureNoRetryProven": true,
+    "selectorTimeoutProven": true,
+    "manualRetryCreatesNewRunProven": true,
+    "persistentRetryIdempotencyProven": true,
+    "crashBetweenHookEventAndReceiptCommitProven": false,
+    "crashBetweenRetryStartAndReceiptCommitProven": false
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "muses.platform-core-alpha.evidence.v1",
+  "recordedAt": "2026-07-26",
+  "candidate": "ai-elements-xyflow-konva",
+  "versions": {
+    "next": "16.2.6",
+    "xyflow": "12.11.2",
+    "konva": "10.3.0",
+    "reactKonva": "19.2.5"
+  },
+  "checks": {
+    "domainTests": {
+      "status": "pass",
+      "count": 7
+    },
+    "workflowBrowserLoop": {
+      "status": "pass",
+      "count": 3
+    },
+    "productionBuild": {
+      "status": "pass",
+      "route": "/studio"
+    },
+    "interactionShell": {
+      "status": "pass",
+      "features": [
+        "searchable-node-library",
+        "on-demand-node-panel",
+        "coze-baseline-professional-nodes",
+        "node-configuration-side-sheet",
+        "structured-variable-picker",
+        "typed-output-port-continuation",
+        "compatible-node-filtering",
+        "atomic-node-edge-command-sequence",
+        "single-node-run-details",
+        "live-ephemeral-node-drag",
+        "user-controlled-camera",
+        "run-result-gallery",
+        "mouse-and-trackpad-modes"
+      ]
+    },
+    "themeAndI18n": {
+      "status": "pass",
+      "themes": ["system", "light", "dark"],
+      "locales": ["en", "zh-CN"]
+    },
+    "performanceA1": {
+      "status": "not_run"
+    },
+    "faultMatrix": {
+      "status": "not_run"
+    },
+    "accessibilityGate": {
+      "status": "partial"
+    },
+    "realInfrastructure": {
+      "status": "not_run"
+    }
+  }
+}

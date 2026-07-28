@@ -10,12 +10,12 @@ import { getRequestLocale } from "@/i18n/server"
 
 export const metadata: Metadata = {
   title: {
-    default: "OWorker SaaS Starter",
-    template: "%s | OWorker SaaS Starter",
+    default: "Muses",
+    template: "%s | Muses",
   },
-  applicationName: "OWorker SaaS Starter",
+  applicationName: "Muses",
   description:
-    "A production-minded SaaS starter with Agent-readable service interfaces.",
+    "An open, workflow-native AI creation operating system.",
   icons: {
     icon: [
       {
@@ -33,17 +33,17 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "OWorker SaaS Starter",
+    title: "Muses",
     description:
-      "A production-minded SaaS starter with Agent-readable service interfaces.",
-    siteName: "OWorker SaaS Starter",
+      "An open, workflow-native AI creation operating system.",
+    siteName: "Muses",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "OWorker SaaS Starter",
+    title: "Muses",
     description:
-      "A production-minded SaaS starter with Agent-readable service interfaces.",
+      "An open, workflow-native AI creation operating system.",
   },
   other: {
     "anss:canonical-service-root": "/",

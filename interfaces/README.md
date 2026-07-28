@@ -9,5 +9,7 @@ Standard surfaces:
 - `aclip/` for CLI / ACLIP-ready command contracts
 - `mcp/` for MCP capability descriptions
 - `skills/` for consumer-agent runtime skills
+- `workflow-runtime.md` for Muses workflow compilation, durable execution, waiting, and resume contracts
+- `platform-control-plane.md` for the versioned model catalog, authenticated workspace boundary, usage projection, and credit settlement contract
 
 See `docs/anss-v0.1.md` for the ANSS v0.1 boundary: core scope, optional scope, out-of-scope items, conformance, and the return-to-Starter-mainline gate.

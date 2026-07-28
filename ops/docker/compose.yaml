@@ -70,7 +70,11 @@ services:
       STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
       LOG_FORMAT: json
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "fetch(''http://127.0.0.1:3001/health'').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"',
+        ]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -103,6 +107,13 @@ services:
       PORT: 3000
       HOSTNAME: 0.0.0.0
       DATABASE_URL: postgresql://oworker:oworker@db:5432/oworker_saas
+      WORKFLOW_TARGET_WORLD: "@workflow/world-postgres"
+      WORKFLOW_POSTGRES_URL: postgresql://oworker:oworker@db:5432/oworker_saas
+      WORKFLOW_POSTGRES_JOB_PREFIX: muses_
+      MUSES_WORKFLOW_HARNESS_ENABLED: ${MUSES_WORKFLOW_HARNESS_ENABLED:-false}
+      MUSES_INITIAL_CREDIT_MICROS: ${MUSES_INITIAL_CREDIT_MICROS:-100000000}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
       REDIS_URL: redis://cache:6379
       S3_ENDPOINT: http://storage:9000
       S3_PUBLIC_ENDPOINT: ${S3_PUBLIC_ENDPOINT:-http://localhost:9000}

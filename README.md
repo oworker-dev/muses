@@ -4,7 +4,7 @@
 > operating system. Start with
 > `docs/shared/概览.md`, `docs/shared/目标.md`,
 > `docs/shared/价值宪法.md`, `docs/shared/开放原则.md`, and
-> `docs/internal/长期架构.md`. Use `apcc status` for the current goal, phase,
+> `docs/internal/平台核心Alpha路线.md`. Use `apcc status` for the current goal, phase,
 > tasks, decisions, and handoff state. The starter documentation below remains
 > the operational baseline for the existing SaaS foundation.
 
@@ -29,11 +29,46 @@ OAuth secrets, production credentials, or private telemetry. See
 
 ## Current Stage
 
-The current APCC phase is **Value Foundation**. Before freezing technical
-contracts, the project is measuring real AI short-drama and PPT workflows,
-validating external user needs, and then running focused technical discovery.
-Run `apcc status` for the current derived state. Start the local docs site with
-`apcc site start`.
+The current APCC phase is **Platform Core Alpha: a workflow-native creation
+space**. The current value gate is narrower than the full platform-core list:
+first let a user generate, inspect, and continue using one real image through
+the professional-mode `Start → image.generate → End` path. Existing canvas,
+document, asset, job, and durable-runtime work remains available as a gap pool;
+it is pulled only when this user task or the next real PPT task exposes a
+blocker. MusesPPT remains the first scenario MVP but does not determine current
+canvas contracts, PPTX, or image-to-editable-SVG choices. See
+`docs/internal/用户成果驱动交付计划.md`,
+`docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
+
+The professional Studio now has protected Start/End nodes, typed Start inputs,
+a framework-independent publication validator, a pure
+`WorkflowDocument → WorkflowDefinition` compiler, and a supported-node domain
+interpreter. The compiled definition has its own versioned schema and strips
+canvas and run-result state before the Next.js backend starts a real Vercel
+Workflow SDK run persisted through Postgres World. The Gate 0 Harness executes
+Start, server fixture image references, a real Hook-based human Selector,
+DesignDocument reference creation, and End while streaming a queryable run
+projection. It is not yet an arbitrary-node or real Capability/Job runtime; the
+browser deterministic image action remains explicitly labeled and separate.
+The waiting Selector projection now survives browser refresh and Web/Workflow
+container restart through Postgres World recovery. A Muses-owned PostgreSQL
+resume receipt supplies the request idempotency that Workflow SDK Hook resume
+calls do not provide themselves.
+Waiting runs can also be cancelled through a Muses-owned mutation receipt and a
+run-scoped lock shared with resume, preventing duplicate cancellation events and
+stale Selector actions after the Hook is disposed.
+
+Studio now requires a verified Better Auth session and provisions one stable
+personal Muses Workspace with an owner membership and idempotent development
+credit grant. Studio APIs authorize every run and generated asset against that
+Workspace. Real image runs reserve credit before Workflow SDK or provider
+execution, settle known usage, release explicit failures, and retain ambiguous
+provider outcomes for review. The Studio header and Account Billing page expose
+the resulting available/reserved credit projection. A versioned model catalog
+now supplies Studio configuration and freezes Offering, Capability Profile and
+PriceBook facts into paid-run reservations; `/admin/models` provides the first
+audited enable/disable control. The current flat image price and initial grant
+remain Alpha policies rather than production commercial commitments.
 
 This project is generated from OWorker SaaS Starter.
 

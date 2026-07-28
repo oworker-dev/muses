@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { useState, useTransition } from "react"
 import { LanguagesIcon } from "lucide-react"
 
@@ -16,7 +17,14 @@ import { isAppLocale, localeCookieName, type AppLocale } from "@/i18n/config"
 
 type LanguagePreference = AppLocale | "auto"
 
-export function LanguageSwitcher({ locale }: { locale: AppLocale }) {
+export function LanguageSwitcher({
+  locale,
+  compact = false,
+}: {
+  locale: AppLocale
+  compact?: boolean
+}) {
+  const t = useTranslations("Account.settings")
   const router = useRouter()
   const [selectedLanguage, setSelectedLanguage] = useState<LanguagePreference>(
     () => readLocalePreference()
@@ -51,9 +59,9 @@ export function LanguageSwitcher({ locale }: { locale: AppLocale }) {
         <Button
           type="button"
           variant="outline"
-          size="icon-lg"
-          className="rounded-full"
-          aria-label={`Change language, current locale ${locale}`}
+          size={compact ? "icon" : "icon-lg"}
+          className={compact ? "rounded-lg" : "rounded-full"}
+          aria-label={`${t("languageLabel")}: ${locale}`}
           disabled={isPending}
         >
           <LanguagesIcon />
@@ -64,9 +72,15 @@ export function LanguageSwitcher({ locale }: { locale: AppLocale }) {
           value={selectedLanguage}
           onValueChange={changeLocale}
         >
-          <DropdownMenuRadioItem value="auto">Auto</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="en">English</DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="zh-CN">中文</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="auto">
+            {t("languageAuto")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="en">
+            {t("languageEnglish")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="zh-CN">
+            {t("languageChinese")}
+          </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>

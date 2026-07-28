@@ -177,6 +177,60 @@ create index if not exists audit_log_created_idx
 create index if not exists audit_log_actor_idx
   on audit_log (actor_user_id, created_at desc);
 
+create table if not exists workflow_run_resume_receipt (
+  workspace_id text not null,
+  run_id text not null,
+  suspension_id text not null,
+  idempotency_key text not null,
+  selected_asset_id text not null,
+  status text not null default 'processing',
+  created_at timestamptz not null default now(),
+  completed_at timestamptz,
+  primary key (workspace_id, run_id, idempotency_key),
+  unique (workspace_id, run_id, suspension_id),
+  check (status in ('processing', 'completed'))
+);
+
+create index if not exists workflow_run_resume_receipt_created_idx
+  on workflow_run_resume_receipt (created_at desc);
+
+create table if not exists workflow_run_cancel_receipt (
+  workspace_id text not null,
+  run_id text not null,
+  idempotency_key text not null,
+  reason text,
+  status text not null default 'processing',
+  created_at timestamptz not null default now(),
+  completed_at timestamptz,
+  primary key (workspace_id, run_id, idempotency_key),
+  unique (workspace_id, run_id),
+  check (status in ('processing', 'completed'))
+);
+
+create index if not exists workflow_run_cancel_receipt_created_idx
+  on workflow_run_cancel_receipt (created_at desc);
+
+create table if not exists workflow_run_retry_receipt (
+  workspace_id text not null,
+  source_run_id text not null,
+  idempotency_key text not null,
+  target_run_id text,
+  status text not null default 'processing',
+  created_at timestamptz not null default now(),
+  completed_at timestamptz,
+  primary key (workspace_id, source_run_id, idempotency_key),
+  unique (target_run_id),
+  check (status in ('processing', 'completed')),
+  check (
+    (status = 'processing' and target_run_id is null and completed_at is null)
+    or
+    (status = 'completed' and target_run_id is not null and completed_at is not null)
+  )
+);
+
+create index if not exists workflow_run_retry_receipt_created_idx
+  on workflow_run_retry_receipt (created_at desc);
+
 insert into billing_subscription (
   id,
   account_id,

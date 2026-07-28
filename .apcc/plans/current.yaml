@@ -10,83 +10,133 @@ items:
     pinnedReason: 正式开发前必须保持可见的架构基线。
     createdAt: 2026-07-24T18:27:47.205Z
     updatedAt: 2026-07-24T18:30:21.000Z
+  - id: platform-core-alpha
+    name: Platform Core Alpha：工作流原生创作空间
+    summary: 以用户成果 Gate 拉动工作流原生创作空间：当前先验证专业模式真实首图，只补实际暴露的画布、DSL、Asset/Job/Capability、持久化与 Runtime 缺口。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前唯一工程关键路径。
+    createdAt: 2026-07-24T19:56:41.199Z
+    updatedAt: 2026-07-27T19:17:06.773Z
+  - id: first-image-value-gate
+    name: 价值 Gate 1：用户友好的真实生图闭环
+    summary: 先让目标用户在专业模式中理解 Start→image.generate→End，并通过真实模型获得、检查和继续使用一张图片；只补齐这条路径实际暴露的最小缺口，通过后再进入 PPT 场景扩展。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前唯一工程关键路径；阻止无用户结果证据的组件堆叠。
+    createdAt: 2026-07-27T19:12:15.517Z
+    updatedAt: 2026-07-27T19:12:15.517Z
+  - id: core-gate-0
+    name: Gate 0：最小技术基线与核心契约
+    summary: 通过场景无关 Spike 选择画布 Alpha 技术基线，并定义工作流图、专业文档引用、Command、Revision、Asset、Job 与 Capability 最小契约。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: 进入实现前只解决会改变核心边界的高风险问题。
+    createdAt: 2026-07-24T19:56:41.359Z
+    updatedAt: 2026-07-24T19:56:41.359Z
+  - id: workflow-canvas-alpha
+    name: Slice 1：工作流无限画布 Alpha
+    summary: 技术缺口池：仅当首图或真实场景暴露工作流画布交互、保存或历史阻断时拉取对应任务，不按组件顺序独立推进。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:56:41.526Z
+    updatedAt: 2026-07-27T19:12:54.257Z
+  - id: design-document-alpha
+    name: Slice 2：DesignDocument 专业画布节点
+    summary: 技术缺口池：仅当首图后续操作或 PPT 真实任务需要深度编辑时拉取 DesignDocument 能力，不预先追求完整设计编辑器。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:56:41.678Z
+    updatedAt: 2026-07-27T19:12:54.482Z
+  - id: image-capability-alpha
+    name: Slice 3：资产、Job 与图像能力闭环
+    summary: 能力缺口池：真实首图 Gate 拉取最小 Asset/Job/Capability 能力；图像处理等扩展只由已观察到的用户任务触发。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:56:41.832Z
+    updatedAt: 2026-07-27T19:12:54.434Z
+  - id: core-alpha-gate
+    name: Platform Core Alpha Gate：独立与组合验收
+    summary: 验证核心模块可独立运行、只经公共契约连接、保存恢复可靠，并为 Agent 提供稳定 Query/Command/Capability 接口。
+    parentPlanId: platform-core-alpha
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-24T19:56:41.984Z
+    updatedAt: 2026-07-24T19:56:41.984Z
   - id: value-foundation
-    name: Value Foundation：建立产品价值与体验基线
-    summary: 确认创始动机、目标用户、关键任务、差异化体验、开放原则、商业价值、指标与证据机制。
+    name: 并行轨：真实价值证据与开放治理
+    summary: 持续维护用户价值、真实业务证据、外部验证和开源治理，不把具体场景实现路线变成平台核心 Alpha 的前置条件。
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: true
-    pinnedReason: Wave 0 前必须完成的当前阶段。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-24T19:00:24.937Z
-    updatedAt: 2026-07-24T19:06:29.000Z
-  - id: technical-discovery
-    name: Technical Discovery：验证关键技术路线
-    summary: 以价值和体验约束验证文档协作、画布渲染、媒体运行时、Job/Workflow、Schema 与一致性路线，不提前冻结完整技术栈。
+    updatedAt: 2026-07-24T19:56:40.723Z
+  - id: agent-core-alpha
+    name: Agent Core Alpha：单 Agent 驱动创作空间
+    summary: 当首图或后续真实场景证明直接 Capability 与人工工作流不足时，接入单 Agent Runtime，并仅通过公共 Query、Command 与 Capability 端口驱动创作空间。
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: true
-    pinnedReason: Value Foundation 完成后、Wave 0 契约冻结前的必要证据阶段。
-    createdAt: 2026-07-24T19:02:53.628Z
-    updatedAt: 2026-07-24T19:06:29.000Z
-  - id: wave-0-protocol-lab
-    name: Wave 0：建立创作协议实验室
-    summary: 验证 CreativeDocument、Command、Asset、Capability、Job、Provenance 与策略的最小稳定语义。
-    parentPlanId: null
-    versionRef: null
-    owner: null
     pinned: false
     pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T19:05:22.645Z
-  - id: wave-1-document-canvas
-    name: Wave 1：交付创作文档与最小画布
-    summary: 建立可迁移创作文档、统一命令、空间投影、编辑交互、自动保存与版本恢复。
+    createdAt: 2026-07-24T19:56:42.138Z
+    updatedAt: 2026-07-27T19:17:06.981Z
+  - id: agent-orchestration-alpha
+    name: Agent Orchestration：MusesAgent、领域 Agent 与多 Agent
+    summary: 在单 Agent 可靠闭环后建立平台级 MusesAgent、领域 Agent 和受 Runtime 管理的执行型 SubAgents 委托架构。
     parentPlanId: null
     versionRef: null
-    owner: null
+    owner: codex-main
     pinned: false
     pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-  - id: wave-2-asset-job-image
-    name: Wave 2：连接资产、任务与图像能力
-    summary: 打通资产生命周期、异步任务、来源记录和首个可替换图像能力适配器。
+    createdAt: 2026-07-24T19:56:42.295Z
+    updatedAt: 2026-07-24T19:56:42.295Z
+  - id: scenario-mvp
+    name: Scenario MVP：用真实场景验证通用层
+    summary: 首图价值 Gate 通过后立即以 MusesPPT 真实任务发现并逐项补齐能力；随后用 AI 短剧验证跨场景复用，不等待预设的全部通用层与 Agent 层完成。
     parentPlanId: null
     versionRef: null
-    owner: null
+    owner: codex-main
     pinned: false
     pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-  - id: wave-3-agent-canvas
-    name: Wave 3：交付 Agent 与画布工具闭环
-    summary: 让 Agent 在预算、权限、确认与检查点约束下通过公共能力和命令操作真实创作对象。
-    parentPlanId: null
+    createdAt: 2026-07-24T19:56:42.464Z
+    updatedAt: 2026-07-27T19:17:07.184Z
+  - id: muses-ppt-mvp
+    name: MusesPPT：首个真实场景 MVP
+    summary: 首图价值 Gate 通过后，用一个真实 PPT 任务运行现有平台，先记录成果与缺口，再逐项拉动文本、Agent、PresentationDocument、设计、导出等能力。
+    parentPlanId: scenario-mvp
     versionRef: null
-    owner: null
+    owner: codex-main
     pinned: false
     pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-  - id: wave-4-workflow-composition
-    name: Wave 4：交付工作流与三入口复用证明
-    summary: 建立版本化工作流运行时，并证明同一能力可被界面、Agent 与工作流一致调用。
-    parentPlanId: null
+    createdAt: 2026-07-24T19:56:42.669Z
+    updatedAt: 2026-07-27T19:12:54.153Z
+  - id: muses-short-drama-mvp
+    name: Muses Short Drama：第二场景 MVP
+    summary: 复用平台与 Agent 内核并增加镜头、时间线、视频、配音、音效与音乐专业能力，验证跨场景内核。
+    parentPlanId: scenario-mvp
     versionRef: null
-    owner: null
+    owner: codex-main
     pinned: false
     pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
-  - id: wave-5-professional-media
-    name: Wave 5：扩展专业媒体与场景套件
-    summary: 在共享协议上增加视频、音频与音乐、演示、品牌、批量变体、发布与经验证的场景组合。
-    parentPlanId: null
-    versionRef: null
-    owner: null
-    pinned: false
-    pinnedReason: null
-    createdAt: 2026-07-24T18:30:21.000Z
-    updatedAt: 2026-07-24T18:30:21.000Z
+    createdAt: 2026-07-24T19:56:42.832Z
+    updatedAt: 2026-07-24T19:56:42.832Z

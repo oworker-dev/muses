@@ -16,12 +16,17 @@ This project uses the production-minded SaaS foundation as the platform base for
 ## Durable Decisions
 
 - Treat `docs/internal/长期架构.md` as the canonical architecture and require an APCC architecture decision before changing its core boundaries.
-- Build reusable kernels before scenario suites, while requiring independent, protocol, and composition evidence before calling a module reusable.
+- Let observable user outcomes pull the smallest required kernel work; require independent, protocol, composition, and scenario evidence before calling a module reusable.
 - Keep scenarios above kernel contracts; never add ecommerce, PPT, social, or other scenario types to a kernel solely for one delivery.
+- Use a workflow-native infinite canvas as the top-level creation space; treat `DesignDocument` and future presentation, video, and audio editors as enterable professional-document nodes with their own authoritative state.
+- Distinguish exploratory/context/provenance relationships from executable typed workflow edges; a canvas graph is not automatically a published workflow.
+- Prove each operation through a direct human or Capability path before allowing an Agent to orchestrate it; complete the single-Agent safety loop before adding MusesAgent, domain-agent profiles, or multi-Agent scheduling.
+- Use AI Elements + XYFlow only as the first outer-canvas projection candidate, Workflow SDK only as a durable execution candidate, and Eve/Pi only behind a replaceable Agent Harness port; Muses documents, commands, assets, provenance, jobs, and policies remain authoritative.
 - Route human, Agent, workflow, and API mutations through shared Command, Capability, Job, policy, and provenance boundaries.
 - Start as a modular monolith with isolated workers; split services only from measured scaling, fault-domain, security, data-sovereignty, deployment, or ownership evidence.
 - Treat audio, music, voice, and sound as first-class media capabilities with professional time, track, licensing, and provenance semantics.
 - Use `docs/shared/价值宪法.md` as the value gate: architecture elegance alone never justifies implementation or continued investment.
+- Use `docs/internal/用户成果驱动交付计划.md` as the current delivery order: first prove one user-friendly real image, then let a real PPT task expose the next missing capability.
 - Keep the core product, protocols, formats, and migration paths open and self-hostable; protect private user data and security material from Build in Public disclosure.
 
 - Keep `src/` as the implementation root.
@@ -38,7 +43,8 @@ This project uses the production-minded SaaS foundation as the platform base for
 - Keep next-intl as the minimal internationalization baseline.
 - Keep React Email as the default transactional email template boundary.
 - Keep Account Console as an explicit account/settings surface; do not use it as the default post-auth landing page and do not assume the product is a dashboard/workbench SaaS.
-- Keep Site Admin Console as the website-owner surface for account operations, revenue, subscriptions, aggregate analytics, service health, audit logs, and provider diagnostics; do not turn it into a product-specific back office.
+- Reuse the Site Admin Console shell, site-admin authorization, and audit boundary for two visibly separated groups: website operations and the Muses platform control plane. Product control-plane pages may manage versioned model offerings, capability profiles, prices, routing, budgets, and usage, but must not grow into a generic CRM or unbounded product back office.
+- Require an authenticated, verified account and authorized workspace for Studio and every Studio API. Keep model charges in an immutable workspace credit ledger with idempotent reservation, settlement, release, and audit semantics; Stripe payment records and model-usage credits remain separate ledgers.
 - Keep first-party analytics aggregate and privacy-minded by default; associate signed-in page views through hashed user ids, use rollups for admin reads, and do not store raw IP addresses in the starter baseline.
 - Keep provider choices replaceable by documenting environment variables, fallbacks, and verification commands.
 - Update contract tests and interface descriptions when public behavior changes.

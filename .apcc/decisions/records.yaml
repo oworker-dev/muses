@@ -104,3 +104,108 @@ items:
     revisitCondition: 若出现明确商标、域名、社区混淆或目标用户认知风险时重审。
     createdAt: 2026-07-24T19:13:21.299Z
     decidedAt: 2026-07-24T19:13:33.754Z
+  - id: mvp
+    name: 采用双轨贯穿切片交付首个 MVP
+    description: 以通用内核最小闭环和 PPT 商业材料真实场景同步推进，替代所有内核完成后才验证场景的串行交付方式。
+    docPath: internal/MVP交付路线.md
+    category: scope
+    proposedBy: codex-main
+    context: 现有 Wave 0 至 Wave 5 串行路线直到最后阶段才触达真实场景，不符合尽快获得通用能力可用与场景价值证据的目标。PPT 定制是现有真实业务，包含结构、页面、文本、图像、品牌与可编辑导出，能以较低媒体复杂度覆盖首批核心协议。
+    impactOfNoAction: 项目可能长期停留在协议与平台抽象建设，模块虽各自完整但组合风险、体验风险和真实交付价值被延迟发现。
+    expectedOutcome: 每个迭代都同时产生可独立运行的通用模块证据和一段真实 PPT 交付证据；首个 MVP 在不牺牲模块边界的前提下尽快完成 Brief 到可编辑交付闭环，随后用 AI 短剧验证跨时间媒体扩展。
+    boundary: 首个 MVP 只覆盖单用户 PPT/商业材料、页面画布、资产、一个图像能力、受控 Agent、固定模板工作流和可编辑导出；不阻塞于多人实时协作、通用 DAG 编辑器、视频时间线、AI 音乐、插件市场、移动端或完整品牌系统。
+    status: approved
+    decisionSummary: 批准以 PPT 商业材料作为首个真实纵向切片，并让价值证据轨与技术去险、通用内核交付并行推进。通用模块保持独立契约和 Harness，场景只通过公开端口组合；首个真实 PPT 基线在契约冻结前必须就绪，AI 短剧用于 MVP 后的第二场景与跨时间媒体验证。
+    revisitCondition: 若 PPT 真实交付无法覆盖首批文档、画布、资产、任务、能力、Agent 或可编辑导出价值，或技术 Spike 证明可编辑 PPTX 交付路线不可行，则重新选择首个纵向场景或缩减 MVP。
+    createdAt: 2026-07-24T19:27:14.406Z
+    decidedAt: 2026-07-24T19:29:09.351Z
+  - id: decision-3
+    name: 采用工作流原生无限画布与专业文档节点架构
+    description: 将工作流原生无限画布定义为 Muses 顶层创作空间，纯设计画布及未来 PPT、视频、音频等专业编辑器作为可进入、可版本化、可分支和可执行的专业文档节点；先跑通无 Agent 的平台核心 Alpha，再逐层接入 Agent。
+    docPath: internal/平台核心Alpha路线.md
+    category: architecture
+    proposedBy: product-owner
+    context: Muses 对标 Codex、Lovart 与 Codia 的综合体验，需要同时呈现创作内容、执行过程、来源关系和专业编辑空间。此前计划以 PPT 页面画布和 PPTX 导出作为当前硬门，过早让具体场景与历史 image-to-editable-SVG 探索影响通用平台内核。
+    impactOfNoAction: 项目可能先形成孤立的传统设计编辑器或纯节点 DAG，再为 Agent、媒体编辑与工作流补建第二套状态、命令和交互系统；也可能让 PPT/SVG 路线错误冻结平台契约。
+    expectedOutcome: 顶层画布统一承载内容节点、任务节点、Agent/Capability 节点、来源/上下文边与可执行工作流边；DesignDocument 等专业节点在聚焦后提供自己的深度编辑语义。平台先用图像输入、生成/处理、结果分支、人工选择、DesignDocument 编辑和保存恢复证明通用闭环，再接单 Agent、平台级 MusesAgent、领域 Agent 与多 Agent 调度。
+    boundary: 当前只定义顶层画布、节点/边语义、专业文档节点边界、命令/修订和交付顺序；不冻结具体画布库、Agent SDK、PPT 页面模型、PPTX、image-to-editable-SVG、视频时间线、音频工程或通用工作流发布引擎。
+    status: approved
+    decisionSummary: 批准以工作流原生无限画布作为 Muses 顶层创作空间，以 DesignDocument 等专业编辑器作为可进入的版本化节点。平台核心 Alpha 先在无 Agent 条件下验证工作流图、专业文档、资产、Job、图像能力、分支选择和保存恢复；随后接入单 Agent，再建设 MusesAgent、领域 Agent 与多 Agent 调度。PPT 保留为首个场景 MVP，但不再作为平台核心技术栈、首批契约或画布实现的前置门。
+    revisitCondition: 若真实使用证明顶层工作流空间显著增加普通创作负担，或嵌套专业文档节点无法在性能、可访问性和编辑体验上成立，则重审默认视图与画布分层，但仍保持工作流语义和专业媒体语义分离。
+    createdAt: 2026-07-24T19:55:12.296Z
+    decidedAt: 2026-07-24T19:55:59.959Z
+  - id: vercel-agent-harness
+    name: 采用分层 Vercel 工作流生态与可替换 Agent Harness 路线
+    description: 以 AI Elements + XYFlow 作为外层画布首选投影候选，以 Workflow SDK 作为耐久执行候选，以 Eve 和 Pi 作为未来 Agent Harness 主候选与对照候选；AI SDK 只承担模型与流式交互适配，Muses 保有文档、命令、资产、来源与策略权威状态。
+    docPath: internal/平台技术栈与AgentHarness路线.md
+    category: architecture
+    proposedBy: product-owner
+    context: Muses 需要同时达到 Lovart/Codia 式沉浸画布和 Codex 级自主 Agent。AI Elements 的 Canvas 已基于 XYFlow，Workflow SDK 解决耐久步骤但不拥有可视化探索图；传统 AI/Chat SDK 也不足以提供上下文压缩、恢复、沙箱、审批与多 Agent 调度。
+    impactOfNoAction: 项目可能重复实现成熟开源能力，或把 UI 图、耐久执行状态、Agent 会话与 Muses 权威文档混为一体，导致供应商锁定、迁移困难和长期能力上限。
+    expectedOutcome: 复用 Vercel 开放生态加速外层画布、耐久执行和 Agent 构建，同时通过 Muses 自有协议保持技术可替换性；画布和 Agent 候选都由统一 Spike 与硬门决定。
+    boundary: 本决策只确认分层、候选优先级和依赖方向；不把 AI Elements/XYFlow、Workflow SDK、Eve、Pi、Konva、Fabric 或 Pixi 冻结为最终实现，不提前进入 Agent 开发，也不让第三方 SDK 类型进入权威 Schema。
+    status: approved
+    decisionSummary: 批准以 Muses 自有领域内核为中心，分层使用 AI Elements/XYFlow、Workflow SDK、Eve/Pi 和 AI SDK。外层画布、耐久执行与 Agent Harness 通过独立 adapter 连接，任何第三方运行状态都不得成为 WorkflowDocument、DesignDocument、Command、Revision、Asset、Job 或 Provenance 的权威来源。
+    revisitCondition: 若统一 Spike 证明 AI Elements/XYFlow 无法满足目标规模或专业交互，Workflow SDK 无法满足自托管与可观测要求，或 Eve/Pi 无法在 Muses 策略、沙箱和操作端口边界下运行，则替换对应 adapter，不改变领域内核。
+    createdAt: 2026-07-24T20:56:54.135Z
+    decidedAt: 2026-07-24T20:57:04.868Z
+  - id: decision-4
+    name: 采用双模式同源画布并优先交付专业模式
+    description: Muses 使用同一 WorkflowDocument 提供创作模式与专业模式两种无分叉投影；专业模式作为完整无损视图先行，画布瞬时交互状态与领域权威状态分离。
+    docPath: null
+    category: architecture
+    proposedBy: codex-main
+    context: 当前画布 Spike 已证明领域命令闭环，但节点逻辑过度暴露内部结构、变量与结果节点抽象难懂，并因缺少实时节点变化适配产生明显拖动卡顿。
+    impactOfNoAction: 继续堆节点会冻结错误用户心智、恶化交互性能，并导致未来常规模式与专业模式形成两套不兼容文档。
+    expectedOutcome: 专业模式达到 Coze 级节点逻辑、变量选择与运行调试体验；创作模式未来可在同一文档上隐藏复杂度；拖动过程保持实时，结束时仅提交一次领域命令。
+    boundary: 当前只重构工作流画布投影、交互状态和首批专业节点；不接入 Workflow SDK 耐久运行时、不开发 Agent、不冻结 image-result 或 selector 的当前 UI 形态。
+    status: approved
+    decisionSummary: 用户检查后确认当前画布抽象且难用，并要求推进双模式与 Coze 式专业模式落地。领域文档保持同源，专业模式先验证完整语义，创作模式后续作为简化投影；实时交互状态不进入领域文档。
+    revisitCondition: 只有用户研究或性能证据证明同源投影无法覆盖两类体验时，才重新评估文档分层，不允许先复制两套权威状态。
+    createdAt: 2026-07-26T14:29:36.842Z
+    decidedAt: 2026-07-26T14:29:46.869Z
+  - id: decision-5
+    name: 采用用户成果拉动、缺口补齐的交付顺序
+    description: 每个阶段先定义并运行用户可见成果，再依据真实阻塞补齐 DSL、界面、能力和基础设施；首个价值 Gate 是在专业模式中以用户友好方式完成真实生图，随后用真实 PPT 任务扩展能力边界。
+    docPath: internal/用户成果驱动交付计划.md
+    category: change
+    proposedBy: product-owner
+    context: 当前工程已经证明多项画布与耐久运行语义，但产品负责人仍无法自然生成一张真实图片，说明技术任务顺序没有持续对齐用户获得感。
+    impactOfNoAction: 项目会继续按组件清单堆叠发布、恢复、画布和文档能力，在缺少用户结果证据时冻结过度或错误的抽象。
+    expectedOutcome: 每轮都有可观察的用户结果、明确缺口和最小修复；首图闭环通过后，PPT 真实任务只拉动其实际需要的新节点和内核能力。
+    boundary: 保留工作流原生画布、专业模式先行、同源 DSL 和既有 Runtime 证据；不立即切换创作模式，不删除已验证内核，也不预先冻结图像供应商、PPT 页面模型、Agent 或导出路线。
+    status: approved
+    decisionSummary: 以用户可见成果作为每个阶段的入口和退出门，先让专业模式完成用户友好的真实首图，再由 PPT 等真实场景暴露并拉动缺口；技术内核继续保持稳定边界，但不再按组件清单串行完成。
+    revisitCondition: 若连续真实任务证明成果 Gate 无法暴露关键平台风险，或只做最小缺口导致不可接受的数据、安全、可靠性或迁移债务，再调整 Gate 粒度，但不回到无用户证据的组件堆叠。
+    createdAt: 2026-07-27T19:12:00.906Z
+    decidedAt: 2026-07-27T19:12:08.394Z
+  - id: site-admin-muses
+    name: 扩展 Site Admin 为隔离的 Muses 平台控制面
+    description: 复用 OWorker Site Admin 的认证、布局和审计基础，新增模型目录、能力规格、价格、路由与用量管理，同时保持站点运营与产品控制面分组隔离。
+    docPath: internal/模型能力目录与平台控制面.md
+    category: architecture
+    proposedBy: product-owner
+    context: 生图节点已暴露模型规格和价格硬编码；LLM、图像、视频、音乐等能力需要统一、版本化、可审计的管理入口。
+    impactOfNoAction: 模型规格继续散落在节点 UI 和供应商适配器中，无法安全新增模型、调整价格、灰度或追踪成本。
+    expectedOutcome: Studio 只引用稳定 modelRef 并从发布的能力目录渲染配置；平台管理员在受控后台管理模型供应、能力和价格。
+    boundary: 只建设服务于 Muses 创作能力的模型控制面；不建设通用 CRM、任意插件市场或 Coze 式通用 AI 应用后台。
+    status: approved
+    decisionSummary: 产品负责人确认 Muses 需要 AI 工作流平台的创作基础能力与统一模型控制面；复用现有 Admin 能降低重复建设，但必须将站点运营与产品配置分组，并保持版本、审计和供应商适配边界。
+    revisitCondition: 当模型控制面需要独立扩缩容、安全域或团队所有权时，再评估拆分独立服务。
+    createdAt: 2026-07-27T21:22:32.642Z
+    decidedAt: 2026-07-27T21:22:40.415Z
+  - id: gate-1-1
+    name: 在 Gate 1.1 建立认证工作区与积分结算硬边界
+    description: Studio 与其 API 必须登录；每个资源归属受权工作区；付费模型运行通过不可变积分账本执行额度检查、预留、结算和释放。
+    docPath: internal/用户工作区与积分计费边界.md
+    category: architecture
+    proposedBy: product-owner
+    context: 当前 Studio 匿名可用且工作区标识硬编码，模型调用已经产生真实费用；继续扩展模型和资产会放大所有权、滥用与计费技术债。
+    impactOfNoAction: 无法可靠判断谁拥有工作流和资产，无法防止匿名消耗生产凭证，也无法把模型价格、实际用量与用户余额闭环。
+    expectedOutcome: 登录用户进入自己的工作区，所有 Studio API 服务端鉴权；付费运行在提交前检查并预留积分，结束后按版本化价格和实际用量结算且可审计。
+    boundary: 本 Gate 建立身份、个人工作区、积分账户与运行结算内核；具体积分商品、促销、退款和企业套餐由后续商业验证决定。
+    status: approved
+    decisionSummary: 产品负责人明确要求现在偿还 Studio 匿名访问与计费不可连接的技术债；真实模型凭证已接入，因此认证、资源所有权和积分预留/结算是首图成果的组成部分。
+    revisitCondition: 当团队工作区、企业合同或按法币直接计费成为已验证需求时，扩展角色、发票和价格策略，不改变不可变账本与运行结算原则。
+    createdAt: 2026-07-27T21:22:50.754Z
+    decidedAt: 2026-07-27T21:22:58.633Z

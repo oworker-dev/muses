@@ -21,6 +21,7 @@ Keep these boundaries stable:
 - runtime and delivery guidance lives under `ops/`
 - product-specific modules should define their workflow, data model, routes, contracts, and verification path
 - provider or ecosystem changes should be documented through provider README files, environment examples, and tests
+- any workflow node addition, rename, split, merge, deprecation, or input/output semantic change must update `docs/internal/专业模式节点产品目录.md` in the same change, together with the versioned DSL, runtime adapter, both locale catalogs, UI projection, templates, and verification required by that catalog
 
 <!-- APCC:BEGIN -->
 ## APCC

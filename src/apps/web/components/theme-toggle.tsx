@@ -2,6 +2,7 @@
 
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,7 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export function ThemeToggle() {
+export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+  const t = useTranslations("Account.settings")
   const { theme, setTheme } = useTheme()
   const selectedTheme = theme || "system"
   const TriggerIcon =
@@ -28,9 +30,9 @@ export function ThemeToggle() {
         <Button
           type="button"
           variant="outline"
-          size="icon-lg"
-          className="rounded-full"
-          aria-label="Change color theme"
+          size={compact ? "icon" : "icon-lg"}
+          className={compact ? "rounded-lg" : "rounded-full"}
+          aria-label={t("themeLabel")}
         >
           <TriggerIcon />
         </Button>
@@ -39,15 +41,15 @@ export function ThemeToggle() {
         <DropdownMenuRadioGroup value={selectedTheme} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="system">
             <MonitorIcon />
-            System
+            {t("themeSystem")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="light">
             <SunIcon />
-            Light
+            {t("themeLight")}
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark">
             <MoonIcon />
-            Dark
+            {t("themeDark")}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>

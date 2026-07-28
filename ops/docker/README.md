@@ -29,6 +29,23 @@ The stack uses:
 - `src/apps/worker` for BullMQ background execution.
 - `src/apps/web` for the Next.js web app, auth UI, account console, and admin console.
 
+The Web container also hosts the Muses durable Workflow SDK boundary. It uses
+`@workflow/world-postgres` against the same PostgreSQL database with an isolated
+schema and `muses_` job prefix. `instrumentation.ts` starts the long-lived World
+worker, and `docker:start` runs the idempotent Workflow schema bootstrap before
+starting Next.js.
+
+Required self-hosted settings:
+
+```bash
+WORKFLOW_TARGET_WORLD=@workflow/world-postgres
+WORKFLOW_POSTGRES_URL=postgresql://user:password@db:5432/database
+WORKFLOW_POSTGRES_JOB_PREFIX=muses_
+```
+
+Postgres World requires a long-running process and must not be used in a
+serverless deployment. Vercel deployments use Vercel World instead.
+
 Run `pnpm run smoke` after the stack is healthy to verify the API and default integrations from the host.
 
 Maintenance commands:
