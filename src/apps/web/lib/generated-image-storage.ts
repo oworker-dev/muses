@@ -8,6 +8,8 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { createHash } from "node:crypto"
 
+import { recordGeneratedImageAsset } from "@/lib/generated-asset-store"
+
 let bucketReady = false
 
 export async function storeGeneratedImage(input: {
@@ -18,6 +20,12 @@ export async function storeGeneratedImage(input: {
   index: number
   bytes: Uint8Array
   mimeType: "image/png" | "image/jpeg" | "image/webp"
+  width: number
+  height: number
+  prompt: string
+  provider: string
+  modelRef: string
+  createdAt: string
 }) {
   const config = getStorageConfig()
   await ensureBucket(config)
@@ -53,6 +61,24 @@ export async function storeGeneratedImage(input: {
     })
   )
 
+  await recordGeneratedImageAsset({
+    id: assetId,
+    workspaceId: input.workspaceId,
+    workflowRunId: input.runId,
+    nodeId: input.nodeId,
+    stepId: input.stepId,
+    assetIndex: input.index,
+    objectKey: key,
+    mimeType: input.mimeType,
+    byteSize: input.bytes.byteLength.toString(),
+    width: input.width,
+    height: input.height,
+    prompt: input.prompt,
+    provider: input.provider,
+    modelRef: input.modelRef,
+    createdAt: input.createdAt,
+  })
+
   const publicClient = createS3Client(config.publicEndpoint, config)
   const url = await getSignedUrl(
     publicClient,
@@ -64,16 +90,12 @@ export async function storeGeneratedImage(input: {
 }
 
 export async function readGeneratedImage(input: {
-  workspaceId: string
-  runId: string
-  assetId: string
+  objectKey: string
   mimeType: "image/png" | "image/jpeg" | "image/webp"
 }) {
   const config = getStorageConfig()
-  const extension = mimeExtension(input.mimeType)
-  const key = `generated/${input.workspaceId}/${input.runId}/${input.assetId}.${extension}`
   const object = await createS3Client(config.endpoint, config).send(
-    new GetObjectCommand({ Bucket: config.bucket, Key: key })
+    new GetObjectCommand({ Bucket: config.bucket, Key: input.objectKey })
   )
   if (!object.Body) {
     throw new Error("Generated image object has no body.")

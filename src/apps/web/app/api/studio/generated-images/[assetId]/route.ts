@@ -1,11 +1,9 @@
-import { getRun } from "workflow/api"
-
 import type { WorkflowRuntimeImageAsset } from "@muses/domain"
 
 import { authorizeWorkflowRun } from "@/lib/credit-ledger"
+import { getGeneratedImageAsset } from "@/lib/generated-asset-store"
 import { readGeneratedImage } from "@/lib/generated-image-storage"
 import { requireStudioApiAccess } from "@/lib/studio-access"
-import type { WorkflowDefinitionInterpreterResult } from "@/workflows/workflow-definition-interpreter"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -36,27 +34,17 @@ export async function GET(
   }
 
   try {
-    const run = getRun<WorkflowDefinitionInterpreterResult>(runId)
-    if (!(await run.exists) || (await run.status) !== "completed") {
-      return imageNotFoundResponse()
-    }
-    const result = await run.returnValue
-    if (result.definition.workspaceId !== workspaceId) {
-      return imageNotFoundResponse()
-    }
-    const asset = findImageAsset(result.outputs, assetId)
-    if (
-      !asset ||
-      asset.source.runId !== runId ||
-      asset.source.workspaceId !== workspaceId
-    ) {
+    const asset = await getGeneratedImageAsset({
+      workspaceId,
+      workflowRunId: runId,
+      assetId,
+    })
+    if (!asset) {
       return imageNotFoundResponse()
     }
 
     const object = await readGeneratedImage({
-      workspaceId,
-      runId,
-      assetId,
+      objectKey: asset.objectKey,
       mimeType: asset.mimeType,
     })
     return new Response(Uint8Array.from(object.bytes).buffer, {
@@ -70,18 +58,6 @@ export async function GET(
   } catch {
     return imageNotFoundResponse()
   }
-}
-
-function findImageAsset(
-  outputs: WorkflowDefinitionInterpreterResult["outputs"],
-  assetId: string
-): WorkflowRuntimeImageAsset | undefined {
-  for (const value of Object.values(outputs)) {
-    if (value.valueType !== "image") continue
-    const asset = value.assets?.find((candidate) => candidate.id === assetId)
-    if (asset) return asset
-  }
-  return undefined
 }
 
 function imageNotFoundResponse() {

@@ -98,16 +98,13 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   });
   const generatedImage = panel.locator("figure img");
   await expect(generatedImage).toBeVisible();
-  const runId = await page.evaluate(
-    (currentWorkspaceId) => {
-      const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
-      const key = Object.keys(window.localStorage).find((candidate) =>
-        candidate.startsWith(prefix),
-      );
-      return key ? window.localStorage.getItem(key) : null;
-    },
-    workspaceId,
-  );
+  const runId = await page.evaluate((currentWorkspaceId) => {
+    const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
+    const key = Object.keys(window.localStorage).find((candidate) =>
+      candidate.startsWith(prefix),
+    );
+    return key ? window.localStorage.getItem(key) : null;
+  }, workspaceId);
   expect(runId).toBeTruthy();
   const runResponse = await page.request.get(
     `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${runId}`,
@@ -115,6 +112,9 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   expect(runResponse.ok()).toBeTruthy();
   const runProjection = (await runResponse.json()) as {
     run: {
+      plan?: {
+        steps: Array<{ id: string; status: string }>;
+      };
       context: {
         messages: Array<{
           role: string;
@@ -136,6 +136,12 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   };
   const generatedAssetId = imageToolOutput.assets?.[0]?.id;
   expect(generatedAssetId).toMatch(/^image_/);
+  expect(runProjection.run.plan?.steps).toEqual([
+    expect.objectContaining({ id: "understand-request", status: "completed" }),
+    expect.objectContaining({ id: "generate-image", status: "completed" }),
+    expect.objectContaining({ id: "place-result", status: "completed" }),
+  ]);
+  await expect(page.getByTestId("studio-agent-plan")).toBeVisible();
   await expect(generatedImage).toHaveAttribute(
     "src",
     new RegExp(generatedAssetId!),
@@ -147,12 +153,50 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   expect(gatewayResponse.ok()).toBeTruthy();
   const gateway = (await gatewayResponse.json()) as {
     creativeCanvas: {
-      items: Array<{ kind: string; refId: string }>;
+      revision: number;
+      items: Array<{
+        id: string;
+        kind: string;
+        refId: string;
+        position: { x: number; y: number };
+      }>;
     };
   };
   expect(gateway.creativeCanvas.items).toContainEqual(
     expect.objectContaining({ kind: "asset", refId: generatedAssetId }),
   );
+  const canvasItem = gateway.creativeCanvas.items.find(
+    ({ refId }) => refId === generatedAssetId,
+  );
+  expect(canvasItem).toBeTruthy();
+  const creativeItem = page.getByTestId(
+    `creative-canvas-item-${canvasItem!.id}`,
+  );
+  await expect(creativeItem).toBeVisible();
+  await expect(creativeItem.locator("img")).toHaveAttribute(
+    "src",
+    new RegExp(generatedAssetId!),
+  );
+
+  const itemBox = await creativeItem.boundingBox();
+  expect(itemBox).not.toBeNull();
+  await page.mouse.move(itemBox!.x + itemBox!.width - 24, itemBox!.y + 24);
+  await page.mouse.down();
+  await page.mouse.move(itemBox!.x + itemBox!.width + 72, itemBox!.y + 72, {
+    steps: 4,
+  });
+  await page.mouse.up();
+  await expect
+    .poll(async () => {
+      const response = await page.request.get(
+        `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+      );
+      const current = (await response.json()) as typeof gateway;
+      return current.creativeCanvas.items.find(
+        ({ id }) => id === canvasItem!.id,
+      )?.position;
+    })
+    .not.toEqual(canvasItem!.position);
 
   await page.reload();
   await expect(page.getByTestId("studio-agent-panel")).toContainText(
@@ -160,6 +204,9 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   );
   await expect(
     page.getByTestId("studio-agent-panel").locator("figure img"),
+  ).toBeVisible();
+  await expect(
+    page.getByTestId(`creative-canvas-item-${canvasItem!.id}`),
   ).toBeVisible();
 });
 
@@ -346,7 +393,7 @@ test("Studio consumes a published versioned image model catalog", async ({
   });
   expect(catalog.offerings[0]).not.toHaveProperty("providerModelId");
 
-  await page.goto("/studio");
+  await page.goto("/studio?mode=professional");
   await page.getByTestId("workflow-node-image-generator-1").click();
   await expect(page.getByLabel("Model").locator("option")).toHaveCount(2);
   await expectPublishedCatalogVersionsAreImmutable();
@@ -512,7 +559,7 @@ test("the default professional workflow produces and restores one image result",
     });
   });
 
-  await page.goto("/studio");
+  await page.goto("/studio?mode=professional");
   await expect(page.getByTestId("workflow-node-start-1")).toBeVisible();
   await expect(
     page.getByTestId("workflow-node-image-generator-1"),
@@ -1008,7 +1055,7 @@ test("Muses waits and resumes a durable server interpreter while keeping the loc
 
   const firstResult = page
     .locator('[data-testid^="workflow-result-image-result-"]')
-    .first();
+    .nth(1);
   await firstResult.click();
   await expect(
     page.getByText(/Direction selected and published/i),
@@ -1023,7 +1070,7 @@ test("Muses waits and resumes a durable server interpreter while keeping the loc
     page.getByRole("heading", { name: "Launch composition" }),
   ).toBeVisible();
 
-  const headline = page.locator("textarea").first();
+  const headline = page.getByRole("textbox", { name: "headline" });
   await headline.fill("Built in public.");
   await page.getByRole("button", { name: "Back to workflow" }).click();
   await expect(page.getByTestId("workflow-node-design-1")).toContainText(
@@ -1663,7 +1710,7 @@ test("professional canvas keeps a node under the pointer while dragging", async 
 test("insufficient credits reject a real image run before provider execution", async ({
   page,
 }) => {
-  await page.goto("/studio");
+  await page.goto("/studio?mode=professional");
   await expect(
     page.getByTestId("workflow-node-image-generator-1"),
   ).toBeVisible();

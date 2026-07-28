@@ -2,7 +2,7 @@
   "schemaVersion": "1.0",
   "recordedAt": "2026-07-29",
   "gate": "a7-single-agent-image-loop",
-  "engineeringStatus": "verified-minimum-loop",
+  "engineeringStatus": "verified-creative-projection",
   "environment": {
     "studio": "http://127.0.0.1:4730/studio",
     "agentRuntime": "muses-agent-core",
@@ -11,9 +11,9 @@
     "assetStore": "s3-compatible-minio"
   },
   "realRun": {
-    "runId": "arun_6c7475d82a8d170db36b24775889adc2",
-    "driverRunId": "wrun_01KYNCEKW7G0V3B2C8HHP7EM13",
-    "imageWorkflowRunId": "wrun_01KYNCEV77N5HVEYBBQKW11GAW",
+    "runId": "arun_bfc91961a02854e28caa7bf26ccc2394",
+    "driverRunId": "wrun_01KYNEQNKVD5B9F79GFHBKGJ94",
+    "imageWorkflowRunId": "wrun_01KYNEQZJ4P488DP6BH59AQ7KT",
     "status": "completed",
     "revision": 6,
     "driverStatus": "completed",
@@ -21,29 +21,38 @@
     "turns": 2,
     "modelCalls": 2,
     "toolCalls": 1,
-    "inputTokens": 2271,
-    "outputTokens": 289,
-    "eventCount": 14,
+    "inputTokens": 2266,
+    "outputTokens": 233,
+    "eventCount": 16,
+    "executionPlan": {
+      "revision": 1,
+      "steps": 3,
+      "completedSteps": 3,
+      "assetEvidenceRefs": true
+    },
     "asset": {
-      "id": "image_7c75721e449544d0037d1140",
+      "id": "image_84351a0779bf92158820a092",
       "mimeType": "image/png",
       "width": 1024,
       "height": 1536
     },
     "creativeCanvas": {
-      "revision": 1,
+      "revision": 2,
       "itemKind": "asset",
       "itemRefMatchesAsset": true,
       "itemPosition": {
-        "x": 120,
-        "y": 120
+        "x": 193.67441860465112,
+        "y": 156.8372093023256
       },
       "itemSize": {
         "width": 320,
         "height": 480
-      }
+      },
+      "visibleProjection": true,
+      "dragPersisted": true
     },
-    "restoredAfterRefresh": true
+    "restoredAfterRefresh": true,
+    "assetAuthority": "muses-generated-asset"
   },
   "verification": {
     "domainTests": {
@@ -59,18 +68,32 @@
       "failed": 0
     },
     "repositoryTypecheck": "passed",
-    "workflowFilesScanned": 185,
+    "workflowFilesScanned": 189,
     "workflowEntries": 2,
     "workflowSerdeIssues": 0,
+    "targetedLint": "passed",
+    "fullWebLintBaseline": {
+      "status": "failed-known-baseline",
+      "errors": 7,
+      "warnings": 4
+    },
+    "webProductionBuild": "passed",
+    "apccDoctor": "passed",
     "playwrightRealImage": {
       "passed": 1,
       "failed": 0,
-      "durationSeconds": 43.9,
+      "durationSeconds": 38,
       "origin": "127.0.0.1:4730"
+    },
+    "visualInspection": {
+      "desktopViewport": "1440x960",
+      "mobileViewport": "390x844",
+      "pageOverflow": false,
+      "assetNaturalSize": "1024x1536"
     }
   },
   "limitations": {
-    "creativeCanvasVisualProjection": false,
+    "creativeCanvasVisualProjection": true,
     "editableExecutionPlan": false,
     "steeringBrowserEvidence": false,
     "approvalUi": false,

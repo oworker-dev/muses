@@ -937,8 +937,8 @@ items:
     statusChangedAt: 2026-07-28T17:09:26.500Z
   - id: project-agent-plan-to-creative-canvas
     name: 投影 Agent 计划到创作画布
-    summary: 创作模式隐藏 Input/Output，以 AgentRun、资产、结果、来源和可展开执行计划为中心。
-    status: pending
+    summary: 已交付默认创作模式、可移动 Asset 投影、三步持久 ExecutionPlan、Muses 生成 Asset 权威记录与 Workflow World 生命周期解耦；真实 Run、拖动刷新、桌面移动视觉、Domain 39/39、Agent Core 9/9、Harness 3/3、类型检查、定向 lint、Workflow validate、生产构建和 APCC doctor 均有证据。
+    status: done
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
     countedForProgress: true
@@ -946,5 +946,18 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T17:09:26.727Z
-    updatedAt: 2026-07-28T17:09:26.727Z
-    statusChangedAt: 2026-07-28T17:09:26.727Z
+    updatedAt: 2026-07-28T23:07:30.533Z
+    statusChangedAt: 2026-07-28T23:07:30.533Z
+  - id: verify-agent-steering-loop
+    name: 验证 Agent steering 与 follow-up 创作链路
+    summary: 从已完成 AgentRun 发起自然语言修改，验证新的计划修订、真实图像结果、CreativeCanvas 增量放置、刷新恢复、权限与费用连续性；只补用户链路暴露的缺口。
+    status: pending
+    planRef: agent-canvas-loop
+    parentTaskId: build-single-agent-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-28T23:07:30.752Z
+    updatedAt: 2026-07-28T23:07:30.752Z
+    statusChangedAt: 2026-07-28T23:07:30.752Z

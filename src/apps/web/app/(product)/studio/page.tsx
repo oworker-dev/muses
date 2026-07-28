@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 
 import { MusesStudio } from "@/components/studio/muses-studio"
 import { getServerSession } from "@/lib/auth"
+import { getCreativeCanvasProjection } from "@/lib/creative-canvas-projection"
 import {
   ensurePersonalStudioWorkspace,
   serializeStudioContext,
@@ -37,9 +38,13 @@ export default async function StudioPage() {
     workspaceId: context.workspace.id,
     userId: session.user.id,
   })
+  const creativeCanvasProjection = await getCreativeCanvasProjection(
+    operationGatewaySnapshot
+  )
   return (
     <MusesStudio
       initialContext={context}
+      initialCreativeCanvasProjection={creativeCanvasProjection}
       initialModelCatalog={modelCatalog}
       initialOperationGatewaySnapshot={operationGatewaySnapshot}
       user={{ name: session.user.name, email: session.user.email }}

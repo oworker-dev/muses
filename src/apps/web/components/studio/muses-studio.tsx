@@ -26,6 +26,7 @@ import {
   MapIcon,
   MinusIcon,
   MousePointer2Icon,
+  PaletteIcon,
   PlusIcon,
   PlayIcon,
   RefreshCwIcon,
@@ -38,6 +39,7 @@ import {
   Trash2Icon,
   UploadIcon,
   UserCircleIcon,
+  WorkflowIcon,
   XIcon,
 } from "lucide-react"
 import dynamic from "next/dynamic"
@@ -80,7 +82,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isAppLocale } from "@/i18n/config"
 import { cn } from "@/lib/utils"
+import type { CreativeCanvasProjection } from "@/lib/creative-canvas-projection"
 
+import { CreativeCanvasView } from "./creative-canvas"
 import {
   StudioActionsProvider,
   type NodePanelRequest,
@@ -100,6 +104,7 @@ const STORAGE_KEY = "muses.platform-core-alpha.workspace"
 const LAST_RUN_STORAGE_KEY = "muses.platform-core-alpha.last-durable-run"
 
 type CanvasInputMode = "mouse" | "trackpad"
+type StudioMode = "creative" | "professional"
 
 type StudioContextProjection = {
   workspace: {
@@ -289,11 +294,13 @@ const paletteItems: Array<{
 
 export function MusesStudio({
   initialContext,
+  initialCreativeCanvasProjection,
   initialModelCatalog,
   initialOperationGatewaySnapshot,
   user,
 }: {
   initialContext: StudioContextProjection
+  initialCreativeCanvasProjection: CreativeCanvasProjection
   initialModelCatalog: ModelCatalogProjection
   initialOperationGatewaySnapshot: OperationGatewaySnapshot
   user: { name?: string | null; email: string }
@@ -301,6 +308,7 @@ export function MusesStudio({
   const t = useTranslations("Studio")
   const searchParams = useSearchParams()
   const harnessTemplate = searchParams.get("template") === "harness"
+  const requestedMode = searchParams.get("mode")
   const createWorkspace = useCallback(() => {
     const initial = harnessTemplate
       ? createHarnessWorkspace()
@@ -344,6 +352,13 @@ export function MusesStudio({
   const locale = isAppLocale(localeValue) ? localeValue : "en"
   const [workspace, setWorkspace] =
     useState<MusesWorkspaceDraft>(createWorkspace)
+  const [studioMode, setStudioMode] = useState<StudioMode>(() =>
+    harnessTemplate || requestedMode === "professional"
+      ? "professional"
+      : "creative"
+  )
+  const [creativeCanvasProjection, setCreativeCanvasProjection] =
+    useState<CreativeCanvasProjection>(initialCreativeCanvasProjection)
   const [hydrated, setHydrated] = useState(false)
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
     "image-generator-1"
@@ -467,6 +482,75 @@ export function MusesStudio({
     if (!response.ok) return
     setStudioContext((await response.json()) as StudioContextProjection)
   }, [workspace.id])
+
+  const refreshCreativeCanvas = useCallback(async () => {
+    const query = new URLSearchParams({
+      workspaceId: initialContext.workspace.id,
+      projectId: initialOperationGatewaySnapshot.project.id,
+    })
+    const response = await fetch(`/api/studio/creative-canvas?${query}`)
+    if (!response.ok) return
+    setCreativeCanvasProjection(
+      (await response.json()) as CreativeCanvasProjection
+    )
+  }, [initialContext.workspace.id, initialOperationGatewaySnapshot.project.id])
+
+  const moveCreativeItem = useCallback(
+    async (itemId: string, position: { x: number; y: number }) => {
+      const canvas = creativeCanvasProjection.canvas
+      const item = canvas.items.find((candidate) => candidate.id === itemId)
+      if (
+        !item ||
+        (item.position.x === position.x && item.position.y === position.y)
+      ) {
+        return
+      }
+      setCreativeCanvasProjection((current) => ({
+        ...current,
+        canvas: {
+          ...current.canvas,
+          items: current.canvas.items.map((candidate) =>
+            candidate.id === itemId ? { ...candidate, position } : candidate
+          ),
+        },
+      }))
+      const commandId = `command_${crypto.randomUUID().replaceAll("-", "")}`
+      try {
+        const response = await fetch("/api/studio/operation-gateway", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
+            commandId,
+            idempotencyKey: commandId,
+            workspaceId: canvas.workspaceId,
+            projectId: canvas.projectId,
+            target: { type: "creative-canvas", id: canvas.canvasId },
+            expectedRevision: canvas.revision,
+            issuedAt: new Date().toISOString(),
+            payload: {
+              type: "creative.item.put",
+              item: { ...item, position },
+            },
+          }),
+        })
+        const result =
+          (await response.json()) as Partial<OperationCommandResponse>
+        if (!response.ok || !result.accepted || !result.snapshot) {
+          throw new Error("Creative canvas move was rejected.")
+        }
+        setCreativeCanvasProjection((current) => ({
+          ...current,
+          canvas: result.snapshot!.creativeCanvas,
+        }))
+        setNotice(t("status.saved"))
+      } catch {
+        await refreshCreativeCanvas()
+        setNotice(t("status.saveFailed"))
+      }
+    },
+    [creativeCanvasProjection, refreshCreativeCanvas, t]
+  )
 
   const enqueueGatewayPayloads = useCallback(
     (definitionId: string, payloads: OperationCommandEnvelope["payload"][]) => {
@@ -613,7 +697,10 @@ export function MusesStudio({
   }, [lastRunId, refreshStudioContext, t, workspace.id])
 
   const dispatch = useCallback(
-    (payload: MusesCommandPayload | MusesCommandPayload[]) => {
+    (
+      payload: MusesCommandPayload | MusesCommandPayload[],
+      successNotice?: string
+    ) => {
       const payloads = Array.isArray(payload) ? payload : [payload]
       if (payloads.length === 0) return
       const definitionId = workspace.workflow.id
@@ -623,7 +710,9 @@ export function MusesStudio({
           setNotice(result.message)
           return current
         }
-        setNotice(t("status.applied", { count: payloads.length }))
+        setNotice(
+          successNotice || t("status.applied", { count: payloads.length })
+        )
         return result.workspace
       })
       enqueueGatewayPayloads(
@@ -846,20 +935,22 @@ export function MusesStudio({
         setNotice(t("status.selectionIncomplete"))
         return
       }
-      dispatch([
-        {
-          type: "workflow.result.select",
-          selectorNodeId: selector.id,
-          resultNodeId,
-          designNodeId: designNode.id,
-        },
-        {
-          type: "design.background.set",
-          documentId: designNode.data.documentId,
-          assetId: resultNode.data.assetId,
-        },
-      ])
-      setNotice(t("status.directionSelected"))
+      dispatch(
+        [
+          {
+            type: "workflow.result.select",
+            selectorNodeId: selector.id,
+            resultNodeId,
+            designNodeId: designNode.id,
+          },
+          {
+            type: "design.background.set",
+            documentId: designNode.data.documentId,
+            assetId: resultNode.data.assetId,
+          },
+        ],
+        t("status.directionSelected")
+      )
     },
     [dispatch, t, workspace.workflow.nodes]
   )
@@ -1231,18 +1322,21 @@ export function MusesStudio({
     <StudioActionsProvider value={actions}>
       <main className="relative flex h-svh min-h-[640px] flex-col overflow-hidden bg-background text-foreground">
         <StudioHeader
+          creativeRevision={creativeCanvasProjection.canvas.revision}
           workspace={workspace}
           studioContext={studioContext}
           user={user}
           hydrated={hydrated}
           locale={locale}
+          mode={studioMode}
+          onModeChange={setStudioMode}
           onExport={exportWorkspace}
           onReset={resetWorkspace}
         />
 
         <div className="flex min-h-0 flex-1">
           <section className="relative min-w-0 flex-1 bg-muted/20">
-            {paletteOpen ? (
+            {studioMode === "professional" && paletteOpen ? (
               <Palette
                 context={paletteContext}
                 sourceNode={
@@ -1259,14 +1353,16 @@ export function MusesStudio({
                 }}
               />
             ) : null}
-            <div
-              role="status"
-              className="pointer-events-none absolute top-3 left-1/2 z-20 flex max-w-[min(560px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 py-2 text-[10px] text-muted-foreground shadow-sm backdrop-blur"
-            >
-              <CircleDotIcon className="size-3 shrink-0 text-emerald-500" />
-              <span className="truncate">{notice}</span>
-            </div>
-            {durableRun ? (
+            {studioMode === "professional" ? (
+              <div
+                role="status"
+                className="pointer-events-none absolute top-3 left-1/2 z-20 flex max-w-[min(560px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 py-2 text-[10px] text-muted-foreground shadow-sm backdrop-blur"
+              >
+                <CircleDotIcon className="size-3 shrink-0 text-emerald-500" />
+                <span className="truncate">{notice}</span>
+              </div>
+            ) : null}
+            {studioMode === "professional" && durableRun ? (
               <DurableRunPanel
                 projection={durableRun}
                 resumingAssetId={resumingAssetId}
@@ -1280,81 +1376,96 @@ export function MusesStudio({
             <StudioAgentPanel
               workspaceId={initialContext.workspace.id}
               projectId={initialOperationGatewaySnapshot.project.id}
+              onCanvasChanged={refreshCreativeCanvas}
             />
-            <Canvas<MusesFlowNode>
-              nodes={canvasNodes}
-              edges={flowEdges}
-              nodeTypes={nodeTypes}
-              onConnect={onConnect}
-              onNodesChange={onCanvasNodesChange}
-              onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-              onPaneClick={() => setSelectedNodeId(null)}
-              onNodeDragStart={(_, node) => {
-                draggingNodeIds.current.add(node.id)
-                setSelectedNodeId(node.id)
-              }}
-              onNodeDragStop={(_, node) => {
-                draggingNodeIds.current.delete(node.id)
-                dispatch({
-                  type: "workflow.node.move",
-                  nodeId: node.id,
-                  position: node.position,
-                })
-              }}
-              onNodesDelete={onNodesDelete}
-              onEdgesDelete={onEdgesDelete}
-              defaultEdgeOptions={{ type: "smoothstep" }}
-              minZoom={0.2}
-              maxZoom={1.8}
-              proOptions={{ hideAttribution: false }}
-              fitView={false}
-              panOnDrag={canvasInputMode === "mouse"}
-              panOnScroll={canvasInputMode === "trackpad"}
-              selectionOnDrag={canvasInputMode === "trackpad"}
-              zoomOnScroll={canvasInputMode === "mouse"}
-              zoomOnPinch
-              selectionKeyCode="Shift"
-            >
-              <CanvasBootstrap enabled={hydrated} />
-              {miniMapVisible ? (
-                <MiniMap
-                  position="bottom-right"
-                  pannable
-                  zoomable
-                  nodeColor={(node) =>
-                    node.type === "design-document" ? "#fb7185" : "#8b5cf6"
-                  }
-                  maskColor="var(--muses-minimap-mask)"
-                  className="!right-3 !bottom-16 !m-0 !rounded-lg !border !border-border !bg-background !shadow-sm"
-                />
-              ) : null}
-              <ProfessionalToolbar
-                inputMode={canvasInputMode}
-                lastRunId={lastRunId}
-                miniMapVisible={miniMapVisible}
-                onAddNode={() => {
-                  setPaletteContext(null)
-                  setPaletteOpen((open) => !open)
-                }}
-                onInputModeChange={setCanvasInputMode}
-                onMiniMapToggle={() => setMiniMapVisible((visible) => !visible)}
-                onPublish={() => void publishWorkflow()}
-                publishing={publishing}
+            {studioMode === "creative" ? (
+              <CreativeCanvasView
+                key={`${creativeCanvasProjection.canvas.canvasId}:${creativeCanvasProjection.canvas.revision}`}
+                projection={creativeCanvasProjection}
+                onMoveItem={(itemId, position) =>
+                  void moveCreativeItem(itemId, position)
+                }
               />
-            </Canvas>
+            ) : (
+              <Canvas<MusesFlowNode>
+                nodes={canvasNodes}
+                edges={flowEdges}
+                nodeTypes={nodeTypes}
+                onConnect={onConnect}
+                onNodesChange={onCanvasNodesChange}
+                onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+                onPaneClick={() => setSelectedNodeId(null)}
+                onNodeDragStart={(_, node) => {
+                  draggingNodeIds.current.add(node.id)
+                  setSelectedNodeId(node.id)
+                }}
+                onNodeDragStop={(_, node) => {
+                  draggingNodeIds.current.delete(node.id)
+                  dispatch({
+                    type: "workflow.node.move",
+                    nodeId: node.id,
+                    position: node.position,
+                  })
+                }}
+                onNodesDelete={onNodesDelete}
+                onEdgesDelete={onEdgesDelete}
+                defaultEdgeOptions={{ type: "smoothstep" }}
+                minZoom={0.2}
+                maxZoom={1.8}
+                proOptions={{ hideAttribution: false }}
+                fitView={false}
+                panOnDrag={canvasInputMode === "mouse"}
+                panOnScroll={canvasInputMode === "trackpad"}
+                selectionOnDrag={canvasInputMode === "trackpad"}
+                zoomOnScroll={canvasInputMode === "mouse"}
+                zoomOnPinch
+                selectionKeyCode="Shift"
+              >
+                <CanvasBootstrap enabled={hydrated} />
+                {miniMapVisible ? (
+                  <MiniMap
+                    position="bottom-right"
+                    pannable
+                    zoomable
+                    nodeColor={(node) =>
+                      node.type === "design-document" ? "#fb7185" : "#8b5cf6"
+                    }
+                    maskColor="var(--muses-minimap-mask)"
+                    className="!right-3 !bottom-16 !m-0 !rounded-lg !border !border-border !bg-background !shadow-sm"
+                  />
+                ) : null}
+                <ProfessionalToolbar
+                  inputMode={canvasInputMode}
+                  lastRunId={lastRunId}
+                  miniMapVisible={miniMapVisible}
+                  onAddNode={() => {
+                    setPaletteContext(null)
+                    setPaletteOpen((open) => !open)
+                  }}
+                  onInputModeChange={setCanvasInputMode}
+                  onMiniMapToggle={() =>
+                    setMiniMapVisible((visible) => !visible)
+                  }
+                  onPublish={() => void publishWorkflow()}
+                  publishing={publishing}
+                />
+              </Canvas>
+            )}
           </section>
-          <Inspector
-            selectedNode={selectedNode}
-            workspace={workspace}
-            modelCatalog={initialModelCatalog}
-            dispatch={dispatch}
-            onBindVariable={bindVariable}
-            actions={actions}
-            onClose={() => setSelectedNodeId(null)}
-          />
+          {studioMode === "professional" ? (
+            <Inspector
+              selectedNode={selectedNode}
+              workspace={workspace}
+              modelCatalog={initialModelCatalog}
+              dispatch={dispatch}
+              onBindVariable={bindVariable}
+              actions={actions}
+              onClose={() => setSelectedNodeId(null)}
+            />
+          ) : null}
         </div>
 
-        {activeDocument ? (
+        {studioMode === "professional" && activeDocument ? (
           <DesignEditor
             assets={workspace.assets}
             document={activeDocument}
@@ -1393,19 +1504,25 @@ function CanvasBootstrap({ enabled }: { enabled: boolean }) {
 }
 
 function StudioHeader({
+  creativeRevision,
   workspace,
   studioContext,
   user,
   hydrated,
   locale,
+  mode,
+  onModeChange,
   onExport,
   onReset,
 }: {
+  creativeRevision: number
   workspace: MusesWorkspaceDraft
   studioContext: StudioContextProjection
   user: { name?: string | null; email: string }
   hydrated: boolean
   locale: "en" | "zh-CN"
+  mode: StudioMode
+  onModeChange: (mode: StudioMode) => void
   onExport: () => void
   onReset: () => void
 }) {
@@ -1428,26 +1545,43 @@ function StudioHeader({
             </span>
           </div>
           <p className="hidden text-[9px] text-muted-foreground sm:block">
-            {t("subtitle")}
+            {mode === "creative" ? t("modes.creativeSubtitle") : t("subtitle")}
           </p>
         </div>
       </div>
 
-      <div className="absolute left-1/2 hidden -translate-x-1/2 items-center rounded-lg bg-muted p-0.5 md:flex">
+      <div className="absolute left-1/2 flex -translate-x-1/2 items-center rounded-lg bg-muted p-0.5">
         <button
           type="button"
-          disabled
-          className="rounded-md px-3 py-1.5 text-[10px] font-medium text-muted-foreground opacity-55"
-          title={t("modes.creativeSoon")}
+          onClick={() => onModeChange("creative")}
+          className={cn(
+            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] font-medium",
+            mode === "creative"
+              ? "border border-border bg-background font-semibold shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          aria-current={mode === "creative" ? "page" : undefined}
+          aria-label={t("modes.creative")}
+          title={t("modes.creative")}
         >
-          {t("modes.creative")}
+          <PaletteIcon className="size-3.5" />
+          <span className="hidden lg:inline">{t("modes.creative")}</span>
         </button>
         <button
           type="button"
-          className="rounded-md border border-border bg-background px-3 py-1.5 text-[10px] font-semibold shadow-sm"
-          aria-current="page"
+          onClick={() => onModeChange("professional")}
+          className={cn(
+            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] font-medium",
+            mode === "professional"
+              ? "border border-border bg-background font-semibold shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+          aria-current={mode === "professional" ? "page" : undefined}
+          aria-label={t("modes.professional")}
+          title={t("modes.professional")}
         >
-          {t("modes.professional")}
+          <WorkflowIcon className="size-3.5" />
+          <span className="hidden lg:inline">{t("modes.professional")}</span>
         </button>
       </div>
 
@@ -1471,18 +1605,24 @@ function StudioHeader({
           </span>
         </span>
         <span className="hidden rounded-md bg-muted px-2 py-1 text-[9px] text-muted-foreground 2xl:inline">
-          r{workspace.workflow.revision}
+          {mode === "creative"
+            ? `c${creativeRevision}`
+            : `r${workspace.workflow.revision}`}
         </span>
-        <ToolbarButton
-          icon={RotateCcwIcon}
-          label={t("header.reset")}
-          onClick={onReset}
-        />
-        <ToolbarButton
-          icon={DownloadIcon}
-          label={t("header.export")}
-          onClick={onExport}
-        />
+        {mode === "professional" ? (
+          <>
+            <ToolbarButton
+              icon={RotateCcwIcon}
+              label={t("header.reset")}
+              onClick={onReset}
+            />
+            <ToolbarButton
+              icon={DownloadIcon}
+              label={t("header.export")}
+              onClick={onExport}
+            />
+          </>
+        ) : null}
         <ThemeToggle compact />
         <LanguageSwitcher compact locale={locale} />
         <Link

@@ -4,6 +4,7 @@ import {
   CheckIcon,
   CircleStopIcon,
   LoaderCircleIcon,
+  ListChecksIcon,
   SendIcon,
   SparklesIcon,
 } from "lucide-react"
@@ -44,9 +45,11 @@ const subscribeToHydration = () => () => undefined
 export function StudioAgentPanel({
   workspaceId,
   projectId,
+  onCanvasChanged,
 }: {
   workspaceId: string
   projectId: string
+  onCanvasChanged?: () => void | Promise<void>
 }) {
   const t = useTranslations("Studio.agent")
   const storageKey = `muses.agent.last-run.${workspaceId}.${projectId}`
@@ -69,9 +72,10 @@ export function StudioAgentPanel({
       if (!response.ok) throw new Error(result.message || t("requestFailed"))
       setRun(result.run)
       setEvents(result.events || [])
+      if (isTerminal(result.run.status)) void onCanvasChanged?.()
       return result.run
     },
-    [t, workspaceId]
+    [onCanvasChanged, t, workspaceId]
   )
 
   useEffect(() => {
@@ -166,7 +170,9 @@ export function StudioAgentPanel({
     () =>
       [...(run?.context.messages || [])]
         .reverse()
-        .find((message) => message.role === "assistant" && message.content.trim()),
+        .find(
+          (message) => message.role === "assistant" && message.content.trim()
+        ),
     [run]
   )
   const imageOutput = useMemo(
@@ -238,6 +244,50 @@ export function StudioAgentPanel({
             ))}
           </div>
 
+          {run.plan ? (
+            <details
+              className="mt-2.5 rounded-md border border-border bg-muted/20"
+              data-testid="studio-agent-plan"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-2.5 py-2 text-[9px] font-medium text-foreground">
+                <span className="flex items-center gap-1.5">
+                  <ListChecksIcon className="size-3.5 text-muted-foreground" />
+                  {t("plan")}
+                </span>
+                <span className="text-muted-foreground">
+                  {t("planProgress", {
+                    completed: run.plan.steps.filter(
+                      ({ status }) => status === "completed"
+                    ).length,
+                    total: run.plan.steps.length,
+                  })}
+                </span>
+              </summary>
+              <div className="border-t border-border px-2.5 py-2">
+                <p className="line-clamp-2 text-[9px] leading-4 text-muted-foreground">
+                  {run.plan.goal}
+                </p>
+                <ol className="mt-1.5 grid gap-1.5">
+                  {run.plan.steps.map((step) => (
+                    <li
+                      key={step.id}
+                      className="flex min-h-5 items-center gap-2 text-[9px] text-foreground"
+                    >
+                      {step.status === "completed" ? (
+                        <CheckIcon className="size-3 shrink-0 text-emerald-600" />
+                      ) : step.status === "in-progress" ? (
+                        <LoaderCircleIcon className="size-3 shrink-0 animate-spin" />
+                      ) : (
+                        <span className="size-3 shrink-0 rounded-full border border-border" />
+                      )}
+                      <span>{planStepLabel(step.id, step.title, t)}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </details>
+          ) : null}
+
           {imageOutput?.assets?.length ? (
             <div className="mt-3 grid gap-2">
               {imageOutput.assets.map((asset) => (
@@ -263,7 +313,7 @@ export function StudioAgentPanel({
           ) : null}
 
           {latestAssistant ? (
-            <p className="mt-3 whitespace-pre-wrap text-[10px] leading-4 text-foreground">
+            <p className="mt-3 text-[10px] leading-4 whitespace-pre-wrap text-foreground">
               {latestAssistant.content}
             </p>
           ) : null}
@@ -312,7 +362,9 @@ export function StudioAgentPanel({
           </button>
         </div>
         {error ? (
-          <p className="mt-1.5 text-[9px] leading-4 text-destructive">{error}</p>
+          <p className="mt-1.5 text-[9px] leading-4 text-destructive">
+            {error}
+          </p>
         ) : null}
       </form>
     </aside>
@@ -321,7 +373,8 @@ export function StudioAgentPanel({
 
 function findLatestImageOutput(messages: readonly AgentMessage[]) {
   for (const message of [...messages].reverse()) {
-    if (message.role !== "tool" || message.toolName !== "image.generate") continue
+    if (message.role !== "tool" || message.toolName !== "image.generate")
+      continue
     try {
       const output = JSON.parse(message.content) as ImageToolOutput
       if (Array.isArray(output.assets)) return output
@@ -332,19 +385,29 @@ function findLatestImageOutput(messages: readonly AgentMessage[]) {
   return null
 }
 
-function agentStages(run: AgentRunSnapshot | null, events: readonly AgentEvent[]) {
+function agentStages(
+  run: AgentRunSnapshot | null,
+  events: readonly AgentEvent[]
+) {
   const eventTypes = new Set(events.map(({ type }) => type))
   const imageRequested = events.some(
-    (event) => event.type === "tool.started" && event.data.toolName === "image.generate"
+    (event) =>
+      event.type === "tool.started" && event.data.toolName === "image.generate"
   )
   const imageCompleted = events.some(
-    (event) => event.type === "tool.completed" && event.data.toolName === "image.generate"
+    (event) =>
+      event.type === "tool.completed" &&
+      event.data.toolName === "image.generate"
   )
   const completed = run?.status === "completed"
   return [
     {
       key: "understand" as const,
-      state: eventTypes.has("model.completed") ? "done" : run ? "active" : "idle",
+      state: eventTypes.has("model.completed")
+        ? "done"
+        : run
+          ? "active"
+          : "idle",
     },
     {
       key: "create" as const,
@@ -365,6 +428,21 @@ function isSettled(status: AgentRunSnapshot["status"]) {
     status === "waiting-approval" ||
     status === "waiting-input"
   )
+}
+
+function isTerminal(status: AgentRunSnapshot["status"]) {
+  return status === "completed" || status === "failed" || status === "cancelled"
+}
+
+function planStepLabel(
+  id: string,
+  fallback: string,
+  t: ReturnType<typeof useTranslations<"Studio.agent">>
+) {
+  if (id === "understand-request") return t("planSteps.understand")
+  if (id === "generate-image") return t("planSteps.generate")
+  if (id === "place-result") return t("planSteps.place")
+  return fallback
 }
 
 function statusLabel(

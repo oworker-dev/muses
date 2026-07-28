@@ -146,6 +146,7 @@ export default function DesignEditor({
                   {element.id}
                 </span>
                 <textarea
+                  aria-label={element.id}
                   value={element.text}
                   onChange={(event) =>
                     onDispatch({

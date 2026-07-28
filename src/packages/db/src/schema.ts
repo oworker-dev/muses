@@ -2,6 +2,7 @@ import {
   bigint,
   boolean,
   date,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -341,6 +342,35 @@ export const musesWorkflowRun = pgTable(
     uniqueIndex("muses_workflow_run_workspace_idempotency_idx").on(
       table.workspaceId,
       table.idempotencyKey,
+    ),
+  ],
+);
+
+export const musesGeneratedAsset = pgTable(
+  "muses_generated_asset",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    workflowRunId: text("workflow_run_id").notNull(),
+    nodeId: text("node_id").notNull(),
+    stepId: text("step_id").notNull(),
+    assetIndex: integer("asset_index").notNull(),
+    objectKey: text("object_key").notNull(),
+    mimeType: text("mime_type").notNull(),
+    byteSize: bigint("byte_size", { mode: "bigint" }).notNull(),
+    width: integer("width").notNull(),
+    height: integer("height").notNull(),
+    prompt: text("prompt").notNull(),
+    provider: text("provider").notNull(),
+    modelRef: text("model_ref").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("muses_generated_asset_object_key_idx").on(table.objectKey),
+    index("muses_generated_asset_run_idx").on(
+      table.workspaceId,
+      table.workflowRunId,
+      table.createdAt,
     ),
   ],
 );

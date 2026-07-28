@@ -90,7 +90,9 @@ Muses 对象必须保持区分：
 
 现有执行适配已于 2026-07-27 从边界 Probe 推进为首批节点解释器：Next.js 服务端使用 `workflow@4.6.2`，自托管 Docker 使用 `@workflow/world-postgres@4.3.1`；当前浏览器 `WorkflowDocument` 在迁移期视为单定义专业编辑草稿，Muses 完成发布校验并编译独立 `WorkflowDefinition`，再由 SDK 创建可查询的耐久 `WorkflowRun`。后续必须把专业工作空间、定义身份和创作画布分离，Workflow SDK 不参与该产品对象迁移。
 
-`WorkflowDefinition 0.3.0-draft` 与 `WorkflowRuntimePort` 已冻结当前首图版本。默认图像路径已接真实 OpenAI Images Adapter；身份、积分和运行观测已经形成 Agent 可复用底座。Agent-first 产品对象、Node Type Registry、Operation Gateway、独立 Agent Core、Skill/MCP/沙盒端口与 Harness 对照已经完成；2026-07-29 的 A7 证据进一步证明单 Agent 可以复用这条路径生成真实图片并通过 Gateway 写入 `CreativeCanvas`。Workflow SDK 没有因此成为 Agent 或创作画布的权威状态。
+`WorkflowDefinition 0.3.0-draft` 与 `WorkflowRuntimePort` 已冻结当前首图版本。默认图像路径已接真实 OpenAI Images Adapter；身份、积分和运行观测已经形成 Agent 可复用底座。Agent-first 产品对象、Node Type Registry、Operation Gateway、独立 Agent Core、Skill/MCP/沙盒端口与 Harness 对照已经完成；2026-07-29 的 A7 证据进一步证明单 Agent 可以复用这条路径生成真实图片，通过 Gateway 写入并移动 `CreativeCanvas` Asset，并把最小 `ExecutionPlan` 持久化在 AgentRun 中。Workflow SDK 没有因此成为 Agent、创作画布或生成 Asset 的权威状态。
+
+本地自托管开发固定使用 `@workflow/world-postgres`，必须显式设置 `WORKFLOW_TARGET_WORLD` 与 `WORKFLOW_POSTGRES_URL`，不允许静默退回进程内 Local World。Workflow SDK 的事件日志是 Run、Step、Hook 和 Wait 的执行事实来源；Muses 自有 `muses_generated_asset` 保存用户资产身份、对象键、媒体元数据和来源，授权读取不依赖 SDK `returnValue`。这是执行耐久性与产品资产连续性的明确所有权边界。
 
 ## 5. 为什么 Agent 需要 Harness
 
@@ -211,7 +213,8 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 - 外层画布：AI Elements + XYFlow。
 - 耐久工作流：Workflow SDK。
-- Agent Runtime：Muses Agent Core headless 实现；PostgreSQL 保存权威 Run/Event，Workflow SDK 驱动可恢复 Node step。
+- Agent Runtime：Muses Agent Core headless 实现；Muses PostgreSQL 保存权威 Agent Run/Event，Workflow SDK Postgres World 驱动可恢复 Node step。
+- 生成 Asset：Muses PostgreSQL 保存 Asset 身份、对象键、元数据和来源，S3 兼容对象存储保存二进制；Workflow SDK 输出只作为执行结果，不作为 Asset 授权或生命周期权威。
 - 模型工具协议：AI SDK 7；内部点分工具名通过可逆别名映射到供应商安全名称。
 - 首批 Agent 工具：`canvas.inspect`、`canvas.item.put`、`image.generate`，写操作统一经过 Operation Gateway。
 - 可选 Agent loop：Pi Agent Core Adapter。
@@ -220,7 +223,7 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 ### 暂缓
 
 - 最终专业画布渲染器。
-- Workflow SDK 的正式 world/托管部署选择。
+- 生产环境 Workflow World 的托管/自托管部署选择；本地自托管开发已固定 Postgres World。
 - Eve 的生产采用；Pi 当前只固定 Spike 版本，不承诺成为唯一 Loop。
 - 多 Agent 拓扑、Agent SDK、模型供应商和长期记忆实现。
 
@@ -228,7 +231,7 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 1. 已完成 Agent-first 对象、调用身份、Node Type Registry、Operation Gateway、独立 Agent Core、扩展/沙盒端口和 Eve/Pi 对照。
 2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
-3. 继续把权威 CreativeCanvas 投影成创作模式，显示 AgentRun、Asset、来源和可展开 ExecutionPlan，并完成 steering/follow-up 浏览器验收。
+3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据和可展开最小 ExecutionPlan；继续完成 steering/follow-up 浏览器验收。
 4. 让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
 5. 通过恢复、压缩、费用、预算、审批、取消、隔离、追踪与 eval Gate 后，再进入 MusesAgent、领域 Agent 和 SubAgent 调度。
 6. 最小 Orchestration 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。

@@ -337,6 +337,28 @@ export async function failWorkflowStart(submissionId: string, reason: string) {
   }
 }
 
+export async function finalizeUnreservedWorkflowSubmission(input: {
+  submissionId: string
+  workflowRunId: string
+  status: "completed" | "failed" | "cancelled"
+}) {
+  const result = await getPgPool().query(
+    `
+      update muses_workflow_run
+      set status = $2,
+          sdk_run_id = coalesce(sdk_run_id, $3),
+          completed_at = coalesce(completed_at, now())
+      where id = $1
+        and reservation_id is null
+        and (sdk_run_id is null or sdk_run_id = $3)
+    `,
+    [input.submissionId, input.status, input.workflowRunId]
+  )
+  if (result.rowCount !== 1) {
+    throw new Error("Unreserved workflow submission could not be finalized.")
+  }
+}
+
 export async function finalizeCreditReservation(input: {
   reservationId: string
   workflowRunId: string | null

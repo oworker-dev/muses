@@ -30,13 +30,17 @@ import {
   type WorkflowRuntimeValue,
 } from "@muses/domain"
 
-import { storeGeneratedImage } from "@/lib/generated-image-storage"
-import { readGeneratedImage } from "@/lib/generated-image-storage"
+import { getGeneratedImageAsset } from "@/lib/generated-asset-store"
+import {
+  readGeneratedImage,
+  storeGeneratedImage,
+} from "@/lib/generated-image-storage"
 import { readReadyReferenceImageBytes } from "@/lib/reference-image-storage"
 import {
   attachWorkflowSdkRun,
   creditChargeForNode,
   finalizeCreditReservation,
+  finalizeUnreservedWorkflowSubmission,
   type WorkflowCreditContext,
 } from "@/lib/credit-ledger"
 
@@ -215,7 +219,7 @@ export async function workflowDefinitionInterpreter(
     return finalizeAndFailInterpreterRun(
       runId,
       definitionFailure(initial.issue),
-      options.creditContext,
+      options,
       actualCreditMicros
     )
   }
@@ -232,7 +236,7 @@ export async function workflowDefinitionInterpreter(
       return finalizeAndFailInterpreterRun(
         runId,
         definitionFailure(preparation.issue),
-        options.creditContext,
+        options,
         actualCreditMicros
       )
     }
@@ -255,7 +259,7 @@ export async function workflowDefinitionInterpreter(
           return finalizeAndFailInterpreterRun(
             runId,
             definitionFailure(committed.issue),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -313,7 +317,7 @@ export async function workflowDefinitionInterpreter(
               attempts: permanent ? 1 : maxAttempts,
               maxAttempts,
             },
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -321,7 +325,7 @@ export async function workflowDefinitionInterpreter(
           return finalizeAndFailInterpreterRun(
             runId,
             execution.failure,
-            options.creditContext,
+            options,
             actualCreditMicros,
             execution.billingUncertain
           )
@@ -337,7 +341,7 @@ export async function workflowDefinitionInterpreter(
           return finalizeAndFailInterpreterRun(
             runId,
             definitionFailure(committed.issue),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -375,7 +379,7 @@ export async function workflowDefinitionInterpreter(
               message: `Selector hook is already owned by run "${conflict.runId}".`,
               nodeId: node.id,
             }),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -415,7 +419,7 @@ export async function workflowDefinitionInterpreter(
               nodeId: node.id,
               nodeKind: node.kind,
             },
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -428,7 +432,7 @@ export async function workflowDefinitionInterpreter(
               message: "Human selection does not match the active suspension.",
               nodeId: node.id,
             }),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -442,7 +446,7 @@ export async function workflowDefinitionInterpreter(
           return finalizeAndFailInterpreterRun(
             runId,
             definitionFailure(resumed.issue),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -470,7 +474,7 @@ export async function workflowDefinitionInterpreter(
           return finalizeAndFailInterpreterRun(
             runId,
             definitionFailure(completed.issue),
-            options.creditContext,
+            options,
             actualCreditMicros
           )
         }
@@ -485,8 +489,8 @@ export async function workflowDefinitionInterpreter(
           type: "run.succeeded",
           outputs: preparation.value.outputs,
         })
-        await finalizeWorkflowCreditsStep(
-          options.creditContext,
+        await finalizeWorkflowSubmissionStep(
+          options,
           runId,
           "settle",
           actualCreditMicros,
@@ -510,7 +514,7 @@ export async function workflowDefinitionInterpreter(
       code: "execution-order-invalid",
       message: "Workflow execution order ended without a terminal result.",
     }),
-    options.creditContext,
+    options,
     actualCreditMicros
   )
 }
@@ -720,6 +724,12 @@ async function executeRealImageNodeStep(
           index,
           bytes: prepared.bytes,
           mimeType: prepared.mimeType,
+          width: prepared.width,
+          height: prepared.height,
+          prompt: prompt.value.trim(),
+          provider: "openai",
+          modelRef: imageConfig.modelRef,
+          createdAt,
         })
         return {
           id: stored.assetId,
@@ -916,11 +926,24 @@ async function resolveReferenceImageBytes(
   }
   return Promise.all(
     assets.map(async (asset) => {
-      const object = await readGeneratedImage({
+      if (asset.source.workspaceId !== workspaceId) {
+        throw new FatalError(
+          "Variable reference image belongs to another workspace."
+        )
+      }
+      const persisted = await getGeneratedImageAsset({
         workspaceId,
-        runId: asset.source.runId,
+        workflowRunId: asset.source.runId,
         assetId: asset.id,
-        mimeType: asset.mimeType,
+      })
+      if (!persisted || persisted.mimeType !== asset.mimeType) {
+        throw new FatalError(
+          "Variable reference image is not available in the Asset store."
+        )
+      }
+      const object = await readGeneratedImage({
+        objectKey: persisted.objectKey,
+        mimeType: persisted.mimeType,
       })
       return object.bytes
     })
@@ -1001,12 +1024,15 @@ async function failInterpreterRun(
 async function finalizeAndFailInterpreterRun(
   runId: string,
   failure: WorkflowRuntimeFailureProjection,
-  creditContext: WorkflowCreditContext | undefined,
+  submission: Pick<
+    WorkflowInterpreterHarnessOptions,
+    "submissionId" | "creditContext"
+  >,
   actualCreditMicros: bigint,
   billingUncertain = false
 ): Promise<never> {
-  await finalizeWorkflowCreditsStep(
-    creditContext,
+  await finalizeWorkflowSubmissionStep(
+    submission,
     runId,
     billingUncertain
       ? "review"
@@ -1029,8 +1055,11 @@ async function attachWorkflowSdkRunStep(submissionId: string, runId: string) {
 }
 attachWorkflowSdkRunStep.maxRetries = 3
 
-async function finalizeWorkflowCreditsStep(
-  creditContext: WorkflowCreditContext | undefined,
+async function finalizeWorkflowSubmissionStep(
+  submission: Pick<
+    WorkflowInterpreterHarnessOptions,
+    "submissionId" | "creditContext"
+  >,
   runId: string,
   status: "settle" | "release" | "review",
   actualCreditMicros: bigint,
@@ -1039,17 +1068,24 @@ async function finalizeWorkflowCreditsStep(
 ) {
   "use step"
 
-  if (!creditContext) return
-  await finalizeCreditReservation({
-    reservationId: creditContext.reservationId,
-    workflowRunId: runId,
-    status,
-    actualMicros: actualCreditMicros,
-    reason,
-    workflowStatus,
-  })
+  if (submission.creditContext) {
+    await finalizeCreditReservation({
+      reservationId: submission.creditContext.reservationId,
+      workflowRunId: runId,
+      status,
+      actualMicros: actualCreditMicros,
+      reason,
+      workflowStatus,
+    })
+  } else if (submission.submissionId) {
+    await finalizeUnreservedWorkflowSubmission({
+      submissionId: submission.submissionId,
+      workflowRunId: runId,
+      status: workflowStatus,
+    })
+  }
 }
-finalizeWorkflowCreditsStep.maxRetries = 3
+finalizeWorkflowSubmissionStep.maxRetries = 3
 
 function definitionFailure(
   issue: WorkflowInterpreterIssue

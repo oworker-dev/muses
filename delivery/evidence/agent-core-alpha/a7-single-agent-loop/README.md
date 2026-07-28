@@ -11,12 +11,14 @@ An authenticated user described one image in natural language. Muses Agent
 Core persisted the run, called `openai/gpt-5.6-sol`, requested
 `image.generate`, reused the existing paid image workflow, and placed the
 resulting Asset into the authoritative `CreativeCanvas` through the Operation
-Gateway. The Studio restored the completed run and image after refresh.
+Gateway. Studio opened in creative mode, rendered the Asset as a movable canvas
+object, persisted a drag through `creative.item.put`, and restored the run,
+image and position after refresh.
 
-The real run used two model calls, one tool call, 2,271 input tokens and 289
+The real run used two model calls, one tool call, 2,266 input tokens and 233
 output tokens. It produced one `1024 x 1536` PNG. The Agent run reached revision
-6 with 14 ordered events and the canvas reached revision 1 with one matching
-Asset item.
+6 with 16 ordered events and a completed three-step ExecutionPlan. The canvas
+reached revision 2 after the matching Asset item was moved.
 
 No provider credential, signed object URL, user email, or private model
 response is stored in this evidence package.
@@ -27,18 +29,27 @@ response is stored in this evidence package.
    sequence and revision compare-and-swap.
 2. AI SDK preserves assistant tool calls and tool results across the second
    model turn; dotted Muses tool names use reversible provider-safe aliases.
-3. Workflow SDK drives a Node step while Muses PostgreSQL remains the
-   authoritative Agent state.
+3. Workflow SDK Postgres World drives durable execution events while Muses
+   PostgreSQL remains the authoritative Agent, canvas and Asset state.
 4. `image.generate` reuses the model catalog, credit reservation, image
    workflow, object storage and Operation Gateway instead of writing canvas
    state directly.
 5. The generated Asset ID in the Agent tool result matches one
-   `CreativeCanvas.items[].refId`.
+   `CreativeCanvas.items[].refId`; its object key, dimensions, media type,
+   model, prompt and Workflow/Node/Step provenance are also recorded in the
+   Muses-owned generated Asset table.
 6. The authenticated Studio API and Agent panel start, inspect, cancel,
    steer/follow-up and restore a run; the real browser gate covers start,
    completion, canvas persistence and refresh restoration.
-7. Desktop and mobile captures render a nonblank real image without text
-   overlap inside the Agent panel.
+7. Studio defaults to the creative projection, shows a movable real Asset and
+   an expandable persisted ExecutionPlan, and keeps professional mode available
+   as a separate projection.
+8. Desktop `1440 x 960` and mobile `390 x 844` captures render a nonblank real
+   image without page overflow or text/control overlap. Both rendered image
+   instances report natural dimensions of `1024 x 1536`.
+9. Generated-image authorization reads the Muses Asset record and object store,
+   not Workflow SDK `returnValue`, so the product Asset does not inherit the
+   Workflow World lifecycle.
 
 ## Verification
 
@@ -54,17 +65,19 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
 - Agent Core: 9/9 tests passed.
 - Agent Harness adapters: 3/3 tests passed.
 - Repository type checks passed.
-- Workflow validation scanned 185 files, found two workflow entries and no
+- Workflow validation scanned 189 files, found two workflow entries and no
   serialization issues.
-- Real Playwright gate: 1/1 passed in 43.9 seconds.
+- The Web production build and APCC doctor passed. Targeted lint for the A7
+  files passed; full Web lint still reports the pre-existing
+  `muses-studio.tsx` React Hooks baseline (7 errors, 4 repository warnings).
+- Real Playwright gate: 1/1 passed in about 38 seconds.
+- Visual replay of the latest completed run confirmed the creative canvas,
+  Agent panel, ExecutionPlan, real image and responsive viewport bounds.
 
 ## Not Proven
 
-- The generated Asset is persisted in `CreativeCanvas`, but the current Studio
-  still shows the professional workflow canvas; a movable creative-canvas
-  projection is not yet delivered.
-- The three visible stages are a run projection, not a complete editable
-  `ExecutionPlan`.
+- The persisted three-step plan proves plan ownership and projection for the
+  image loop; it is not yet a general editable planning interface.
 - Steering/follow-up and approval have API/Core support, but the real browser
   gate does not yet cover them and Studio has no approval decision UI.
 - Cancelling an Agent Run does not yet cancel an already-running child image

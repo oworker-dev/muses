@@ -19,7 +19,8 @@ const MODEL_TIMEOUT_MS = 2 * 60 * 1000
 export class AiSdkAgentModel implements AgentModelPort {
   async complete(input: Parameters<AgentModelPort["complete"]>[0]) {
     const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey) throw new Error("The OpenAI Agent model provider is not configured.")
+    if (!apiKey)
+      throw new Error("The OpenAI Agent model provider is not configured.")
     const provider = createOpenAI({
       apiKey,
       ...(process.env.OPENAI_BASE_URL
@@ -46,7 +47,9 @@ export class AiSdkAgentModel implements AgentModelPort {
       }
       const canonicalName = toolAliases.aliasToCanonical.get(call.toolName)
       if (!canonicalName) {
-        throw new Error(`Agent model requested unknown tool "${call.toolName}".`)
+        throw new Error(
+          `Agent model requested unknown tool "${call.toolName}".`
+        )
       }
       return {
         id: call.toolCallId,
@@ -58,13 +61,15 @@ export class AiSdkAgentModel implements AgentModelPort {
     const outputTokens = result.usage.outputTokens || 0
     return {
       content: result.text,
-      finishReason: toolCalls.length > 0 ? ("tool-calls" as const) : ("stop" as const),
+      finishReason:
+        toolCalls.length > 0 ? ("tool-calls" as const) : ("stop" as const),
       toolCalls,
       usage: {
         inputTokens,
         outputTokens,
         creditMicros: modelCreditMicros(inputTokens, outputTokens),
       },
+      plan: imageExecutionPlan(input.run, toolCalls),
     }
   }
 }
@@ -106,7 +111,8 @@ export function toAiSdkTranscript(
             ...toolCalls.map((call) => ({
               type: "tool-call" as const,
               toolCallId: call.id,
-              toolName: canonicalToAlias.get(call.name) || modelSafeToolName(call.name),
+              toolName:
+                canonicalToAlias.get(call.name) || modelSafeToolName(call.name),
               input: call.input,
             })),
           ],
@@ -115,7 +121,9 @@ export function toAiSdkTranscript(
       }
       case "tool":
         if (!message.toolCallId || !message.toolName) {
-          throw new Error("Persisted Agent tool results require call id and tool name.")
+          throw new Error(
+            "Persisted Agent tool results require call id and tool name."
+          )
         }
         transcript.push({
           role: "tool",
@@ -142,7 +150,8 @@ function toAiSdkTools(
 ): ToolSet {
   return Object.fromEntries(
     definitions.map((definition) => [
-      canonicalToAlias.get(definition.name) || modelSafeToolName(definition.name),
+      canonicalToAlias.get(definition.name) ||
+        modelSafeToolName(definition.name),
       tool({
         description: definition.description,
         inputSchema: jsonSchema(
@@ -198,6 +207,81 @@ function modelCreditMicros(inputTokens: number, outputTokens: number) {
 
 function nonNegativeBigInt(value: string | undefined) {
   return value && /^\d+$/.test(value) ? BigInt(value) : BigInt(0)
+}
+
+function imageExecutionPlan(
+  run: Parameters<AgentModelPort["complete"]>[0]["run"],
+  toolCalls: readonly { id: string; name: string }[]
+) {
+  const latestUserRequest = [...run.context.messages]
+    .reverse()
+    .find(({ role }) => role === "user")?.content
+  const imageCallPending = toolCalls.some(
+    ({ name }) => name === "image.generate"
+  )
+  const completedAssets = completedImageAssetIds(run.context.messages)
+  const continuing = toolCalls.length > 0
+  const imageStatus = imageCallPending
+    ? ("in-progress" as const)
+    : completedAssets.length > 0
+      ? ("completed" as const)
+      : continuing
+        ? ("pending" as const)
+        : ("blocked" as const)
+  const placeStatus =
+    imageCallPending || continuing
+      ? ("pending" as const)
+      : completedAssets.length > 0
+        ? ("completed" as const)
+        : ("blocked" as const)
+
+  return {
+    goal: latestUserRequest || "Create an image on the Muses canvas.",
+    steps: [
+      {
+        id: "understand-request",
+        title: "Understand the request",
+        status: "completed" as const,
+        dependsOn: [],
+        evidenceRefs: [],
+      },
+      {
+        id: "generate-image",
+        title: "Generate the image",
+        status: imageStatus,
+        dependsOn: ["understand-request"],
+        evidenceRefs: completedAssets,
+      },
+      {
+        id: "place-result",
+        title: "Place the result on the canvas",
+        status: placeStatus,
+        dependsOn: ["generate-image"],
+        evidenceRefs: completedAssets,
+      },
+    ],
+  }
+}
+
+function completedImageAssetIds(messages: readonly AgentMessage[]) {
+  for (const message of [...messages].reverse()) {
+    if (message.role !== "tool" || message.toolName !== "image.generate") {
+      continue
+    }
+    try {
+      const output = JSON.parse(message.content) as {
+        assets?: Array<{ id?: unknown }>
+      }
+      if (Array.isArray(output.assets)) {
+        return output.assets.flatMap(({ id }) =>
+          typeof id === "string" && id ? [id] : []
+        )
+      }
+    } catch {
+      return []
+    }
+  }
+  return []
 }
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {

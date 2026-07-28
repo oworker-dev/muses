@@ -155,11 +155,13 @@ Agent 可以构建包含 Agent 节点的工作流，但 Runtime 必须限制最�
 
 ## 12. A7 当前工程状态
 
-截至 2026-07-29，A7 的第一个纵向切片已经用真实模型和真实图片通过工程验证：已登录用户可以在 Studio 用自然语言发起 `AgentRun`，Muses Agent Core 通过 AI SDK 完成模型工具循环，`image.generate` 复用模型目录、积分预留、Workflow SDK 图像解释器和对象存储，并只通过 Operation Gateway 把生成的 Asset 放入权威 `CreativeCanvas`。PostgreSQL 持久化 Run snapshot 与有序事件；Workflow SDK 只驱动可重试的 Node step；刷新后 Agent 面板恢复同一结果。
+截至 2026-07-29，A7 已用真实模型和真实图片通过第二个纵向切片：已登录用户可以在 Studio 用自然语言发起 `AgentRun`，Muses Agent Core 通过 AI SDK 完成模型工具循环，`image.generate` 复用模型目录、积分预留、Workflow SDK 图像解释器和对象存储，并只通过 Operation Gateway 把生成的 Asset 放入权威 `CreativeCanvas`。Studio 默认进入创作模式，专业模式保留为可切换投影；生成结果以可移动 Asset 卡片显示，拖动通过 `creative.item.put` 保存，刷新后位置、图片和 AgentRun 均可恢复。
 
-这项证据证明的是最小 Agent 生图闭环，不是完整创作模式已经交付。当前专业工作流画布仍是 Studio 主画面，生成资产尚未作为可移动对象投影到创作模式画布；面板中的“理解、生成、放置”是运行阶段投影，不是完整 `ExecutionPlan` 编辑器；steering/follow-up 已有 Core 与 API 控制面，但尚未完成真实浏览器验收；审批 UI、子图像工作流联动取消、文本模型目录计价、压缩/重启/隔离 eval 仍属于 A9。
+AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的最小 `ExecutionPlan`，计划步骤携带依赖、状态和 Asset evidence ref，并在 Agent 面板中默认折叠、按需展开。这证明了 ExecutionPlan 与 CreativeCanvas 是不同权威对象，而不是把专业工作流的 Input/Output 隐藏起来；当前计划仍是图像闭环的固定最小计划，不是通用可编辑规划器。
 
-可复核证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`。下一步先完成 `CreativeCanvas` 的用户可见投影与 Agent 计划/来源表达，再完成 A8 指定工作流发布调用，随后进入 A9，而不是提前增加多 Agent 或 PPT 场景。
+生成图片同时写入 Muses 自有 `muses_generated_asset` 记录，保存对象键、媒体类型、字节数、尺寸、Prompt、Provider、Model 和 Workflow/Node/Step 来源。图片读取先经过 Muses Workspace 与 WorkflowRun 授权，再按 Asset 记录访问对象存储，不再把 Workflow SDK `returnValue` 当成 Asset 权威；因此 Workflow World 清理、过期或切换不能让已确认 Asset 失去产品身份。
+
+可复核证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`。这项证据仍不等于 A7 或完整创作模式全部通过：steering/follow-up 尚未完成真实浏览器验收；审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。下一步先完成 steering 用户链路，再推进 A8 指定工作流调用与 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
 
 ## 13. 当前实现迁移
 

@@ -246,6 +246,13 @@
       "send": "发送",
       "cancel": "取消 Agent 运行",
       "requestFailed": "MusesAgent 未能完成此请求。",
+      "plan": "执行计划",
+      "planProgress": "{completed}/{total}",
+      "planSteps": {
+        "understand": "理解需求",
+        "generate": "生成图片",
+        "place": "放置结果"
+      },
       "stages": {
         "understand": "理解",
         "create": "生成",
@@ -255,7 +262,25 @@
     "modes": {
       "creative": "创作模式",
       "professional": "专业模式",
+      "creativeSubtitle": "Agent 优先的视觉创作空间",
       "creativeSoon": "创作模式将在专业工作流语义稳定后开放"
+    },
+    "creativeCanvas": {
+      "empty": "还没有创作资产",
+      "download": "下载图片",
+      "assetMeta": "{model} · {width} x {height}",
+      "itemKinds": {
+        "asset": "资产",
+        "artifact": "制品",
+        "professional-document": "专业文档",
+        "workflow": "工作流",
+        "agent-run": "Agent 运行"
+      },
+      "relations": {
+        "context": "上下文",
+        "provenance": "来源",
+        "association": "关联"
+      }
     },
     "header": {
       "workflow": "工作流",

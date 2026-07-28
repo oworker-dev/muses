@@ -246,6 +246,13 @@
       "send": "Send",
       "cancel": "Cancel Agent run",
       "requestFailed": "MusesAgent could not complete this request.",
+      "plan": "Execution plan",
+      "planProgress": "{completed}/{total}",
+      "planSteps": {
+        "understand": "Understand the request",
+        "generate": "Generate the image",
+        "place": "Place the result"
+      },
       "stages": {
         "understand": "Understand",
         "create": "Generate",
@@ -255,7 +262,25 @@
     "modes": {
       "creative": "Creative",
       "professional": "Professional",
+      "creativeSubtitle": "Agent-first visual creation space",
       "creativeSoon": "Creative mode will open after the professional workflow semantics stabilize"
+    },
+    "creativeCanvas": {
+      "empty": "No creative assets yet",
+      "download": "Download image",
+      "assetMeta": "{model} · {width} x {height}",
+      "itemKinds": {
+        "asset": "Asset",
+        "artifact": "Artifact",
+        "professional-document": "Professional document",
+        "workflow": "Workflow",
+        "agent-run": "Agent run"
+      },
+      "relations": {
+        "context": "Context",
+        "provenance": "Source",
+        "association": "Related"
+      }
     },
     "header": {
       "workflow": "Workflow",
