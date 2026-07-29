@@ -19,7 +19,7 @@ path alone is insufficient.
 | Budget and billing | Agent budget snapshot, model-call receipt, model/tool usage, credit reservation and immutable ledger | Duplicate delivery, provider failure before/after an ambiguous response, retry and child workflow completion. Every known charge/reservation settles once, ambiguous calls retain review funds, and limits stop new work before the side effect. | Unit state machine, isolated PostgreSQL ledger probe and real Agent image chain correlated to AgentRun/model/WorkflowRun/Asset | Passed |
 | Approval and cancellation | Agent Core approval state, Muses cancellation command and child-run links | External tool waits for server-authorized approval; deny, cancel while model runs, cancel while child workflow runs, and late success. Cancellation prevents new effects but preserves facts that actually completed. | Approval UI/API probe, Workflow World cancellation record, child-run terminal projection and race tests | Passed |
 | Isolation and tracing | Workspace authorization, Run-scoped logical sandbox, policy snapshots and correlation identifiers | Cross-Workspace Run/Asset/tool access, stale Skill/MCP snapshot, sandbox escape attempt and trace discontinuity. No caller receives another Workspace's data or credentials. | Negative authorization suite and one trace joining AgentRun, model, tool, WorkflowRun, Asset, usage and credit | Passed |
-| Fixed evals | Versioned eval fixtures and sanitized evidence bundle | Success, recovery, refusal, budget, approval, cancellation, isolation and no-side-effect cases run against fixed inputs. Failures must be reproducible without private customer content. | Machine-readable results, commands, versions and residual-risk record under `delivery/evidence/agent-core-alpha/a9-reliability/` | Pending |
+| Fixed evals | Versioned eval fixtures and sanitized evidence bundle | Success, recovery, refusal, budget, approval, cancellation, isolation and no-side-effect cases run against fixed inputs. Failures must be reproducible without private customer content. | Machine-readable results, commands, versions and residual-risk record under `delivery/evidence/agent-core-alpha/a9-reliability/` | Passed |
 
 ## Driver recovery contract
 
@@ -163,6 +163,24 @@ hydrate Workflow input/output. The API omits prompts, model text, tool payloads,
 object keys, credential references, user email and provider request bodies.
 AI SDK telemetry uses `muses-agent-model`, records only non-sensitive ids and
 turn/context numbers, and explicitly disables input/output recording.
+
+## Fixed eval contract
+
+The versioned `agent-core-a9-reliability@1.0.0` suite drives the same
+framework-neutral `HeadlessAgentRuntime` used by adapters. Eight deterministic
+cases cover success, recoverable driver retry, policy refusal, pre-provider
+budget rejection, approval, late-result cancellation fencing, extension
+snapshot isolation and an unknown-tool no-side-effect path. Fixed ids, time,
+model responses and in-memory tools make the suite independent of customer
+data, credentials, PostgreSQL, network access and live providers.
+
+Every expected observation is a hard assertion. The runner exits nonzero if a
+case fails or if its report differs from the committed sanitized evidence.
+The report records suite version, fixture digest, assertion names and observed
+non-sensitive state. This boundary follows Eve's useful eval shape of driving
+the real runtime and producing machine artifacts, but does not bind Agent Core
+to Eve 0.27.8, whose Node, Workflow protocol and Session-scoped sandbox remain
+incompatible with the current Muses runtime contract.
 
 ## Gate rule
 

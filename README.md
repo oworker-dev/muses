@@ -42,7 +42,8 @@ three-step ExecutionPlan can be expanded from the Agent panel. A real
 follow-up now revises that plan, generates one charged image, places it beside
 the previous Asset and survives refresh. Callable workflow publication now
 resolves immutable server-owned versions through one UI, Agent, and HTTP API
-invocation boundary. The A9 reliability Gate remains ahead of orchestration or
+invocation boundary. The A9 single-Agent reliability Gate has passed; the next
+engineering boundary is the minimal A10 orchestration contract, still before
 PPT scenario work. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
@@ -58,7 +59,7 @@ also records generated-image identity and storage provenance independently
 from Workflow SDK `returnValue`. A7 and A8 do not claim the A9 reliability or
 multi-media experience.
 
-Five A9 reliability slices now pass: durable driver recovery, bounded context
+All six A9 reliability slices now pass: durable driver recovery, bounded context
 compaction, model-call budget/billing receipts, and server-authoritative tool
 approval with linked cancellation, plus Run-scoped isolation and end-to-end
 trace projection. External-effect Agent tools wait on a
@@ -68,9 +69,11 @@ new canvas or child-run effects, cancels active Workflow SDK children, and
 keeps completed facts and known billing outcomes intact. New Runs freeze a
 deny-by-default logical sandbox and immutable Skill/MCP/tool surface; the
 authenticated trace joins Agent, model, tool, Workflow World, Asset and credit
-facts without exposing payloads or credentials. The fixed eval bundle remains
-the only blocker for the overall A9 Gate and therefore multi-Agent or PPT
-expansion.
+facts without exposing payloads or credentials. A versioned eight-case fixed
+eval suite now gates success, recovery, refusal, budget, approval,
+cancellation, isolation and no-side-effect behavior against the same headless
+Runtime with zero live provider or network calls. A10 orchestration remains a
+separate Gate and PPT expansion still cannot bypass it.
 
 The professional Studio now has protected Start/End nodes, typed Start inputs,
 a framework-independent publication validator, a pure

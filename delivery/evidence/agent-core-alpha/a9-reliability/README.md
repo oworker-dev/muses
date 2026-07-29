@@ -1,4 +1,4 @@
-# A9 Reliability Progress Evidence
+# A9 Reliability Evidence
 
 Date: 2026-07-29
 
@@ -8,8 +8,8 @@ Environment: local PostgreSQL and Workflow SDK Postgres World with Studio at
 ## Outcome
 
 The driver-recovery, context-compaction, budget/billing,
-approval/cancellation and isolation/tracing A9 slices passed. The overall A9
-gate remains in progress; the fixed eval bundle is the final blocking slice.
+approval/cancellation, isolation/tracing and fixed-eval slices passed. The A9
+single-Agent reliability gate is complete.
 
 Agent driver ownership is now Muses-owned rather than inferred from a nullable
 Workflow SDK run id:
@@ -117,6 +117,14 @@ request details. AI SDK telemetry uses the stable `muses-agent-model` function
 id, includes only non-sensitive correlation facts, and disables input/output
 recording.
 
+The versioned fixed suite drives the framework-neutral headless Runtime with
+deterministic model, clock, ids, Store and tools. Its eight hard-gated cases
+cover success, recoverable driver retry, policy refusal, budget rejection
+before model execution, external-effect approval, cancellation against a late
+model result, isolation snapshot drift and an unknown-tool no-side-effect
+path. It makes no live provider or network call. The runner exits nonzero for
+any failed assertion or any drift from the committed machine report.
+
 ## Verification
 
 ```bash
@@ -133,6 +141,7 @@ set -a; source .env.development; set +a
 pnpm --filter ./src/apps/web run verify:agent-cancellation
 set -a; source .env.development; set +a
 pnpm --filter ./src/apps/web run verify:agent-isolation-tracing
+pnpm run eval:agent-a9
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'expired Agent driver claims'
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
@@ -146,7 +155,7 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
 ```
 
 - Domain: 39/39 tests passed.
-- Agent Core: 34/34 tests passed.
+- Agent Core: 35/35 tests passed.
 - Agent Harness adapters: 3/3 tests passed.
 - Web unit: 18/18 tests passed, including 9 model-receipt adapter cases.
 - Recovery state-machine tests: 4/4 passed.
@@ -192,6 +201,11 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
 - The Agent trace authorization E2E passed in 0.230 seconds against Studio on
   port 4730: the owning Workspace received 200, a forged Workspace received
   404, and a foreign Run id received 404.
+- Fixed Agent evals passed 8/8 hard-gated cases against suite version 1.0.0
+  with fixture digest
+  `sha256:db63243be92de8a4f2f886ca8b430df0634e471ad9351b435503d40eb9f4dd7c`.
+  The committed report matched the runner exactly, with zero live provider and
+  network calls.
 
 ## Boundaries and residual risk
 
@@ -207,10 +221,13 @@ physical or provider-backed process sandbox; code execution, browsers,
 untrusted files and media-processing tools must remain disabled until that
 boundary exists. The deterministic compactor bounds conversational history;
 provider-specific tokenization and semantic-summary quality still need
-model-profile evals. The fixed eval bundle is the final A9 task.
+model-profile evals. These are explicit next-stage risks rather than silent A9
+claims; none invalidates the fixed single-Agent invariants proven by this Gate.
 
 ## Artifacts
 
 - `README.md`: human-readable outcome, commands and limits.
 - `results.json`: sanitized machine-readable facts without credentials,
   prompts, user identity or provider payloads.
+- `fixed-evals-v1.json`: exact sanitized fixed-suite report checked by the A9
+  runner.

@@ -2,7 +2,7 @@
   "schemaVersion": "0.1.0",
   "gate": "a9-reliability",
   "date": "2026-07-29",
-  "status": "in-progress",
+  "status": "passed",
   "environment": {
     "studioUrl": "http://127.0.0.1:4730/studio",
     "database": "local-postgresql",
@@ -10,7 +10,7 @@
   },
   "verification": {
     "domainTests": { "passed": 39, "total": 39 },
-    "agentCoreTests": { "passed": 34, "total": 34 },
+    "agentCoreTests": { "passed": 35, "total": 35 },
     "agentHarnessTests": { "passed": 3, "total": 3 },
     "webUnitTests": { "passed": 18, "total": 18 },
     "driverRecoveryStateTests": { "passed": 4, "total": 4 },
@@ -148,11 +148,33 @@
       },
       "traceAuthorizationE2E": {
         "passed": true,
-        "durationSeconds": 0.230,
+        "durationSeconds": 0.23,
         "ownerStatus": 200,
         "forgedWorkspaceStatus": 404,
         "foreignRunStatus": 404
       }
+    },
+    "fixedEvals": {
+      "status": "passed",
+      "suiteId": "agent-core-a9-reliability",
+      "suiteVersion": "1.0.0",
+      "fixtureDigest": "sha256:db63243be92de8a4f2f886ca8b430df0634e471ad9351b435503d40eb9f4dd7c",
+      "passed": 8,
+      "failed": 0,
+      "total": 8,
+      "categories": [
+        "success",
+        "recovery",
+        "refusal",
+        "budget",
+        "approval",
+        "cancellation",
+        "isolation",
+        "no-side-effect"
+      ],
+      "liveProviderCalls": 0,
+      "liveNetworkCalls": 0,
+      "committedEvidenceMatched": true
     },
     "migrations": [
       {
@@ -179,7 +201,6 @@
     "Post-provider outcomes that cannot be proven become review_required and need an operator reconciliation surface.",
     "Live text-model rates are zero; versioned text-model prices still need catalog authority.",
     "A physical or provider-backed compute sandbox is not provisioned; code, browser, untrusted-file and media-processing execution must remain disabled until it is.",
-    "Provider-specific tokenization and semantic-summary quality still require model-profile evals.",
-    "The fixed eval bundle remains the final open A9 task."
+    "Provider-specific tokenization and semantic-summary quality still require model-profile evals."
   ]
 }

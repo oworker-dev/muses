@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "muses-agent-eval-result-v1",
+  "suiteId": "agent-core-a9-reliability",
+  "suiteVersion": "1.0.0",
+  "fixtureDigest": "sha256:db63243be92de8a4f2f886ca8b430df0634e471ad9351b435503d40eb9f4dd7c",
+  "runtime": "muses-headless",
+  "modelFixture": "fixture/deterministic-v1",
+  "status": "passed",
+  "passed": 8,
+  "failed": 0,
+  "total": 8,
+  "liveProviderCalls": 0,
+  "liveNetworkCalls": 0,
+  "cases": [
+    {
+      "id": "success-canvas-command",
+      "category": "success",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "turns",
+        "modelCalls",
+        "toolCalls",
+        "toolExecutions",
+        "scopedToVerifiedRun",
+        "terminalCheckpoint"
+      ],
+      "observed": {
+        "status": "completed",
+        "turns": 2,
+        "modelCalls": 2,
+        "toolCalls": 1,
+        "toolExecutions": 1,
+        "scopedToVerifiedRun": true,
+        "terminalCheckpoint": true
+      }
+    },
+    {
+      "id": "recover-after-driver-retry",
+      "category": "recovery",
+      "status": "passed",
+      "assertions": [
+        "retryCode",
+        "statusBeforeRecovery",
+        "modelEventsBeforeRecovery",
+        "status",
+        "modelCalls",
+        "toolCalls",
+        "toolExecutions"
+      ],
+      "observed": {
+        "retryCode": "model-call-in-progress",
+        "statusBeforeRecovery": "running",
+        "modelEventsBeforeRecovery": 0,
+        "status": "completed",
+        "modelCalls": 1,
+        "toolCalls": 0,
+        "toolExecutions": 0
+      }
+    },
+    {
+      "id": "refuse-policy-denied-tool",
+      "category": "refusal",
+      "status": "passed",
+      "assertions": ["status", "policyDenials", "toolCalls", "toolExecutions"],
+      "observed": {
+        "status": "completed",
+        "policyDenials": 1,
+        "toolCalls": 0,
+        "toolExecutions": 0
+      }
+    },
+    {
+      "id": "budget-stops-before-model",
+      "category": "budget",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "failureCode",
+        "modelCompletions",
+        "modelCalls",
+        "toolCalls",
+        "creditMicros",
+        "toolExecutions"
+      ],
+      "observed": {
+        "status": "failed",
+        "failureCode": "input-token-budget-exceeded",
+        "modelCompletions": 0,
+        "modelCalls": 0,
+        "toolCalls": 0,
+        "creditMicros": "0",
+        "toolExecutions": 0
+      }
+    },
+    {
+      "id": "approval-gates-external-tool",
+      "category": "approval",
+      "status": "passed",
+      "assertions": [
+        "waitingStatus",
+        "executionsBeforeApproval",
+        "status",
+        "approvalRequests",
+        "approvalDecisions",
+        "toolCalls",
+        "toolExecutions"
+      ],
+      "observed": {
+        "waitingStatus": "waiting-approval",
+        "executionsBeforeApproval": 0,
+        "status": "completed",
+        "approvalRequests": 1,
+        "approvalDecisions": 1,
+        "toolCalls": 1,
+        "toolExecutions": 1
+      }
+    },
+    {
+      "id": "cancellation-fences-late-model",
+      "category": "cancellation",
+      "status": "passed",
+      "assertions": [
+        "lateResultError",
+        "status",
+        "turns",
+        "modelCalls",
+        "modelEvents",
+        "cancellationEvents",
+        "toolExecutions"
+      ],
+      "observed": {
+        "lateResultError": "revision-conflict",
+        "status": "cancelled",
+        "turns": 0,
+        "modelCalls": 0,
+        "modelEvents": 0,
+        "cancellationEvents": 1,
+        "toolExecutions": 0
+      }
+    },
+    {
+      "id": "isolation-rejects-snapshot-drift",
+      "category": "isolation",
+      "status": "passed",
+      "assertions": [
+        "snapshotState",
+        "networkDefault",
+        "filesystemNamespace",
+        "driftError",
+        "modelCompletions",
+        "toolExecutions"
+      ],
+      "observed": {
+        "snapshotState": "pinned",
+        "networkDefault": "deny",
+        "filesystemNamespace": "agent-run/eval-isolation",
+        "driftError": "extension-snapshot-invalid",
+        "modelCompletions": 0,
+        "toolExecutions": 0
+      }
+    },
+    {
+      "id": "unknown-tool-has-no-side-effect",
+      "category": "no-side-effect",
+      "status": "passed",
+      "assertions": ["status", "toolDenials", "toolCalls", "toolExecutions"],
+      "observed": {
+        "status": "completed",
+        "toolDenials": 1,
+        "toolCalls": 0,
+        "toolExecutions": 0
+      }
+    }
+  ]
+}

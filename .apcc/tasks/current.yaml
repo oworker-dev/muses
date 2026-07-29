@@ -392,7 +392,7 @@ items:
   - id: verify-agent-safety-recovery
     name: 验证 Agent 安全、成本与恢复
     summary: A9 当前主线：验证 Agent/子运行刷新与进程恢复、上下文压缩不漂移、幂等费用与预算、审批与联动取消、Workspace/沙盒隔离、成熟追踪以及固定 eval。
-    status: in_progress
+    status: done
     planRef: agent-reliability-gate
     parentTaskId: null
     countedForProgress: false
@@ -400,12 +400,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.714Z
-    updatedAt: 2026-07-29T00:41:28.700Z
-    statusChangedAt: 2026-07-29T00:41:28.700Z
+    updatedAt: 2026-07-29T08:22:05.048Z
+    statusChangedAt: 2026-07-29T08:22:05.048Z
   - id: define-delegation-protocol
     name: 定义 Agent 委托与调度协议
     summary: 定义子任务图、角色、上下文包、能力/权限、依赖、预算、结果、失败隔离和汇总协议；固定组织层级不进入内核。
-    status: pending
+    status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -413,8 +413,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.883Z
-    updatedAt: 2026-07-27T19:22:21.796Z
-    statusChangedAt: 2026-07-24T19:57:48.883Z
+    updatedAt: 2026-07-29T08:22:05.272Z
+    statusChangedAt: 2026-07-29T08:22:05.272Z
   - id: build-muses-agent
     name: 交付平台级 MusesAgent
     summary: 让 MusesAgent 负责跨领域意图梳理、澄清、计划和委托，但由 Runtime 可靠执行和记录调度状态。
@@ -1042,7 +1042,7 @@ items:
   - id: establish-agent-fixed-evals
     name: 建立固定 Agent eval 与 A9 证据
     summary: 建立可重复的成功、恢复、拒绝、预算、审批、取消、隔离和无副作用 eval 集，形成 A9 工程证据与残余风险。
-    status: in_progress
+    status: done
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1050,5 +1050,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.813Z
-    updatedAt: 2026-07-29T08:05:58.375Z
-    statusChangedAt: 2026-07-29T08:05:58.375Z
+    updatedAt: 2026-07-29T08:22:04.811Z
+    statusChangedAt: 2026-07-29T08:22:04.811Z
