@@ -44,27 +44,52 @@ inside the server adapter so a public client cannot use possession of a raw
 token as its only authorization boundary. Manual retry creates a new run linked
 through `retryOfRunId`; it does not rewind a completed run in place.
 
-## Start The Supported-Node Runtime
+## Publish And Invoke A Definition
+
+The browser, Agent, and API caller never upload a mutable graph to the runtime.
+The Studio first publishes its server-owned draft:
+
+`POST /api/studio/workflow-publications`
+
+```json
+{
+  "workspaceId": "muses-workspace-alpha",
+  "definitionId": "mwfd_poster",
+  "expectedDraftRevision": 7,
+  "deploymentAlias": "production"
+}
+```
+
+Publication locks the draft, checks the expected revision, compiles it on the
+server, and writes an immutable version. Republishing the same executable
+content reuses the existing version. A changed valid draft creates the next
+integer version and atomically moves the stable deployment alias. PostgreSQL
+triggers reject updates and deletes against published definition rows.
+
+A caller then starts a run with either the exact version or a deployment id:
 
 `POST /api/studio/workflow-runs`
 
 ```json
 {
   "workspaceId": "muses-workspace-alpha",
-  "inputs": {},
-  "workflow": {
-    "id": "workflow-alpha",
-    "schemaVersion": "0.6.0-draft",
-    "revision": 0,
-    "nodes": [],
-    "edges": []
-  }
+  "idempotencyKey": "order-20260729-1",
+  "target": {
+    "kind": "deployment",
+    "workspaceId": "muses-workspace-alpha",
+    "deploymentId": "mwdep_poster_production"
+  },
+  "inputs": {}
 }
 ```
 
-The actual document must contain exactly one protected Start and End and compile
-without diagnostics. Invalid documents return `422` and do not create a run.
-Valid documents return `202` with the exact definition reference:
+For an exact version, `target.kind` is `definition-version` and `target.definition`
+is the complete `WorkflowDefinitionRef`. Missing versions return `404`, disabled
+deployments return `409`, and cross-Workspace targets are rejected before a run
+or credit reservation exists. Supplying a serialized `workflow` document is an
+invalid invocation request.
+
+Valid requests return `202` with the resolved frozen identity:
 
 ```json
 {
@@ -74,10 +99,12 @@ Valid documents return `202` with the exact definition reference:
   "durableRuntime": "vercel-workflow-sdk",
   "definition": {
     "workspaceId": "muses-workspace-alpha",
-    "definitionId": "workflow-alpha:runtime-v1",
-    "version": 0,
+    "definitionId": "mwfd_poster",
+    "version": 3,
     "schemaVersion": "0.3.0-draft"
   },
+  "deploymentId": "mwdep_poster_production",
+  "idempotentReplay": false,
   "validation": {
     "valid": true,
     "issues": [],
@@ -89,6 +116,17 @@ Valid documents return `202` with the exact definition reference:
   }
 }
 ```
+
+The invocation idempotency fingerprint includes the resolved frozen definition,
+deployment, caller, inputs, and controlled Harness options. Repeating the same
+request returns the original Workflow SDK run; reusing the key for another
+request returns `409`. The run audit row records the definition id/version,
+deployment id, and caller kind/id alongside the existing billing submission.
+
+MusesAgent reaches this same boundary through `workflow.list`,
+`workflow.inspect`, and `workflow.invoke`. These tools are registered in the
+normal Tool Registry and require `workflow.read` or `workflow.invoke`; they do
+not grant direct database or compiler access.
 
 The default product definition is:
 

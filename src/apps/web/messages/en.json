@@ -338,6 +338,8 @@
       "cancelled": "Cancelled",
       "failed": "Stopped",
       "selectionHint": "The workflow is waiting for your choice. Select a result to continue.",
+      "collapsePanel": "Collapse run result",
+      "expandPanel": "Expand run result",
       "direction": "Direction {count}",
       "serverReference": "Candidate result",
       "choose": "Choose",

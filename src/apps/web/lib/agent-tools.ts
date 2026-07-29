@@ -5,10 +5,12 @@ import { z } from "zod"
 
 import {
   OPERATION_COMMAND_SCHEMA_VERSION,
+  WORKFLOW_DEFINITION_SCHEMA_VERSION,
   compileWorkflowDefinition,
   createInitialWorkspace,
   type CreativeCanvasItem,
   type OperationCommandEnvelope,
+  type WorkflowInvocationTarget,
   type WorkflowRuntimeImageAsset,
 } from "@muses/domain"
 import type {
@@ -31,6 +33,11 @@ import {
   executeOperationCommand,
   getOrCreateOperationGatewaySnapshot,
 } from "@/lib/operation-gateway-store"
+import {
+  inspectWorkflowInvocationTarget,
+  listWorkflowCatalog,
+} from "@/lib/workflow-catalog-store"
+import { startPublishedWorkflowInvocation } from "@/lib/workflow-invocation"
 import {
   workflowDefinitionInterpreter,
   type WorkflowDefinitionInterpreterResult,
@@ -108,6 +115,52 @@ const imageGenerateDefinition: AgentToolDefinition = {
   sideEffect: "project-write",
 }
 
+const workflowListDefinition: AgentToolDefinition = {
+  name: "workflow.list",
+  description:
+    "List the published workflow definitions and callable deployment aliases in the current Muses project.",
+  inputSchema: {
+    type: "object",
+    properties: {},
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.read"],
+  sideEffect: "none",
+}
+
+const workflowInspectDefinition: AgentToolDefinition = {
+  name: "workflow.inspect",
+  description:
+    "Inspect one exact published workflow version or active deployment, including its frozen nodes and input schema.",
+  inputSchema: workflowTargetInputSchema(),
+  requiredPermissions: ["workflow.read"],
+  sideEffect: "none",
+}
+
+const workflowInvokeDefinition: AgentToolDefinition = {
+  name: "workflow.invoke",
+  description:
+    "Start one exact published Muses workflow version or active deployment through the shared authorization, billing, idempotency, and observability boundary.",
+  inputSchema: {
+    ...workflowTargetInputSchema(),
+    properties: {
+      ...workflowTargetInputSchema().properties,
+      inputs: {
+        type: "object",
+        additionalProperties: {
+          oneOf: [
+            runtimeScalarToolSchema("text", "string"),
+            runtimeScalarToolSchema("number", "number"),
+            runtimeScalarToolSchema("boolean", "boolean"),
+          ],
+        },
+      },
+    },
+  },
+  requiredPermissions: ["workflow.invoke"],
+  sideEffect: "project-write",
+}
+
 const canvasItemSchema = z.object({
   refId: z.string().trim().min(1),
   kind: z.enum([
@@ -135,9 +188,37 @@ const imageGenerateSchema = z.object({
   referenceImageAssetIds: z.array(z.string().trim().min(1)).max(16).default([]),
 })
 
+const workflowTargetSchema = z.union([
+  z.object({
+    deploymentId: z.string().trim().min(1),
+    definitionId: z.never().optional(),
+    version: z.never().optional(),
+  }),
+  z.object({
+    definitionId: z.string().trim().min(1),
+    version: z.number().int().min(1),
+    deploymentId: z.never().optional(),
+  }),
+])
+const runtimeScalarSchema = z.discriminatedUnion("valueType", [
+  z.object({ valueType: z.literal("text"), value: z.string() }),
+  z.object({ valueType: z.literal("number"), value: z.number().finite() }),
+  z.object({ valueType: z.literal("boolean"), value: z.boolean() }),
+])
+const workflowInvokeSchema = workflowTargetSchema.and(
+  z.object({ inputs: z.record(z.string(), runtimeScalarSchema).default({}) })
+)
+
 export class MusesAgentToolRegistry implements AgentToolRegistryPort {
   async list() {
-    return [canvasInspectDefinition, canvasItemPutDefinition, imageGenerateDefinition]
+    return [
+      canvasInspectDefinition,
+      canvasItemPutDefinition,
+      imageGenerateDefinition,
+      workflowListDefinition,
+      workflowInspectDefinition,
+      workflowInvokeDefinition,
+    ]
   }
 
   async execute(
@@ -152,7 +233,10 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
         return toolSuccess(
           call,
           await putCanvasItem(context, {
-            id: stableId("canvas-item", `${context.idempotencyKey}:${input.refId}`),
+            id: stableId(
+              "canvas-item",
+              `${context.idempotencyKey}:${input.refId}`
+            ),
             kind: input.kind,
             refId: input.refId,
             title: input.title,
@@ -166,7 +250,37 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
       case "image.generate":
         return toolSuccess(
           call,
-          await generateImageAndPlace(call, context, imageGenerateSchema.parse(call.input))
+          await generateImageAndPlace(
+            call,
+            context,
+            imageGenerateSchema.parse(call.input)
+          )
+        )
+      case "workflow.list":
+        return toolSuccess(
+          call,
+          await listWorkflowCatalog({
+            workspaceId: context.workspaceId,
+            projectId: context.projectId,
+          })
+        )
+      case "workflow.inspect": {
+        const input = workflowTargetSchema.parse(call.input)
+        return toolSuccess(
+          call,
+          await inspectWorkflowInvocationTarget({
+            workspaceId: context.workspaceId,
+            target: workflowTarget(context.workspaceId, input),
+          })
+        )
+      }
+      case "workflow.invoke":
+        return toolSuccess(
+          call,
+          await invokePublishedWorkflow(
+            context,
+            workflowInvokeSchema.parse(call.input)
+          )
         )
       default:
         return {
@@ -179,6 +293,94 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
           },
         }
     }
+  }
+}
+
+async function invokePublishedWorkflow(
+  context: AgentToolExecutionContext,
+  input: z.infer<typeof workflowInvokeSchema>
+) {
+  const result = await startPublishedWorkflowInvocation({
+    workspaceId: context.workspaceId,
+    submittedByUserId: initiatedByUserId(context),
+    caller: { kind: "agent", agentRunId: context.runId },
+    target: workflowTarget(context.workspaceId, input),
+    inputs: input.inputs,
+    idempotencyKey: `${context.idempotencyKey}:published-workflow`,
+  })
+  switch (result.state) {
+    case "started":
+    case "replayed":
+      return {
+        accepted: true,
+        runId: result.runId,
+        definition: result.definition,
+        deploymentId: result.deploymentId,
+        idempotentReplay: result.idempotentReplay,
+        estimatedMicros: result.estimatedMicros.toString(),
+      }
+    case "in-progress":
+      throw new Error("The workflow invocation is still being attached.")
+    case "idempotency-conflict":
+      throw new Error("The workflow invocation idempotency key conflicts.")
+    case "insufficient-credits":
+      throw new Error(
+        `Workflow invocation needs ${result.requiredMicros} credit micros; ${result.availableMicros} are available.`
+      )
+    case "runtime-unavailable":
+      throw new Error("The workflow runtime is temporarily unavailable.")
+  }
+}
+
+function workflowTarget(
+  workspaceId: string,
+  input: z.infer<typeof workflowTargetSchema>
+): WorkflowInvocationTarget {
+  if (input.deploymentId) {
+    return { kind: "deployment", workspaceId, deploymentId: input.deploymentId }
+  }
+  if (!input.definitionId || !input.version) {
+    throw new Error("An exact workflow target is required.")
+  }
+  return {
+    kind: "definition-version",
+    definition: {
+      workspaceId,
+      definitionId: input.definitionId,
+      version: input.version,
+      schemaVersion: WORKFLOW_DEFINITION_SCHEMA_VERSION,
+    },
+  }
+}
+
+function workflowTargetInputSchema() {
+  return {
+    type: "object",
+    properties: {
+      deploymentId: { type: "string", minLength: 1 },
+      definitionId: { type: "string", minLength: 1 },
+      version: { type: "integer", minimum: 1 },
+    },
+    oneOf: [
+      { required: ["deploymentId"] },
+      { required: ["definitionId", "version"] },
+    ],
+    additionalProperties: false,
+  }
+}
+
+function runtimeScalarToolSchema(
+  valueType: "text" | "number" | "boolean",
+  valueJsonType: "string" | "number" | "boolean"
+) {
+  return {
+    type: "object",
+    properties: {
+      valueType: { const: valueType },
+      value: { type: valueJsonType },
+    },
+    required: ["valueType", "value"],
+    additionalProperties: false,
   }
 }
 
@@ -298,11 +500,14 @@ async function generateImageAndPlace(
       `Image generation needs ${claim.requiredMicros} credit micros; ${claim.availableMicros} are available.`
     )
   } else {
-    throw new Error("The image generation idempotency key conflicts with another request.")
+    throw new Error(
+      "The image generation idempotency key conflicts with another request."
+    )
   }
 
   const run = getRun<WorkflowDefinitionInterpreterResult>(workflowRunId)
-  if (!(await run.exists)) throw new Error("The image workflow run was not found.")
+  if (!(await run.exists))
+    throw new Error("The image workflow run was not found.")
   const result = await run.returnValue
   const assets = collectImageAssets(result)
   if (assets.length === 0) {
@@ -342,7 +547,10 @@ async function putCanvasItem(
   const snapshot = await gatewaySnapshot(context)
   const command: OperationCommandEnvelope = {
     schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
-    commandId: stableId("agent-command", `${context.idempotencyKey}:${operationSuffix}`),
+    commandId: stableId(
+      "agent-command",
+      `${context.idempotencyKey}:${operationSuffix}`
+    ),
     idempotencyKey: `${context.idempotencyKey}:canvas:${operationSuffix}`,
     workspaceId: context.workspaceId,
     projectId: context.projectId,
@@ -360,7 +568,9 @@ async function putCanvasItem(
     authorizedActor: command.actor,
   })
   if (!response.accepted) {
-    throw new Error(response.message || "The canvas rejected the Agent operation.")
+    throw new Error(
+      response.message || "The canvas rejected the Agent operation."
+    )
   }
   return {
     item,
@@ -410,7 +620,8 @@ async function waitForAttachedWorkflowRun(
 function collectImageAssets(result: WorkflowDefinitionInterpreterResult) {
   const assets: WorkflowRuntimeImageAsset[] = []
   for (const value of Object.values(result.outputs)) {
-    if (value.valueType === "image" && value.assets) assets.push(...value.assets)
+    if (value.valueType === "image" && value.assets)
+      assets.push(...value.assets)
   }
   return assets
 }
@@ -428,6 +639,9 @@ function stableId(prefix: string, identity: string) {
   return `${prefix}_${createHash("sha256").update(identity).digest("hex").slice(0, 24)}`
 }
 
-function toolSuccess(call: AgentToolCall, output: unknown): AgentToolCallResult {
+function toolSuccess(
+  call: AgentToolCall,
+  output: unknown
+): AgentToolCallResult {
   return { toolCallId: call.id, ok: true, output }
 }

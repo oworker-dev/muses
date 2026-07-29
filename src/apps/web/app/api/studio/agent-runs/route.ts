@@ -72,7 +72,8 @@ const patchSchema = z.discriminatedUnion("action", [
 
 export async function POST(request: Request) {
   const parsed = startSchema.safeParse(await request.json().catch(() => null))
-  if (!parsed.success) return invalidRequest("A prompt and idempotency key are required.")
+  if (!parsed.success)
+    return invalidRequest("A prompt and idempotency key are required.")
   const access = await requireStudioApiAccess(parsed.data.workspaceId)
   if (!access.ok) return access.response
 
@@ -97,7 +98,13 @@ export async function POST(request: Request) {
     profile: musesAgentProfile(),
     input: parsed.data.prompt,
     budget: defaultAgentBudget(),
-    permissions: ["canvas.read", "canvas.write", "image.generate"],
+    permissions: [
+      "canvas.read",
+      "canvas.write",
+      "image.generate",
+      "workflow.read",
+      "workflow.invoke",
+    ],
     metadata: {
       initiatedByUserId: access.user.id,
       initiatedByEmail: access.user.email,
@@ -122,7 +129,9 @@ export async function GET(request: Request) {
   const runId = search.get("runId") || ""
   const afterSequence = parseAfterSequence(search.get("afterSequence"))
   if (!workspaceId || !runId || afterSequence === null) {
-    return invalidRequest("workspaceId, runId, and a valid event cursor are required.")
+    return invalidRequest(
+      "workspaceId, runId, and a valid event cursor are required."
+    )
   }
   const access = await requireStudioApiAccess(workspaceId)
   if (!access.ok) return access.response
@@ -205,7 +214,9 @@ function userMessage(content: string): AgentMessage {
   }
 }
 
-function publicRun<T extends { failure?: AgentRunSnapshot["failure"] }>(run: T) {
+function publicRun<T extends { failure?: AgentRunSnapshot["failure"] }>(
+  run: T
+) {
   return { ...run, failure: toPublicAgentFailure(run.failure) }
 }
 
@@ -231,7 +242,11 @@ function invalidRequest(message: string) {
 
 function runNotFound() {
   return Response.json(
-    { accepted: false, error: "agent-run-not-found", message: "AgentRun was not found." },
+    {
+      accepted: false,
+      error: "agent-run-not-found",
+      message: "AgentRun was not found.",
+    },
     { status: 404 }
   )
 }

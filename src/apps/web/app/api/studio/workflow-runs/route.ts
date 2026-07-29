@@ -7,10 +7,10 @@ import { getWorld } from "workflow/runtime"
 import type { PoolClient } from "pg"
 
 import {
-  compileWorkflowDefinition,
   getWorkflowDefinitionRef,
+  WORKFLOW_DEFINITION_SCHEMA_VERSION,
   type WorkflowDefinition,
-  type WorkflowDocumentDraft,
+  type WorkflowInvocationTarget,
   type WorkflowRuntimeScalarValue,
 } from "@muses/domain"
 
@@ -26,9 +26,15 @@ import {
   claimWorkflowSubmission,
   failWorkflowStart,
   finalizeCreditReservation,
+  finalizeUnreservedWorkflowSubmission,
   fingerprintWorkflowSubmission,
 } from "@/lib/credit-ledger"
 import { requireStudioApiAccess } from "@/lib/studio-access"
+import { WorkflowCatalogStoreError } from "@/lib/workflow-catalog-store"
+import {
+  startPublishedWorkflowInvocation,
+  type StartPublishedWorkflowInvocationResult,
+} from "@/lib/workflow-invocation"
 import {
   MUSES_RUNTIME_STREAM_NAMESPACE,
   MUSES_WORKFLOW_RUNTIME,
@@ -56,36 +62,16 @@ export async function POST(request: Request) {
   const retry = getWorkflowRetryRequest(body)
   if (retry) return retryWorkflowRun(retry, access.user.id)
 
-  const publication = getWorkflowPublicationRequest(body)
-  if (!publication) {
+  const invocation = getWorkflowInvocationRequest(body)
+  if (!invocation) {
     return Response.json(
       {
         accepted: false,
-        error: "invalid-workflow-publication-request",
+        error: "invalid-workflow-invocation-request",
         message:
-          "A workspace id and serialized Muses WorkflowDocument are required.",
+          "A Workspace, exact published workflow target, and idempotency key are required.",
       },
       { status: 400 }
-    )
-  }
-
-  const compilation = compileWorkflowDefinition(publication.workflow, {
-    workspaceId: publication.workspaceId,
-    definitionId: `${publication.workflow.id}:runtime-v1`,
-    version: publication.workflow.revision,
-  })
-  if (!compilation.ok) {
-    return Response.json(
-      {
-        accepted: false,
-        runtime: "muses-workflow-compiler",
-        validation: {
-          valid: false,
-          issues: compilation.issues,
-          topologicalOrder: [],
-        },
-      },
-      { status: 422 }
     )
   }
 
@@ -111,63 +97,57 @@ export async function POST(request: Request) {
     )
   }
 
-  const requestFingerprint = fingerprintWorkflowSubmission({
-    definition: compilation.definition,
-    inputs: publication.inputs,
-    harnessOptions,
-  })
-  const claim = await claimWorkflowSubmission({
-    workspaceId: publication.workspaceId,
-    userId: access.user.id,
-    idempotencyKey: publication.idempotencyKey,
-    requestFingerprint,
-    definition: compilation.definition,
-  }).catch((error: unknown) =>
-    error instanceof ModelCatalogError ? error : Promise.reject(error)
-  )
-  if (claim instanceof ModelCatalogError) {
-    return modelCatalogErrorResponse(claim)
+  let result: StartPublishedWorkflowInvocationResult
+  try {
+    result = await startPublishedWorkflowInvocation({
+      workspaceId: invocation.workspaceId,
+      submittedByUserId: access.user.id,
+      caller: { kind: "user", userId: access.user.id },
+      target: invocation.target,
+      inputs: invocation.inputs,
+      idempotencyKey: invocation.idempotencyKey,
+      harnessOptions,
+    })
+  } catch (error) {
+    if (error instanceof ModelCatalogError)
+      return modelCatalogErrorResponse(error)
+    if (error instanceof WorkflowCatalogStoreError) {
+      return workflowCatalogInvocationErrorResponse(error)
+    }
+    throw error
   }
-  if (claim.state !== "claimed") {
-    return workflowSubmissionClaimResponse(claim)
+  if (
+    result.state === "in-progress" ||
+    result.state === "idempotency-conflict" ||
+    result.state === "insufficient-credits" ||
+    result.state === "runtime-unavailable"
+  ) {
+    return publishedWorkflowInvocationFailureResponse(result)
   }
 
-  let run: { runId: string }
-  try {
-    run = await start(workflowDefinitionInterpreter, [
-      compilation.definition,
-      publication.inputs,
-      {
-        ...harnessOptions,
-        submissionId: claim.submissionId,
-        creditContext: claim.creditContext,
-      },
-    ])
-    await attachWorkflowSdkRun(claim.submissionId, run.runId)
-  } catch {
-    await failWorkflowStart(
-      claim.submissionId,
-      "Workflow SDK did not accept the run submission."
-    ).catch(() => undefined)
-    return workflowRuntimeUnavailableResponse()
-  }
   return Response.json(
     {
       accepted: true,
-      runId: run.runId,
+      runId: result.runId,
       runtime: MUSES_WORKFLOW_RUNTIME,
       durableRuntime: "vercel-workflow-sdk",
-      definition: getWorkflowDefinitionRef(compilation.definition),
+      definition: result.definition,
+      deploymentId: result.deploymentId,
+      idempotentReplay: result.idempotentReplay,
       retryOfRunId: harnessOptions.retryOfRunId,
       billing: {
-        estimatedMicros: claim.estimatedMicros.toString(),
-        availableAfterReserveMicros:
-          claim.availableAfterReserveMicros.toString(),
+        estimatedMicros: result.estimatedMicros.toString(),
+        ...(result.availableAfterReserveMicros === undefined
+          ? {}
+          : {
+              availableAfterReserveMicros:
+                result.availableAfterReserveMicros.toString(),
+            }),
       },
       validation: {
         valid: true,
         issues: [],
-        topologicalOrder: compilation.definition.executionOrder,
+        topologicalOrder: result.topologicalOrder,
       },
     },
     { status: 202 }
@@ -482,6 +462,12 @@ export async function DELETE(request: Request) {
         actualMicros: chargedMicros,
         reason: "Workflow run cancelled by the user.",
         workflowStatus: "cancelled",
+      })
+    } else {
+      await finalizeUnreservedWorkflowSubmission({
+        submissionId: ownedRun.submissionId,
+        workflowRunId: cancellation.runId,
+        status: "cancelled",
       })
     }
     await client.query(
@@ -899,6 +885,72 @@ function modelCatalogErrorResponse(error: ModelCatalogError) {
   )
 }
 
+function workflowCatalogInvocationErrorResponse(
+  error: WorkflowCatalogStoreError
+) {
+  const status =
+    error.code === "workflow-definition-version-not-found" ||
+    error.code === "workflow-deployment-not-found" ||
+    error.code === "workflow-draft-not-found"
+      ? 404
+      : error.code === "workflow-workspace-mismatch"
+        ? 403
+        : error.code === "workflow-publication-invalid"
+          ? 422
+          : 409
+  return Response.json(
+    {
+      accepted: false,
+      error: error.code,
+      message: error.message,
+    },
+    { status }
+  )
+}
+
+function publishedWorkflowInvocationFailureResponse(
+  result: Exclude<
+    StartPublishedWorkflowInvocationResult,
+    { state: "started" | "replayed" }
+  >
+) {
+  switch (result.state) {
+    case "in-progress":
+      return Response.json(
+        {
+          accepted: false,
+          error: "workflow-submission-in-progress",
+          message: "This workflow submission is still being started.",
+        },
+        { status: 409, headers: { "retry-after": "2" } }
+      )
+    case "idempotency-conflict":
+      return Response.json(
+        {
+          accepted: false,
+          error: "idempotency-key-conflict",
+          message: "The idempotency key belongs to another workflow request.",
+        },
+        { status: 409 }
+      )
+    case "insufficient-credits":
+      return Response.json(
+        {
+          accepted: false,
+          error: "insufficient-credits",
+          message: "Available credits are lower than the estimated run cost.",
+          billing: {
+            requiredMicros: result.requiredMicros.toString(),
+            availableMicros: result.availableMicros.toString(),
+          },
+        },
+        { status: 402 }
+      )
+    case "runtime-unavailable":
+      return workflowRuntimeUnavailableResponse()
+  }
+}
+
 function workflowSubmissionClaimResponse(
   claim: Exclude<
     Awaited<ReturnType<typeof claimWorkflowSubmission>>,
@@ -965,38 +1017,75 @@ function getKnownRuntimeChargeMicros(events: readonly WorkflowRuntimeEvent[]) {
   }, BigInt(0))
 }
 
-function getWorkflowPublicationRequest(body: unknown): {
+function getWorkflowInvocationRequest(body: unknown): {
   workspaceId: string
   idempotencyKey: string
-  workflow: WorkflowDocumentDraft
+  target: WorkflowInvocationTarget
   inputs: Readonly<Record<string, WorkflowRuntimeScalarValue>>
 } | null {
-  if (!body || typeof body !== "object") return null
-  const { workspaceId, workflow, idempotencyKey } = body as {
+  if (!body || typeof body !== "object" || Array.isArray(body)) return null
+  const { workspaceId, target, idempotencyKey } = body as {
     workspaceId?: unknown
-    workflow?: unknown
+    target?: unknown
     idempotencyKey?: unknown
     inputs?: unknown
   }
   if (typeof workspaceId !== "string" || !workspaceId.trim()) return null
   if (typeof idempotencyKey !== "string" || !idempotencyKey.trim()) return null
-  if (!workflow || typeof workflow !== "object") return null
-  const candidate = workflow as Partial<WorkflowDocumentDraft>
-  if (
-    typeof candidate.id !== "string" ||
-    typeof candidate.schemaVersion !== "string" ||
-    typeof candidate.revision !== "number" ||
-    !Array.isArray(candidate.nodes) ||
-    !Array.isArray(candidate.edges)
-  ) {
-    return null
-  }
+  const invocationTarget = parseWorkflowInvocationTarget(target)
+  if (!invocationTarget) return null
   return {
     workspaceId: workspaceId.trim(),
     idempotencyKey: idempotencyKey.trim(),
-    workflow: candidate as WorkflowDocumentDraft,
+    target: invocationTarget,
     inputs: getWorkflowInputs((body as { inputs?: unknown }).inputs),
   }
+}
+
+function parseWorkflowInvocationTarget(
+  value: unknown
+): WorkflowInvocationTarget | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null
+  const candidate = value as Record<string, unknown>
+  if (candidate.kind === "deployment") {
+    return typeof candidate.workspaceId === "string" &&
+      candidate.workspaceId.trim() &&
+      typeof candidate.deploymentId === "string" &&
+      candidate.deploymentId.trim()
+      ? {
+          kind: "deployment",
+          workspaceId: candidate.workspaceId.trim(),
+          deploymentId: candidate.deploymentId.trim(),
+        }
+      : null
+  }
+  if (candidate.kind !== "definition-version") return null
+  const definition = candidate.definition
+  if (
+    !definition ||
+    typeof definition !== "object" ||
+    Array.isArray(definition)
+  ) {
+    return null
+  }
+  const ref = definition as Record<string, unknown>
+  return typeof ref.workspaceId === "string" &&
+    ref.workspaceId.trim() &&
+    typeof ref.definitionId === "string" &&
+    ref.definitionId.trim() &&
+    Number.isSafeInteger(ref.version) &&
+    Number(ref.version) >= 1 &&
+    ref.schemaVersion === WORKFLOW_DEFINITION_SCHEMA_VERSION
+    ? {
+        kind: "definition-version",
+        definition: {
+          workspaceId: ref.workspaceId.trim(),
+          definitionId: ref.definitionId.trim(),
+          version: Number(ref.version),
+          schemaVersion: WORKFLOW_DEFINITION_SCHEMA_VERSION,
+        },
+      }
+    : null
 }
 
 function getWorkflowRetryRequest(body: unknown): WorkflowRetryRequest | null {

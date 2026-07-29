@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0",
+  "recordedAt": "2026-07-29",
+  "gate": "a8-callable-workflows",
+  "engineeringStatus": "passed",
+  "environment": {
+    "studio": "http://127.0.0.1:4730/studio",
+    "agentRuntime": "muses-agent-core",
+    "durableDriver": "vercel-workflow-sdk-4.6.2",
+    "durableWorld": "postgresql"
+  },
+  "realAgentInvocation": {
+    "agentRunId": "arun_a127872136d0f59504d9597226acb175",
+    "agentDriverRunId": "wrun_01KYNMT2F8NFMJHSASJ01BRKHC",
+    "status": "completed",
+    "revision": 12,
+    "turns": 4,
+    "modelCalls": 4,
+    "toolCalls": 3,
+    "inputTokens": 8289,
+    "outputTokens": 140,
+    "creditMicros": "0",
+    "eventCount": 30,
+    "toolOrder": [
+      "workflow.list",
+      "workflow.inspect",
+      "workflow.invoke"
+    ],
+    "imageGenerateCalled": false
+  },
+  "publishedWorkflow": {
+    "definitionId": "mws_3449c4e2cadc483b8299661808c2f4fb:durable-harness",
+    "version": 1,
+    "schemaVersion": "0.3.0-draft",
+    "deploymentId": "mwdep_4c3615c1fa3b48c1ab42af208ba3d17d",
+    "deploymentAlias": "production",
+    "deploymentStatus": "active"
+  },
+  "invocation": {
+    "workflowRunId": "wrun_01KYNMT85ZJ36F3MK1DJPSYZ97",
+    "musesSubmissionId": "mrun_75808ef2729448a392fe15904786eb5f",
+    "callerKind": "agent",
+    "callerIdMatchesAgentRun": true,
+    "exactDefinitionAudit": true,
+    "exactDeploymentAudit": true,
+    "workflowSdkStatusAfterCleanup": "cancelled",
+    "musesWorkflowStatusAfterCleanup": "cancelled",
+    "creditReservationCreated": false,
+    "generatedAssetsAdded": 0,
+    "creditLedgerEntriesAdded": 0
+  },
+  "verification": {
+    "domainTests": {
+      "passed": 39,
+      "failed": 0
+    },
+    "agentCoreTests": {
+      "passed": 11,
+      "failed": 0
+    },
+    "agentHarnessAdapterTests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "webUnitTests": {
+      "passed": 5,
+      "failed": 0
+    },
+    "repositoryTypecheck": "passed",
+    "workflowFilesScanned": 194,
+    "workflowEntries": 2,
+    "workflowSerdeIssues": 0,
+    "a8BackendTargetedLint": "passed",
+    "fullWebLintBaseline": {
+      "status": "failed-known-baseline",
+      "errors": 7,
+      "warnings": 4
+    },
+    "webProductionBuild": "passed",
+    "apccDoctor": "passed",
+    "catalogAndUiPlaywright": {
+      "passed": 3,
+      "failed": 0
+    },
+    "realAgentPlaywright": {
+      "passed": 1,
+      "failed": 0,
+      "durationSeconds": 8,
+      "origin": "127.0.0.1:4730"
+    }
+  },
+  "remainingBeyondA8": [
+    "a9-agent-reliability-gate",
+    "external-service-account-authentication",
+    "immutable-version-workspace-deletion-policy",
+    "agent-child-run-cancellation",
+    "approval-and-tracing",
+    "isolation-compaction-restart-and-fixed-evals"
+  ],
+  "artifacts": [
+    "README.md",
+    "results.json"
+  ]
+}

@@ -378,8 +378,8 @@ items:
     statusChangedAt: 2026-07-28T18:01:09.267Z
   - id: build-single-agent-loop
     name: 交付单 Agent 驱动画布闭环
-    summary: 让单 Agent 通过 Operation Gateway 驱动 CreativeCanvas、构建/运行指定 WorkflowDefinition，并支持 steering。
-    status: in_progress
+    summary: A7-A8 已完成：真实单 Agent 生图、steering、CreativeCanvas 投影，以及指定工作流的服务端发布与精确调用均有工程证据；下一步进入 A9 可靠性 Gate。
+    status: done
     planRef: agent-canvas-loop
     parentTaskId: null
     countedForProgress: false
@@ -387,12 +387,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.543Z
-    updatedAt: 2026-07-28T21:28:40.590Z
-    statusChangedAt: 2026-07-28T21:28:40.590Z
+    updatedAt: 2026-07-29T00:41:28.504Z
+    statusChangedAt: 2026-07-29T00:41:28.504Z
   - id: verify-agent-safety-recovery
     name: 验证 Agent 安全、成本与恢复
-    summary: 验证刷新/Worker 重启恢复、压缩、幂等费用、预算、审批、取消、隔离、追踪与 eval。
-    status: pending
+    summary: A9 当前主线：验证 Agent/子运行刷新与进程恢复、上下文压缩不漂移、幂等费用与预算、审批与联动取消、Workspace/沙盒隔离、成熟追踪以及固定 eval。
+    status: in_progress
     planRef: agent-reliability-gate
     parentTaskId: null
     countedForProgress: false
@@ -400,8 +400,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.714Z
-    updatedAt: 2026-07-28T17:09:24.230Z
-    statusChangedAt: 2026-07-24T19:57:48.714Z
+    updatedAt: 2026-07-29T00:41:28.700Z
+    statusChangedAt: 2026-07-29T00:41:28.700Z
   - id: define-delegation-protocol
     name: 定义 Agent 委托与调度协议
     summary: 定义子任务图、角色、上下文包、能力/权限、依赖、预算、结果、失败隔离和汇总协议；固定组织层级不进入内核。
@@ -924,8 +924,8 @@ items:
     statusChangedAt: 2026-07-28T18:01:10.080Z
   - id: publish-callable-workflows
     name: 交付指定工作流调用与发布入口
-    summary: A8 当前入口：在既有 ProfessionalWorkspace 多定义与 WorkflowDefinition 编译/运行底座上，补齐稳定 definition id + published version 调用身份，让 UI、Agent、API 经同一授权、幂等、费用与观测边界精确运行指定定义；只做首个可验收纵向切片。
-    status: in_progress
+    summary: A8 已通过：服务端权威草稿发布为不可变 WorkflowDefinition 版本，UI、MusesAgent 与认证 HTTP API 通过同一授权、幂等、费用、Workflow SDK 与审计边界精确调用 Deployment 或指定版本；真实 Agent 与取消落库证据已归档。
+    status: done
     planRef: agent-canvas-loop
     parentTaskId: build-single-agent-loop
     countedForProgress: true
@@ -933,8 +933,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T17:09:26.500Z
-    updatedAt: 2026-07-28T23:50:38.553Z
-    statusChangedAt: 2026-07-28T23:50:38.553Z
+    updatedAt: 2026-07-29T00:41:28.314Z
+    statusChangedAt: 2026-07-29T00:41:28.314Z
   - id: project-agent-plan-to-creative-canvas
     name: 投影 Agent 计划到创作画布
     summary: 已交付默认创作模式、可移动 Asset 投影、三步持久 ExecutionPlan、Muses 生成 Asset 权威记录与 Workflow World 生命周期解耦；真实 Run、拖动刷新、桌面移动视觉、Domain 39/39、Agent Core 9/9、Harness 3/3、类型检查、定向 lint、Workflow validate、生产构建和 APCC doctor 均有证据。

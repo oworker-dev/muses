@@ -338,6 +338,8 @@
       "cancelled": "已取消",
       "failed": "已停止",
       "selectionHint": "工作流正在等待你的选择。选择一个候选结果后继续。",
+      "collapsePanel": "折叠运行结果",
+      "expandPanel": "展开运行结果",
       "direction": "方向 {count}",
       "serverReference": "候选结果",
       "choose": "选择",

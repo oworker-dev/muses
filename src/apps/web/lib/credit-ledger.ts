@@ -6,6 +6,7 @@ import type {
   ResolvedImageOutputSize,
   WorkflowDefinition,
   WorkflowDefinitionImageGeneratorNode,
+  WorkflowInvocationCaller,
 } from "@muses/domain"
 import { resolveImageOutputSize } from "@muses/domain"
 
@@ -70,6 +71,8 @@ export async function claimWorkflowSubmission(input: {
   idempotencyKey: string
   requestFingerprint: string
   definition: WorkflowDefinition
+  deploymentId?: string
+  caller?: WorkflowInvocationCaller
 }): Promise<WorkflowSubmissionClaim> {
   const pricing = await estimateWorkflowCredits(input.definition)
   const client = await getPgPool().connect()
@@ -154,11 +157,16 @@ export async function claimWorkflowSubmission(input: {
           submitted_by_user_id,
           workflow_document_id,
           workflow_document_revision,
+          workflow_definition_id,
+          workflow_definition_version,
+          workflow_deployment_id,
+          caller_kind,
+          caller_id,
           idempotency_key,
           request_fingerprint,
           status
         )
-        values ($1, $2, $3, $4, $5, $6, $7, 'starting')
+        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'starting')
       `,
       [
         submissionId,
@@ -166,6 +174,13 @@ export async function claimWorkflowSubmission(input: {
         input.userId,
         input.definition.source.documentId,
         input.definition.source.documentRevision,
+        input.definition.definitionId,
+        input.definition.version,
+        input.deploymentId || null,
+        (input.caller || { kind: "user", userId: input.userId }).kind,
+        workflowCallerId(
+          input.caller || { kind: "user", userId: input.userId }
+        ),
         input.idempotencyKey,
         input.requestFingerprint,
       ]
@@ -283,6 +298,19 @@ export async function claimWorkflowSubmission(input: {
     throw error
   } finally {
     client.release()
+  }
+}
+
+function workflowCallerId(caller: WorkflowInvocationCaller) {
+  switch (caller.kind) {
+    case "user":
+      return caller.userId
+    case "agent":
+      return caller.agentRunId
+    case "api":
+      return caller.clientId
+    case "workflow":
+      return caller.workflowRunId
   }
 }
 
@@ -530,6 +558,7 @@ export async function authorizeWorkflowRun(
   sdkRunId: string
 ) {
   const result = await getPgPool().query<{
+    submissionId: string
     reservationId: string | null
     reservationStatus: string | null
     estimatedMicros: string | null
@@ -538,6 +567,7 @@ export async function authorizeWorkflowRun(
   }>(
     `
       select
+        run.id as "submissionId",
         run.reservation_id as "reservationId",
         reservation.status as "reservationStatus",
         reservation.estimated_micros as "estimatedMicros",

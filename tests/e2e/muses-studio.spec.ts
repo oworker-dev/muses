@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { randomBytes } from "node:crypto";
 import pg from "pg";
 
@@ -410,23 +410,18 @@ test("the default professional workflow produces and restores one image result",
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
     "base64",
   );
-  let publishedWorkflow: {
+  let invokedWorkflow: {
     workspaceId?: string;
-    workflow?: {
-      nodes?: Array<{
-        id: string;
-        data: Record<string, unknown>;
-      }>;
-      edges?: Array<{
-        sourceNodeId: string;
-        targetNodeId: string;
-      }>;
+    target?: {
+      kind?: string;
+      workspaceId?: string;
+      deploymentId?: string;
     };
   } | null = null;
 
   await page.route("**/api/studio/workflow-runs*", async (route) => {
     if (route.request().method() === "POST") {
-      publishedWorkflow = route.request().postDataJSON();
+      invokedWorkflow = route.request().postDataJSON();
       await route.fulfill({
         status: 202,
         contentType: "application/json",
@@ -628,16 +623,34 @@ test("the default professional workflow produces and restores one image result",
     "Provider did not report token usage",
   );
   await expect(observability).toContainText("Actual 1 cr · estimated 1 cr");
-  expect(publishedWorkflow?.workspaceId).toBe(workspaceId);
-  expect(publishedWorkflow?.workflow?.nodes?.map((node) => node.id)).toEqual([
-    "start-1",
-    "image-generator-1",
-    "end-1",
-  ]);
+  expect(invokedWorkflow?.workspaceId).toBe(workspaceId);
+  expect(invokedWorkflow?.target).toMatchObject({
+    kind: "deployment",
+    workspaceId,
+  });
+  expect(invokedWorkflow?.target?.deploymentId).toMatch(/^mwdep_/);
+  const inspectionResponse = await page.request.get(
+    `/api/studio/workflow-publications?workspaceId=${workspaceId}&deploymentId=${invokedWorkflow?.target?.deploymentId}`,
+  );
+  expect(inspectionResponse.ok()).toBeTruthy();
+  const inspection = (await inspectionResponse.json()) as {
+    inspection: {
+      definition: {
+        nodes: Array<{ id: string; config: Record<string, unknown> }>;
+        dataBindings: Array<{
+          source: { nodeId: string };
+          target: { nodeId: string };
+        }>;
+      };
+    };
+  };
+  expect(inspection.inspection.definition.nodes.map((node) => node.id)).toEqual(
+    ["start-1", "image-generator-1", "end-1"],
+  );
   expect(
-    publishedWorkflow?.workflow?.nodes?.find(
+    inspection.inspection.definition.nodes.find(
       (node) => node.id === "image-generator-1",
-    )?.data,
+    )?.config,
   ).toMatchObject({
     capabilityId: "image.generate.v1",
     modelRef: "openai/gpt-image-1.5@2026-07-28",
@@ -651,14 +664,10 @@ test("the default professional workflow produces and restores one image result",
     },
     quality: "low",
   });
-  expect(publishedWorkflow?.workflow?.edges).toEqual([
+  expect(inspection.inspection.definition.dataBindings).toEqual([
     expect.objectContaining({
-      sourceNodeId: "start-1",
-      targetNodeId: "image-generator-1",
-    }),
-    expect.objectContaining({
-      sourceNodeId: "image-generator-1",
-      targetNodeId: "end-1",
+      source: expect.objectContaining({ nodeId: "image-generator-1" }),
+      target: expect.objectContaining({ nodeId: "end-1" }),
     }),
   ]);
   await expect(page.getByTestId("durable-run-images")).toContainText(
@@ -769,15 +778,29 @@ test("Muses waits and resumes a durable server interpreter while keeping the loc
       version: number;
       schemaVersion: string;
     };
+    deploymentId: string;
   };
   expect(publicationBody.runtime).toBe("muses-workflow-runtime");
   expect(publicationBody.durableRuntime).toBe("vercel-workflow-sdk");
   expect(publicationBody.runId).toMatch(/^wrun_/);
   expect(publicationBody.definition).toEqual({
     workspaceId,
-    definitionId: "workflow-alpha:runtime-v1",
-    version: 0,
+    definitionId: `${workspaceId}:durable-harness`,
+    version: expect.any(Number),
     schemaVersion: "0.3.0-draft",
+  });
+  expect(publicationBody.definition.version).toBeGreaterThanOrEqual(1);
+  expect(publicationBody.deploymentId).toMatch(/^mwdep_/);
+  const repeatedInvocation = await page.request.post(
+    "/api/studio/workflow-runs",
+    { data: publication.request().postDataJSON() },
+  );
+  expect(repeatedInvocation.status()).toBe(202);
+  expect(await repeatedInvocation.json()).toMatchObject({
+    runId: publicationBody.runId,
+    definition: publicationBody.definition,
+    deploymentId: publicationBody.deploymentId,
+    idempotentReplay: true,
   });
   await expect(
     page.getByText(/Durable Workflow SDK run started:/i),
@@ -967,8 +990,8 @@ test("Muses waits and resumes a durable server interpreter while keeping the loc
       runtime: "muses-workflow-runtime",
       definition: {
         workspaceId,
-        definitionId: "workflow-alpha:runtime-v1",
-        version: 0,
+        definitionId: publicationBody.definition.definitionId,
+        version: publicationBody.definition.version,
       },
       completedNodeIds: [
         "start-1",
@@ -1061,6 +1084,7 @@ test("Muses waits and resumes a durable server interpreter while keeping the loc
     page.getByText(/Direction selected and published/i),
   ).toBeVisible();
 
+  await page.getByTestId("durable-run-collapse").click();
   await page
     .getByTestId("workflow-node-design-1")
     .getByRole("button", { name: "Open design canvas" })
@@ -1264,15 +1288,10 @@ test("durable failures use bounded attempts, terminal timeouts, and new-run retr
       ),
     )
     .toBe(true);
-  const publication = await page.evaluate(
-    (key) => {
-      const raw = window.localStorage.getItem(key);
-      if (!raw) throw new Error("Expected a persisted Studio workspace.");
-      const workspace = JSON.parse(raw);
-      return { workspaceId: workspace.id, workflow: workspace.workflow };
-    },
-    studioWorkspaceStorageKey(workspaceId, true),
-  );
+  const publication = {
+    workspaceId,
+    target: await publishDurableHarness(page),
+  };
 
   const permanentStart = await page.request.post("/api/studio/workflow-runs", {
     headers: { "x-muses-workflow-harness": "permanent-failure" },
@@ -1707,6 +1726,241 @@ test("professional canvas keeps a node under the pointer while dragging", async 
   await page.mouse.up();
 });
 
+test("Workflow Catalog rejects mutable, missing, disabled, and cross-workspace invocation targets", async ({
+  page,
+}) => {
+  const first = await publishDurableHarnessPublication(page);
+  const repeated = await publishDurableHarnessPublication(page);
+  expect(repeated).toMatchObject({
+    published: false,
+    definition: first.definition,
+    deployment: { deploymentId: first.deployment.deploymentId },
+  });
+
+  const layoutOnlyDraftRevision = await advanceWorkflowDraftLayoutRevision(
+    first.definition.definitionId,
+  );
+  const layoutOnlyPublication = await page.request.post(
+    "/api/studio/workflow-publications",
+    {
+      data: {
+        workspaceId,
+        definitionId: first.definition.definitionId,
+        expectedDraftRevision: layoutOnlyDraftRevision,
+        deploymentAlias: "production",
+      },
+    },
+  );
+  expect(layoutOnlyPublication.status()).toBe(200);
+  expect(await layoutOnlyPublication.json()).toMatchObject({
+    published: false,
+    definition: first.definition,
+    deployment: { deploymentId: first.deployment.deploymentId },
+  });
+
+  const invalidFixture = await page.request.post(
+    "/api/studio/workflow-publications",
+    {
+      data: {
+        workspaceId,
+        definitionId: `${workspaceId}:not-the-durable-harness`,
+        fixture: "durable-harness",
+      },
+    },
+  );
+  expect(invalidFixture.status()).toBe(422);
+  expect(await invalidFixture.json()).toMatchObject({
+    error: "workflow-publication-invalid",
+  });
+  await expectWorkflowDefinitionVersionIsImmutable(
+    first.definition.definitionId,
+    first.definition.version,
+  );
+
+  const mutableRequest = await page.request.post("/api/studio/workflow-runs", {
+    data: {
+      workspaceId,
+      workflow: { id: "browser-owned-graph", nodes: [], edges: [] },
+      idempotencyKey: `mutable-graph:${Date.now()}`,
+    },
+  });
+  expect(mutableRequest.status()).toBe(400);
+  expect(await mutableRequest.json()).toMatchObject({
+    error: "invalid-workflow-invocation-request",
+  });
+
+  const missingDeployment = await page.request.post(
+    "/api/studio/workflow-runs",
+    {
+      data: {
+        workspaceId,
+        target: {
+          kind: "deployment",
+          workspaceId,
+          deploymentId: "mwdep_missing",
+        },
+        idempotencyKey: `missing-deployment:${Date.now()}`,
+      },
+    },
+  );
+  expect(missingDeployment.status()).toBe(404);
+  expect(await missingDeployment.json()).toMatchObject({
+    error: "workflow-deployment-not-found",
+  });
+
+  const crossWorkspace = await page.request.post("/api/studio/workflow-runs", {
+    data: {
+      workspaceId,
+      target: {
+        kind: "deployment",
+        workspaceId: "mws_not_authorized",
+        deploymentId: first.deployment.deploymentId,
+      },
+      idempotencyKey: `cross-workspace-deployment:${Date.now()}`,
+    },
+  });
+  expect(crossWorkspace.status()).toBe(403);
+  expect(await crossWorkspace.json()).toMatchObject({
+    error: "workflow-workspace-mismatch",
+  });
+
+  await setWorkflowDeploymentStatus(first.deployment.deploymentId, "disabled");
+  try {
+    const disabledDeployment = await page.request.post(
+      "/api/studio/workflow-runs",
+      {
+        data: {
+          workspaceId,
+          target: {
+            kind: "deployment",
+            workspaceId,
+            deploymentId: first.deployment.deploymentId,
+          },
+          idempotencyKey: `disabled-deployment:${Date.now()}`,
+        },
+      },
+    );
+    expect(disabledDeployment.status()).toBe(409);
+    expect(await disabledDeployment.json()).toMatchObject({
+      error: "workflow-deployment-disabled",
+    });
+  } finally {
+    await setWorkflowDeploymentStatus(first.deployment.deploymentId, "active");
+  }
+});
+
+test("MusesAgent discovers, inspects, and invokes one exact published workflow", async ({
+  page,
+}) => {
+  test.setTimeout(4 * 60_000);
+  const publication = await publishDurableHarnessPublication(page);
+  const deploymentId = publication.deployment.deploymentId;
+  const started = await page.request.post("/api/studio/agent-runs", {
+    data: {
+      workspaceId,
+      prompt: [
+        "Use the Muses workflow tools in this exact order.",
+        "First call workflow.list.",
+        `Then call workflow.inspect for deploymentId ${deploymentId}.`,
+        `Then call workflow.invoke for deploymentId ${deploymentId} with empty inputs.`,
+        "Do not call image.generate. After workflow.invoke succeeds, report its runId and stop.",
+      ].join(" "),
+      idempotencyKey: `agent-workflow-invoke:${Date.now()}`,
+    },
+  });
+  expect(started.status()).toBe(202);
+  const startedBody = (await started.json()) as { run: { runId: string } };
+  const agentRunId = startedBody.run.runId;
+  expect(agentRunId).toMatch(/^arun_/);
+
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
+        );
+        const body = (await response.json()) as {
+          run?: { status?: string };
+        };
+        return body.run?.status;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .toBe("completed");
+
+  const completedResponse = await page.request.get(
+    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
+  );
+  expect(completedResponse.ok()).toBeTruthy();
+  const completed = (await completedResponse.json()) as {
+    run: {
+      context: {
+        messages: Array<{
+          role: string;
+          toolName?: string;
+          content: string;
+        }>;
+      };
+    };
+  };
+  const toolMessages = completed.run.context.messages.filter(
+    ({ role }) => role === "tool",
+  );
+  expect(toolMessages.map(({ toolName }) => toolName)).toEqual(
+    expect.arrayContaining([
+      "workflow.list",
+      "workflow.inspect",
+      "workflow.invoke",
+    ]),
+  );
+  const invocationMessage = [...toolMessages]
+    .reverse()
+    .find(({ toolName }) => toolName === "workflow.invoke");
+  expect(invocationMessage).toBeTruthy();
+  const invocation = JSON.parse(invocationMessage!.content) as {
+    accepted: boolean;
+    runId: string;
+    definition: TestWorkflowPublication["definition"];
+    deploymentId: string;
+  };
+  expect(invocation).toMatchObject({
+    accepted: true,
+    definition: publication.definition,
+    deploymentId,
+  });
+  expect(invocation.runId).toMatch(/^wrun_/);
+  expect(await readWorkflowInvocationAudit(invocation.runId)).toMatchObject({
+    definitionId: publication.definition.definitionId,
+    definitionVersion: publication.definition.version,
+    deploymentId,
+    callerKind: "agent",
+    callerId: agentRunId,
+  });
+
+  const waiting = await page.request.get(
+    `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${invocation.runId}`,
+  );
+  expect(await waiting.json()).toMatchObject({
+    runId: invocation.runId,
+    status: "waiting",
+  });
+  const cancelled = await page.request.delete("/api/studio/workflow-runs", {
+    data: {
+      workspaceId,
+      runId: invocation.runId,
+      idempotencyKey: `agent-workflow-cleanup:${invocation.runId}`,
+      reason: "A8 Agent invocation evidence complete",
+    },
+  });
+  expect(cancelled.status()).toBe(202);
+  await expect
+    .poll(
+      async () =>
+        (await readWorkflowInvocationAudit(invocation.runId)).workflowStatus,
+    )
+    .toBe("cancelled");
+});
+
 test("insufficient credits reject a real image run before provider execution", async ({
   page,
 }) => {
@@ -1714,19 +1968,12 @@ test("insufficient credits reject a real image run before provider execution", a
   await expect(
     page.getByTestId("workflow-node-image-generator-1"),
   ).toBeVisible();
-  const workflow = await page.evaluate(
-    (storageKey) => {
-      const raw = window.localStorage.getItem(storageKey);
-      return raw ? JSON.parse(raw).workflow : null;
-    },
-    studioWorkspaceStorageKey(workspaceId, false),
-  );
-  expect(workflow).toBeTruthy();
+  const target = await publishDefaultWorkflow(page);
 
   await drainStudioCredits();
   const idempotencyKey = `insufficient-credit:${Date.now()}`;
   const response = await page.request.post("/api/studio/workflow-runs", {
-    data: { workspaceId, workflow, idempotencyKey },
+    data: { workspaceId, target, idempotencyKey },
   });
   expect(response.status()).toBe(402);
   expect(await response.json()).toMatchObject({
@@ -1739,6 +1986,78 @@ test("insufficient credits reject a real image run before provider execution", a
 
 function studioWorkspaceStorageKey(id: string, harness: boolean) {
   return `muses.platform-core-alpha.workspace.${id}${harness ? ".harness" : ""}`;
+}
+
+type TestWorkflowPublication = {
+  published: boolean;
+  definition: {
+    workspaceId: string;
+    definitionId: string;
+    version: number;
+    schemaVersion: "0.3.0-draft";
+  };
+  deployment: {
+    workspaceId: string;
+    deploymentId: string;
+    definition: TestWorkflowPublication["definition"];
+  };
+};
+
+async function publishDurableHarnessPublication(page: Page) {
+  const gateway = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(gateway.ok()).toBeTruthy();
+  const response = await page.request.post(
+    "/api/studio/workflow-publications",
+    {
+      data: {
+        workspaceId,
+        definitionId: `${workspaceId}:durable-harness`,
+        fixture: "durable-harness",
+        deploymentAlias: "production",
+      },
+    },
+  );
+  expect(response.ok()).toBeTruthy();
+  return (await response.json()) as TestWorkflowPublication;
+}
+
+async function publishDurableHarness(page: Page) {
+  const publication = await publishDurableHarnessPublication(page);
+  return {
+    kind: "deployment" as const,
+    workspaceId,
+    deploymentId: publication.deployment.deploymentId,
+  };
+}
+
+async function publishDefaultWorkflow(page: Page) {
+  const gatewayResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(gatewayResponse.ok()).toBeTruthy();
+  const gateway =
+    (await gatewayResponse.json()) as OperationGatewayTestSnapshot;
+  const draft = gateway.workflowDefinitions[0];
+  const response = await page.request.post(
+    "/api/studio/workflow-publications",
+    {
+      data: {
+        workspaceId,
+        definitionId: draft.definitionId,
+        expectedDraftRevision: draft.revision,
+        deploymentAlias: "production",
+      },
+    },
+  );
+  expect(response.ok()).toBeTruthy();
+  const publication = (await response.json()) as TestWorkflowPublication;
+  return {
+    kind: "deployment" as const,
+    workspaceId,
+    deploymentId: publication.deployment.deploymentId,
+  };
 }
 
 type OperationGatewayTestSnapshot = {
@@ -1951,6 +2270,109 @@ async function expectPublishedCatalogVersionsAreImmutable() {
         ["price_openai_gpt_image_2_alpha_20260728_1"],
       ),
     ).rejects.toThrow(/immutable/i);
+  } finally {
+    await client.end();
+  }
+}
+
+async function expectWorkflowDefinitionVersionIsImmutable(
+  definitionId: string,
+  version: number,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    await expect(
+      client.query(
+        `
+          update muses_workflow_definition_version
+          set input_schema = '{"mutated":true}'::jsonb
+          where definition_id = $1 and version = $2
+        `,
+        [definitionId, version],
+      ),
+    ).rejects.toThrow(/immutable/i);
+  } finally {
+    await client.end();
+  }
+}
+
+async function setWorkflowDeploymentStatus(
+  deploymentId: string,
+  status: "active" | "disabled",
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    await client.query(
+      "update muses_workflow_deployment set status = $2, updated_at = now() where id = $1",
+      [deploymentId, status],
+    );
+  } finally {
+    await client.end();
+  }
+}
+
+async function advanceWorkflowDraftLayoutRevision(definitionId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const result = await client.query<{ revision: number }>(
+      `
+        update muses_workflow_definition_draft
+        set revision = revision + 1,
+            lifecycle_status = 'draft',
+            document = jsonb_set(
+              jsonb_set(
+                document,
+                '{workflow,revision}',
+                to_jsonb(((document #>> '{workflow,revision}')::integer + 1))
+              ),
+              '{workflow,nodes,0,position,x}',
+              to_jsonb(
+                ((document #>> '{workflow,nodes,0,position,x}')::numeric + 1)
+              )
+            ),
+            updated_at = now()
+        where workspace_id = $1 and id = $2
+        returning revision
+      `,
+      [workspaceId, definitionId],
+    );
+    expect(result.rowCount).toBe(1);
+    return result.rows[0].revision;
+  } finally {
+    await client.end();
+  }
+}
+
+async function readWorkflowInvocationAudit(runId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const result = await client.query<{
+      definitionId: string;
+      definitionVersion: number;
+      deploymentId: string;
+      callerKind: string;
+      callerId: string;
+      workflowStatus: string;
+    }>(
+      `
+        select
+          workflow_definition_id as "definitionId",
+          workflow_definition_version as "definitionVersion",
+          workflow_deployment_id as "deploymentId",
+          caller_kind as "callerKind",
+          caller_id as "callerId",
+          status as "workflowStatus"
+        from muses_workflow_run
+        where workspace_id = $1 and sdk_run_id = $2
+        limit 1
+      `,
+      [workspaceId, runId],
+    );
+    return result.rows[0];
   } finally {
     await client.end();
   }

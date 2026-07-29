@@ -763,12 +763,69 @@ export function MusesStudio({
     setRetryingRun(false)
     setNotice(t("status.validating"))
     try {
+      await operationGatewayQueue.current
+      const authoritativeDefinition =
+        operationGatewaySnapshotRef.current.workflowDefinitions.find(
+          ({ definitionId }) => definitionId === workspace.workflow.id
+        )
+      if (!harnessTemplate && !authoritativeDefinition) {
+        throw new Error("The selected workflow is no longer available.")
+      }
+      const definitionId = harnessTemplate
+        ? `${workspace.id}:durable-harness`
+        : workspace.workflow.id
+      const publicationResponse = await fetch(
+        "/api/studio/workflow-publications",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            workspaceId: workspace.id,
+            definitionId,
+            ...(!harnessTemplate && authoritativeDefinition
+              ? { expectedDraftRevision: authoritativeDefinition.revision }
+              : { fixture: "durable-harness" }),
+            deploymentAlias: "production",
+          }),
+        }
+      )
+      const publication = (await publicationResponse.json()) as {
+        accepted?: boolean
+        deployment?: {
+          workspaceId: string
+          deploymentId: string
+          definition: {
+            workspaceId: string
+            definitionId: string
+            version: number
+            schemaVersion: string
+          }
+        }
+        validation?: { issues?: Array<{ message?: string }> }
+        message?: string
+      }
+      if (
+        !publicationResponse.ok ||
+        !publication.accepted ||
+        !publication.deployment
+      ) {
+        const issue = publication.validation?.issues?.[0]?.message
+        setNotice(
+          issue || publication.message || t("status.publicationRejected")
+        )
+        return
+      }
+
       const response = await fetch("/api/studio/workflow-runs", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           workspaceId: workspace.id,
-          workflow: workspace.workflow,
+          target: {
+            kind: "deployment",
+            workspaceId: workspace.id,
+            deploymentId: publication.deployment.deploymentId,
+          },
           idempotencyKey: `workflow-run:${crypto.randomUUID()}`,
         }),
       })
@@ -806,7 +863,7 @@ export function MusesStudio({
     } finally {
       setPublishing(false)
     }
-  }, [t, workspace.id, workspace.workflow])
+  }, [harnessTemplate, t, workspace.id, workspace.workflow.id])
 
   const resumeDurableSelection = useCallback(
     async (assetId: string) => {
@@ -3058,6 +3115,7 @@ function DurableRunPanel({
   onRetry: () => void
 }) {
   const t = useTranslations("Studio")
+  const [collapsed, setCollapsed] = useState(false)
   const documentOutput = projection.result?.outputs.document
   const designDocument =
     documentOutput?.valueType === "design-document" ? documentOutput : undefined
@@ -3142,160 +3200,186 @@ function DurableRunPanel({
             />
             {statusLabel}
           </span>
+          <button
+            type="button"
+            data-testid="durable-run-collapse"
+            aria-label={
+              collapsed
+                ? t("durableRun.expandPanel")
+                : t("durableRun.collapsePanel")
+            }
+            title={
+              collapsed
+                ? t("durableRun.expandPanel")
+                : t("durableRun.collapsePanel")
+            }
+            onClick={() => setCollapsed((current) => !current)}
+            className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            {collapsed ? (
+              <PlusIcon className="size-3" />
+            ) : (
+              <MinusIcon className="size-3" />
+            )}
+          </button>
         </div>
       </div>
 
-      {projection.observability ? (
-        <DurableRunObservability
-          projection={projection.observability}
-          runStatus={projection.status}
-        />
-      ) : null}
+      {collapsed ? null : (
+        <>
+          {projection.observability ? (
+            <DurableRunObservability
+              projection={projection.observability}
+              runStatus={projection.status}
+            />
+          ) : null}
 
-      {projection.suspension ? (
-        <div className="mt-3" data-testid="durable-run-suspension">
-          <p className="text-[10px] leading-4 text-muted-foreground">
-            {t("durableRun.selectionHint")}
-          </p>
-          <div className="mt-2 grid gap-1.5">
-            {projection.suspension.candidateAssets.map((asset, index) => (
-              <button
-                key={asset.assetId}
-                type="button"
-                data-testid={`server-harness-candidate-${index + 1}`}
-                disabled={Boolean(resumingAssetId) || cancelling}
-                onClick={() => onSelect(asset.assetId)}
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-2.5 py-2 text-left hover:border-violet-400 hover:bg-violet-500/5 disabled:cursor-wait disabled:opacity-60"
-              >
-                <span>
-                  <span className="block text-[10px] font-medium text-foreground">
-                    {t("durableRun.direction", { count: index + 1 })}
-                  </span>
-                  <span className="block text-[8px] text-muted-foreground">
-                    {t("durableRun.serverReference")}
-                  </span>
-                </span>
-                <span className="rounded-md bg-violet-500/10 px-2 py-1 text-[9px] font-semibold text-violet-700 dark:text-violet-200">
-                  {resumingAssetId === asset.assetId
-                    ? t("durableRun.resuming")
-                    : t("durableRun.choose")}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {generatedImages.length > 0 ? (
-        <div className="mt-3 space-y-3" data-testid="durable-run-images">
-          {generatedImages.map((asset, index) => (
-            <figure
-              key={asset.id}
-              className="overflow-hidden rounded-lg border border-border bg-card"
-            >
-              <a href={asset.url} target="_blank" rel="noreferrer">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={asset.url}
-                  alt={asset.prompt}
-                  className="max-h-[420px] w-full bg-muted object-contain"
-                />
-              </a>
-              <figcaption className="flex items-start justify-between gap-3 p-3">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-foreground">
-                    {generatedImages.length > 1
-                      ? t("durableRun.generatedImageNumber", {
-                          count: index + 1,
-                        })
-                      : t("durableRun.generatedImage")}
-                  </p>
-                  <p className="mt-1 line-clamp-2 text-[9px] leading-4 text-muted-foreground">
-                    {asset.prompt}
-                  </p>
-                  <p className="mt-1 text-[8px] text-muted-foreground">
-                    {formatModelRefLabel(asset.modelRef)} · {asset.width} ×{" "}
-                    {asset.height}
-                  </p>
-                </div>
-                <a
-                  href={generatedImageDownloadHref(asset)}
-                  download={generatedImageFilename(asset)}
-                  className="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-background text-muted-foreground hover:text-foreground"
-                  aria-label={t("durableRun.downloadImage")}
-                  title={t("durableRun.downloadImage")}
-                >
-                  <DownloadIcon className="size-3.5" />
-                </a>
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      ) : null}
-
-      {projection.attempts.length > 0 ? (
-        <details className="mt-3" data-testid="durable-run-attempts">
-          <summary className="cursor-pointer text-[9px] font-medium text-muted-foreground">
-            {t("durableRun.executionDetails")}
-          </summary>
-          <div className="mt-2 grid gap-1.5">
-            {projection.attempts.map((attempt) => (
-              <div
-                key={attempt.nodeId}
-                data-testid={`durable-run-attempt-${attempt.nodeId}`}
-                className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/35 px-2.5 py-1.5 text-[9px]"
-              >
-                <span className="truncate font-medium text-foreground">
-                  {durableNodeKindLabel(attempt.nodeKind, t)}
-                </span>
-                <span className="shrink-0 text-muted-foreground">
-                  {t("durableRun.attempt", {
-                    attempt: attempt.attempt,
-                    maxAttempts: attempt.maxAttempts,
-                  })}
-                  {" · "}
-                  {attempt.status === "succeeded"
-                    ? t("durableRun.attemptSucceeded")
-                    : attempt.status === "retrying"
-                      ? t("durableRun.attemptRetrying")
-                      : attempt.status === "failed"
-                        ? t("durableRun.attemptFailed")
-                        : t("durableRun.attemptRunning")}
-                </span>
+          {projection.suspension ? (
+            <div className="mt-3" data-testid="durable-run-suspension">
+              <p className="text-[10px] leading-4 text-muted-foreground">
+                {t("durableRun.selectionHint")}
+              </p>
+              <div className="mt-2 grid gap-1.5">
+                {projection.suspension.candidateAssets.map((asset, index) => (
+                  <button
+                    key={asset.assetId}
+                    type="button"
+                    data-testid={`server-harness-candidate-${index + 1}`}
+                    disabled={Boolean(resumingAssetId) || cancelling}
+                    onClick={() => onSelect(asset.assetId)}
+                    className="flex items-center justify-between rounded-lg border border-border bg-card px-2.5 py-2 text-left hover:border-violet-400 hover:bg-violet-500/5 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <span>
+                      <span className="block text-[10px] font-medium text-foreground">
+                        {t("durableRun.direction", { count: index + 1 })}
+                      </span>
+                      <span className="block text-[8px] text-muted-foreground">
+                        {t("durableRun.serverReference")}
+                      </span>
+                    </span>
+                    <span className="rounded-md bg-violet-500/10 px-2 py-1 text-[9px] font-semibold text-violet-700 dark:text-violet-200">
+                      {resumingAssetId === asset.assetId
+                        ? t("durableRun.resuming")
+                        : t("durableRun.choose")}
+                    </span>
+                  </button>
+                ))}
               </div>
-            ))}
-          </div>
-        </details>
-      ) : null}
+            </div>
+          ) : null}
 
-      {projection.failure ? (
-        <div
-          data-testid="durable-run-failure"
-          className="mt-3 rounded-lg border border-rose-500/25 bg-rose-500/5 p-2.5"
-        >
-          <div className="text-[10px] font-semibold text-rose-700 dark:text-rose-300">
-            {t("durableRun.failureTitle")}
-          </div>
-          <p className="mt-1 text-[9px] leading-4 text-foreground">
-            {projection.failure.message}
-          </p>
-        </div>
-      ) : null}
+          {generatedImages.length > 0 ? (
+            <div className="mt-3 space-y-3" data-testid="durable-run-images">
+              {generatedImages.map((asset, index) => (
+                <figure
+                  key={asset.id}
+                  className="overflow-hidden rounded-lg border border-border bg-card"
+                >
+                  <a href={asset.url} target="_blank" rel="noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={asset.url}
+                      alt={asset.prompt}
+                      className="max-h-[420px] w-full bg-muted object-contain"
+                    />
+                  </a>
+                  <figcaption className="flex items-start justify-between gap-3 p-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold text-foreground">
+                        {generatedImages.length > 1
+                          ? t("durableRun.generatedImageNumber", {
+                              count: index + 1,
+                            })
+                          : t("durableRun.generatedImage")}
+                      </p>
+                      <p className="mt-1 line-clamp-2 text-[9px] leading-4 text-muted-foreground">
+                        {asset.prompt}
+                      </p>
+                      <p className="mt-1 text-[8px] text-muted-foreground">
+                        {formatModelRefLabel(asset.modelRef)} · {asset.width} ×{" "}
+                        {asset.height}
+                      </p>
+                    </div>
+                    <a
+                      href={generatedImageDownloadHref(asset)}
+                      download={generatedImageFilename(asset)}
+                      className="grid size-8 shrink-0 place-items-center rounded-md border border-border bg-background text-muted-foreground hover:text-foreground"
+                      aria-label={t("durableRun.downloadImage")}
+                      title={t("durableRun.downloadImage")}
+                    >
+                      <DownloadIcon className="size-3.5" />
+                    </a>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          ) : null}
 
-      {designDocument ? (
-        <div
-          data-testid="durable-run-output"
-          className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2.5"
-        >
-          <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
-            <CheckIcon className="size-3" />
-            {t("durableRun.typedOutput")}
-          </div>
-          <div className="mt-1 font-mono text-[9px] text-foreground">
-            {designDocument.documentId} · r{designDocument.revision}
-          </div>
-        </div>
-      ) : null}
+          {projection.attempts.length > 0 ? (
+            <details className="mt-3" data-testid="durable-run-attempts">
+              <summary className="cursor-pointer text-[9px] font-medium text-muted-foreground">
+                {t("durableRun.executionDetails")}
+              </summary>
+              <div className="mt-2 grid gap-1.5">
+                {projection.attempts.map((attempt) => (
+                  <div
+                    key={attempt.nodeId}
+                    data-testid={`durable-run-attempt-${attempt.nodeId}`}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/35 px-2.5 py-1.5 text-[9px]"
+                  >
+                    <span className="truncate font-medium text-foreground">
+                      {durableNodeKindLabel(attempt.nodeKind, t)}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground">
+                      {t("durableRun.attempt", {
+                        attempt: attempt.attempt,
+                        maxAttempts: attempt.maxAttempts,
+                      })}
+                      {" · "}
+                      {attempt.status === "succeeded"
+                        ? t("durableRun.attemptSucceeded")
+                        : attempt.status === "retrying"
+                          ? t("durableRun.attemptRetrying")
+                          : attempt.status === "failed"
+                            ? t("durableRun.attemptFailed")
+                            : t("durableRun.attemptRunning")}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </details>
+          ) : null}
+
+          {projection.failure ? (
+            <div
+              data-testid="durable-run-failure"
+              className="mt-3 rounded-lg border border-rose-500/25 bg-rose-500/5 p-2.5"
+            >
+              <div className="text-[10px] font-semibold text-rose-700 dark:text-rose-300">
+                {t("durableRun.failureTitle")}
+              </div>
+              <p className="mt-1 text-[9px] leading-4 text-foreground">
+                {projection.failure.message}
+              </p>
+            </div>
+          ) : null}
+
+          {designDocument ? (
+            <div
+              data-testid="durable-run-output"
+              className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2.5"
+            >
+              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <CheckIcon className="size-3" />
+                {t("durableRun.typedOutput")}
+              </div>
+              <div className="mt-1 font-mono text-[9px] text-foreground">
+                {designDocument.documentId} · r{designDocument.revision}
+              </div>
+            </div>
+          ) : null}
+        </>
+      )}
     </aside>
   )
 }

@@ -84,12 +84,15 @@ ports, bound required inputs, an acyclic executable graph, an End reachable from
 Start, and a stable topological order. Generated `image-result` nodes remain run
 artifacts and are excluded from the published definition.
 
-`POST /api/studio/workflow-runs` validates a serialized `WorkflowDocument`,
-compiles the independent `WorkflowDefinition 0.3.0-draft`, and only then starts
-a real Vercel Workflow SDK 4.6.2 run. The definition snapshot retains typed
-execution semantics while excluding editor and result-gallery state. The
-self-hosted Docker runtime uses Postgres World 4.3.1 and starts its long-lived
-worker through Next.js instrumentation.
+`POST /api/studio/workflow-publications` locks a server-owned draft and compiles
+the independent `WorkflowDefinition 0.3.0-draft` into an immutable sequential
+version. Unchanged executable content reuses its version; a stable Deployment
+alias moves atomically when content changes. `POST /api/studio/workflow-runs`
+rejects serialized browser graphs and accepts only an exact published version
+or Deployment target. UI and MusesAgent use the same invocation service,
+Workspace authorization, idempotency, credit, audit and Workflow SDK 4.6.2
+boundary. The self-hosted runtime uses Postgres World 4.3.1 and starts its
+long-lived worker through Next.js instrumentation.
 
 The first supported-node interpreter now executes the Gate 0 chain
 `Start → image-generator → selector → design-document → End`. A pure domain

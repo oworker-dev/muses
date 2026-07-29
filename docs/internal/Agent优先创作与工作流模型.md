@@ -161,7 +161,7 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 
 生成图片同时写入 Muses 自有 `muses_generated_asset` 记录，保存对象键、媒体类型、字节数、尺寸、Prompt、Provider、Model 和 Workflow/Node/Step 来源。图片读取先经过 Muses Workspace 与 WorkflowRun 授权，再按 Asset 记录访问对象存储，不再把 Workflow SDK `returnValue` 当成 Asset 权威；因此 Workflow World 清理、过期或切换不能让已确认 Asset 失去产品身份。
 
-首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它仍不等于完整创作模式或 Codex 级可靠性全部通过：审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。下一步推进 A8 指定工作流调用与 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
+首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它仍不等于完整创作模式或 Codex 级可靠性全部通过：审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。A8 指定工作流调用也已通过，下一步只进入 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
 
 首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。供应商额度不足期间的重试均保持零模型用量、零图像、零积分与零画布副作用；供应商原始诊断现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录。额度恢复后，同一 Run 完成计划修订，Agent 在一次无效参考 Asset 的无副作用失败后自纠，只创建一个真实图像 Workflow、新增一个 Asset 并扣费一次；新图在旧图右侧非重叠放置，中文浏览器刷新恢复 Run、两张图片和位置。A7 因而通过，后续缺口转入 A8/A9。
 
@@ -170,6 +170,18 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 现有专业画布、Start/End、类型化变量、WorkflowDefinition 编译器和 Workflow SDK Runtime 保留，重新归类为专业模式基础。现有浏览器 `localStorage` 只能作为临时缓存，不能继续充当 Agent 可写的权威状态。
 
 迁移按纵向切片进行：先建立新对象和服务端端口，再让当前 Studio 通过 adapter 使用它们；不先删除可工作的首图链路，也不在没有替代路径时进行全量重写。
+
+## 13.1 A8 工作流发布闭环
+
+Studio 的专业模式现已停止把浏览器中的可变 `WorkflowDocument` 直接提交给运行端。运行前先等待 Operation Gateway 草稿写入完成，再由服务端锁定稳定 definition id 与 draft revision，编译并写入不可变 `WorkflowDefinition` 版本；相同可执行内容重复发布复用原版本，变化后才递增版本。`production` Deployment 只绑定一个精确版本，可禁用，并在发布新版本时原子更新。
+
+UI 与 Agent 都通过同一服务端 invocation 函数解析 `definitionId + version` 或 Deployment id，随后进入既有 Workspace 授权、幂等指纹、积分预留、Workflow SDK、观测与审计链路。`muses_workflow_run` 记录解析后的 definition、version、deployment 与 caller；浏览器上传 graph 的旧入口已被拒绝。MusesAgent 仅通过 Tool Registry 中的 `workflow.list`、`workflow.inspect` 与 `workflow.invoke` 访问目录和启动运行，不拥有数据库或编译器旁路。
+
+`?template=harness` 仍用于等待、恢复、取消和重试回归，但定义改由服务端固定夹具发布，不再把 localStorage 图作为运行权威。该夹具不代表产品工作流，也不会进入普通用户目录，除非显式启用 Harness 环境。
+
+2026-07-29 的 A8 证据已验证三条入口共享同一发布身份：专业 Studio 发布并按 Deployment 调用默认真实图片定义；HTTP API 拒绝可变 graph、不存在版本、禁用 Deployment 和跨 Workspace 目标；真实 MusesAgent 严格执行 `workflow.list → workflow.inspect → workflow.invoke`，调用者审计绑定 AgentRun，并在证据清理后由 Workflow SDK 与 Muses 产品表共同持久化 `cancelled`。对应证据位于 `delivery/evidence/agent-core-alpha/a8-callable-workflows/`。
+
+A8 不改变后续 Gate：公开外部 API 的服务身份/密钥产品化、Workspace 删除与不可变版本保留策略、Agent 子运行联动取消、审批、追踪、隔离和固定 eval 仍在 A9 或其后的显式任务中解决。特别是当前不可变版本触发器会阻止发布版本随 Workspace 级联物理删除；在实现 Workspace 删除前必须先确定归档、保留或受控清除政策，不能静默绕过不可变历史。
 
 ## 14. 当前非目标
 
