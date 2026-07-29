@@ -223,6 +223,14 @@ AgentRun id 同时作为 trace id。只读 API 在 Workspace 授权后关联 Age
 
 固定 eval `agent-core-a9-reliability@1.0.0` 以确定性模型、时钟、ID、Store 和工具直接驱动同一 Headless Runtime，8/8 覆盖成功、恢复、拒绝、预算、审批、取消、隔离和零副作用；任何硬断言失败或与提交证据漂移都会非零退出，且不调用真实供应商或网络。A9 因而通过，可以进入最小 A10，但不等于多 Agent、PPT 或完整 Codex 体验已经完成。文本模型生产费率当前仍需进入版本化模型目录；本次真实环境费率为零，非零文本费用的一次性账本语义由隔离夹具证明。
 
+## 13.3 A10 委派协议
+
+A10 第一切片已经冻结框架无关的委派边界，完整协议见[Agent 委托与调度协议](Agent委托与调度协议.md)，Gate 见 `delivery/agent-orchestration-a10-contract.md`。每个委派计划现在区分整棵树的 root Run 和提交当前计划的直接 parent Run；子 AgentRun 固定 parent/root Run、计划 id/revision 与 task id，并使用独立 `agent-run/<childRunId>` 逻辑沙盒。相同 child Run id 只能重放同一不可变血缘。
+
+子 Agent 不继承父对话或沙盒。ContextPackage 绑定直接父 Run 与精确 ContextSnapshot version，事实分类与 Artifact 引用必须属于服务端 AuthoritySnapshot 的可委派子集；权限、工具、Skill、MCP Connection 和计算能力同样只能收窄。纯验证器已覆盖合法 DAG、稳定拓扑序、scope、依赖、深度、并发、越权、Context、结构化结果和聚合预算，当前 Agent Core 共 62 项测试通过。
+
+该切片尚未实现持久 Scheduler、多 Agent 并行、Profile Registry 存储、实际取消传播或物理计算沙盒。下一步必须先实现 Muses 自有 submission/child receipt、预算预留、task claim/lease、精确 Profile 解析、Workflow SDK adapter、失败模式、结果/证据聚合和恢复 eval；平台级 MusesAgent 只能提出计划，不能成为这些状态的权威。完成这一步后才交付首个领域 Agent 和真实受控多 Agent 验收，仍不提前进入 PPT。
+
 ## 14. 当前非目标
 
 - 不在 Agent Core Gate 内完成完整 Lovart UI、Coze 节点全集或通用 AI 应用平台。

@@ -173,6 +173,7 @@ export type AgentSessionSnapshot = {
 export type AgentRunSnapshot = {
   readonly schemaVersion: typeof AGENT_CORE_SCHEMA_VERSION;
   readonly runId: string;
+  readonly parent?: AgentRunParentRef;
   readonly session: AgentSessionSnapshot;
   readonly profile: AgentProfileSnapshot;
   readonly status: AgentRunStatus;
@@ -199,6 +200,14 @@ export type AgentRunSnapshot = {
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly completedAt?: string;
+};
+
+export type AgentRunParentRef = {
+  readonly runId: string;
+  readonly rootRunId: string;
+  readonly delegationPlanId: string;
+  readonly delegationPlanRevision: number;
+  readonly delegationTaskId: string;
 };
 
 export type AgentEventType =
@@ -236,6 +245,7 @@ export type AgentEventDraft = Omit<AgentEvent, "eventId" | "sequence">;
 
 export type StartAgentRun = {
   readonly runId?: string;
+  readonly parent?: AgentRunParentRef;
   readonly session: Omit<
     AgentSessionSnapshot,
     "schemaVersion" | "createdAt" | "updatedAt"

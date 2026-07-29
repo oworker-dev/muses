@@ -404,8 +404,8 @@ items:
     statusChangedAt: 2026-07-29T08:22:05.048Z
   - id: define-delegation-protocol
     name: 定义 Agent 委托与调度协议
-    summary: 定义子任务图、角色、上下文包、能力/权限、依赖、预算、结果、失败隔离和汇总协议；固定组织层级不进入内核。
-    status: in_progress
+    summary: A10-1 已完成：冻结 root/direct-parent Run 血缘、显式服务端授权 ContextPackage、DAG、能力 grant、结构化结果、预算包络、幂等提交收据与独立子 Run 沙盒契约；62 项 Agent Core 测试和长期文档通过。
+    status: done
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -413,8 +413,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:48.883Z
-    updatedAt: 2026-07-29T08:22:05.272Z
-    statusChangedAt: 2026-07-29T08:22:05.272Z
+    updatedAt: 2026-07-29T15:20:01.867Z
+    statusChangedAt: 2026-07-29T15:20:01.867Z
   - id: build-muses-agent
     name: 交付平台级 MusesAgent
     summary: 让 MusesAgent 负责跨领域意图梳理、澄清、计划和委托，但由 Runtime 可靠执行和记录调度状态。
@@ -1052,3 +1052,16 @@ items:
     createdAt: 2026-07-29T01:30:59.813Z
     updatedAt: 2026-07-29T08:22:04.811Z
     statusChangedAt: 2026-07-29T08:22:04.811Z
+  - id: build-agent-runtime-scheduler
+    name: 交付持久 Runtime Scheduler
+    summary: 在 MusesAgent 之前实现服务端权威的计划提交、Profile 解析、预算预留、task claim/lease、child receipt、Workflow SDK adapter、失败模式、取消传播、结果/证据聚合与恢复 eval。
+    status: in_progress
+    planRef: agent-orchestration-alpha
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T15:20:01.963Z
+    updatedAt: 2026-07-29T15:20:01.963Z
+    statusChangedAt: 2026-07-29T15:20:01.963Z

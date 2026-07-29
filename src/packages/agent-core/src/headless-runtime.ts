@@ -80,6 +80,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
 
   async start(input: StartAgentRun): Promise<AgentRunRef> {
     validateBudget(input.budget);
+    validateParentRef(input.parent, input.runId);
     if (input.runId) {
       const existing = await this.dependencies.store.read(input.runId);
       if (existing) {
@@ -95,11 +96,13 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     }
     const now = this.now();
     const runId = input.runId || this.ids.create("arun");
+    validateParentRef(input.parent, runId);
     const runScope = {
       workspaceId: input.session.workspaceId,
       projectId: input.session.projectId,
       sessionId: input.session.sessionId,
       runId,
+      ...(input.parent ? { parentRunId: input.parent.runId } : {}),
     };
     const extensionResult = input.extensions
       ? validateAgentRunExtensionSnapshot({
@@ -140,6 +143,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     const snapshot: AgentRunSnapshot = {
       schemaVersion: AGENT_CORE_SCHEMA_VERSION,
       runId,
+      parent: input.parent ? structuredClone(input.parent) : undefined,
       session: {
         schemaVersion: AGENT_CORE_SCHEMA_VERSION,
         ...input.session,
@@ -176,6 +180,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         sessionId: input.session.sessionId,
         profileId: input.profile.profileId,
         profileVersion: input.profile.version,
+        ...(input.parent ? { parent: structuredClone(input.parent) } : {}),
         metadata: input.metadata || {},
       }),
       this.event(runId, "message.received", now, {
@@ -942,6 +947,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
           projectId: run.session.projectId,
           sessionId: run.session.sessionId,
           runId: run.runId,
+          ...(run.parent ? { parentRunId: run.parent.runId } : {}),
         },
         profile: run.profile,
         runPermissions: run.permissions,
@@ -1364,6 +1370,25 @@ function validateBudget(budget: AgentBudgetLimit) {
   }
 }
 
+function validateParentRef(parent: StartAgentRun["parent"], runId?: string) {
+  if (!parent) return;
+  if (
+    !parent.runId.trim() ||
+    !parent.rootRunId.trim() ||
+    !parent.delegationPlanId.trim() ||
+    !Number.isSafeInteger(parent.delegationPlanRevision) ||
+    parent.delegationPlanRevision < 0 ||
+    !parent.delegationTaskId.trim() ||
+    parent.runId === runId ||
+    parent.rootRunId === runId
+  ) {
+    throw new AgentRuntimeError(
+      "run-state-invalid",
+      "A delegated AgentRun requires a valid distinct parent lineage.",
+    );
+  }
+}
+
 function toRunRef(run: AgentRunSnapshot): AgentRunRef {
   return {
     runId: run.runId,
@@ -1382,6 +1407,12 @@ function assertIdempotentStart(
     existing.session.workspaceId !== input.session.workspaceId ||
     existing.session.projectId !== input.session.projectId ||
     existing.session.canvasId !== input.session.canvasId ||
+    existing.parent?.runId !== input.parent?.runId ||
+    existing.parent?.rootRunId !== input.parent?.rootRunId ||
+    existing.parent?.delegationPlanId !== input.parent?.delegationPlanId ||
+    existing.parent?.delegationPlanRevision !==
+      input.parent?.delegationPlanRevision ||
+    existing.parent?.delegationTaskId !== input.parent?.delegationTaskId ||
     existing.profile.profileId !== input.profile.profileId ||
     existing.profile.version !== input.profile.version
   ) {

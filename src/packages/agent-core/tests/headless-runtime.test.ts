@@ -8,6 +8,7 @@ import {
   HeadlessAgentRuntime,
   InMemoryAgentStateStore,
   AgentModelError,
+  agentDelegationParentRef,
   type AgentClockPort,
   type AgentIdPort,
   type AgentMessage,
@@ -768,6 +769,72 @@ describe("HeadlessAgentRuntime", () => {
     const events = await fixture.store.readEvents(first.runId);
     expect(events.filter(({ type }) => type === "run.created")).toHaveLength(1);
   });
+
+  it("pins child lineage to an independent Run sandbox", async () => {
+    const fixture = createRuntime([stop("Done")]);
+    const parent = agentDelegationParentRef({
+      parentRunId: "agent-run-parent",
+      rootRunId: "agent-run-parent",
+      planId: "delegation-plan-1",
+      planRevision: 0,
+      taskId: "research",
+    });
+    const ref = await fixture.runtime.start(startInput({ parent }));
+    const child = await fixture.runtime.inspect(ref.runId);
+
+    expect(child).toMatchObject({
+      runId: "agent-run-1",
+      parent,
+      extensions: {
+        logicalSandbox: {
+          scope: { runId: "agent-run-1", parentRunId: "agent-run-parent" },
+          filesystem: { namespace: "agent-run/agent-run-1" },
+        },
+      },
+    });
+    const events = await fixture.store.readEvents(ref.runId);
+    expect(events.find(({ type }) => type === "run.created")?.data).toMatchObject({
+      parent,
+    });
+  });
+
+  it("rejects idempotent child start when parent lineage changes", async () => {
+    const fixture = createRuntime([stop("Done")]);
+    const firstParent = agentDelegationParentRef({
+      parentRunId: "agent-run-parent",
+      rootRunId: "agent-run-parent",
+      planId: "delegation-plan-1",
+      planRevision: 0,
+      taskId: "research",
+    });
+    await fixture.runtime.start(startInput({ parent: firstParent }));
+
+    await expect(
+      fixture.runtime.start(
+        startInput({
+          parent: { ...firstParent, delegationTaskId: "render" },
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "revision-conflict" });
+  });
+
+  it("rejects self-referential child lineage", async () => {
+    const fixture = createRuntime([stop("Done")]);
+
+    await expect(
+      fixture.runtime.start(
+        startInput({
+          parent: agentDelegationParentRef({
+            parentRunId: "agent-run-1",
+            rootRunId: "agent-run-1",
+            planId: "delegation-plan-1",
+            planRevision: 0,
+            taskId: "research",
+          }),
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "run-state-invalid" });
+  });
 });
 
 class ScriptedModel implements AgentModelPort {
@@ -893,10 +960,12 @@ function startInput(
     toolNames?: string[];
     permissions?: string[];
     budget?: StartAgentRun["budget"];
+    parent?: StartAgentRun["parent"];
   } = {},
 ): StartAgentRun {
   return {
     runId: "agent-run-1",
+    parent: overrides.parent,
     session: {
       sessionId: "session-1",
       workspaceId: "workspace-1",

@@ -272,6 +272,7 @@ export async function readAgentTrace(input: {
     generatedAt: new Date().toISOString(),
     run: {
       runId: input.run.runId,
+      ...(input.run.parent ? { parent: input.run.parent } : {}),
       projectId: input.run.session.projectId,
       canvasId: input.run.session.canvasId,
       sessionId: input.run.session.sessionId,

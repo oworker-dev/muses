@@ -225,15 +225,15 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 - 最终专业画布渲染器。
 - 生产环境 Workflow World 的托管/自托管部署选择；本地自托管开发已固定 Postgres World。
 - Eve 的生产采用；Pi 当前只固定 Spike 版本，不承诺成为唯一 Loop。
-- 多 Agent 拓扑、Agent SDK、模型供应商和长期记忆实现。
+- 固定多 Agent 组织拓扑、唯一 Agent SDK、唯一模型供应商和长期记忆实现。框架无关的 A10 委派契约已冻结，持久 Runtime Scheduler 与真实多 Agent 执行仍待实现。
 
 ## 10. 后续验证顺序
 
 1. 已完成 Agent-first 对象、调用身份、Node Type Registry、Operation Gateway、独立 Agent Core、扩展/沙盒端口和 Eve/Pi 对照。
 2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
 3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据、可展开最小 ExecutionPlan 和真实 steering/follow-up 浏览器验收。
-4. 当前让 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition。
-5. 通过恢复、压缩、费用、预算、审批、取消、隔离、追踪与 eval Gate 后，再进入 MusesAgent、领域 Agent 和 SubAgent 调度。
-6. 最小 Orchestration 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
+4. 已完成 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition，以及单 Agent 恢复、压缩、费用、预算、审批、取消、隔离、追踪与固定 eval Gate。
+5. A10 第一切片已冻结 root/direct-parent Run、显式上下文、服务端授权、任务 DAG、结构化结果和预算包络协议；下一步实现持久 Scheduler，再交付 MusesAgent、领域 Agent 和受控 SubAgent 执行。
+6. 最小 Orchestration 运行与恢复 Gate 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
 
 技术候选的新版本不会自动改变路线。升级、替换和正式采用必须由可复现证据与 APCC 决策驱动。

@@ -174,4 +174,4 @@ unguided first-image acceptance remain open.
 
 ## Handoff
 
-Continue with APCC decision `agent-first`: freeze Agent-first product/call contracts, deliver the server-authoritative Operation Gateway and independent Agent Core, then pass the single-Agent canvas and reliability gates. Add MusesAgent, domain profiles, and SubAgent scheduling only after that; do not enter PPT first.
+Continue with APCC decision `agent-first`: the server-authoritative Operation Gateway, independent Agent Core, single-Agent canvas/reliability gates and first A10 delegation contract are complete. Implement the persistent Muses Scheduler with receipts, budget reservations, task leases, exact Profile resolution, linked cancellation and result aggregation next; then add MusesAgent, the first domain profile and controlled SubAgent execution. Do not enter PPT first.

@@ -20,6 +20,10 @@ and later PPT expansion rules are recorded in
 The frozen A9 failure fixtures, product authorities, passing evidence and
 residual-risk rules are recorded in
 `delivery/agent-core-a9-reliability-gate.md`.
+The A10 delegation identity, explicit-context, authority, DAG, budget and
+scheduler boundary is recorded in
+`delivery/agent-orchestration-a10-contract.md`; its canonical long-term design
+is `docs/internal/Agent委托与调度协议.md`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.
 The corrected durable execution boundary, supported-node interpreter, and its
