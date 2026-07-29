@@ -44,9 +44,12 @@ the previous Asset and survives refresh. Callable workflow publication now
 resolves immutable server-owned versions through one UI, Agent, and HTTP API
 invocation boundary. The A9 single-Agent reliability Gate has passed and the
 first A10 slice now freezes root/direct-parent Run lineage, explicit authorized
-context, delegation DAG, grants, result and budget contracts. The next
-engineering boundary is the persistent Muses Scheduler; production multi-Agent
-execution and PPT scenario work have not started. See
+context, delegation DAG, grants, result and budget contracts. The second A10
+slice adds the framework-neutral Scheduler state machine plus PostgreSQL
+Store, event, claim/lease and concurrent logical-budget reservation. Exact
+Profile/result/Artifact adapters, the child Agent runtime, the Workflow SDK
+driver, production multi-Agent execution and PPT scenario work have not
+started. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.

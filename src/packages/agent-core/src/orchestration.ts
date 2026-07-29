@@ -156,21 +156,45 @@ export type AgentDelegationTaskStatus =
   | "cancelled"
   | "blocked";
 
+export type AgentDelegationEvidence = {
+  readonly kind: string;
+  readonly ref: string;
+};
+
+export type AgentDelegationTaskResult = {
+  readonly data: unknown;
+  readonly artifactRefs: readonly string[];
+  readonly evidence: readonly AgentDelegationEvidence[];
+};
+
+export type AgentDelegationBudgetReservationStatus =
+  | "pending"
+  | "reserved"
+  | "settled"
+  | "released"
+  | "review-required";
+
 export type AgentDelegationTaskRun = {
   readonly taskId: string;
   readonly status: AgentDelegationTaskStatus;
-  readonly attemptId?: string;
+  readonly claim?: {
+    readonly attemptId: string;
+    readonly leaseExpiresAt: string;
+  };
   readonly childRunId?: string;
   readonly childSandboxId?: string;
-  readonly childSubmission?: AgentDelegationChildSubmissionReceipt;
-  readonly result?: {
-    readonly data: unknown;
-    readonly artifactRefs: readonly string[];
-    readonly evidenceRefs: readonly string[];
+  readonly profileSnapshot?: AgentProfileSnapshot;
+  readonly budgetReservation?: {
+    readonly reservationId: string;
+    readonly status: AgentDelegationBudgetReservationStatus;
+    readonly updatedAt: string;
   };
+  readonly childSubmission?: AgentDelegationChildSubmissionReceipt;
+  readonly result?: AgentDelegationTaskResult;
   readonly usage?: AgentBudgetUsage;
   readonly failure?: {
     readonly code: string;
+    readonly message: string;
     readonly retryable: boolean;
   };
 };
@@ -207,16 +231,70 @@ export type AgentDelegationRunSnapshot = {
   readonly status:
     | "queued"
     | "running"
+    | "cancelling"
     | "completed"
     | "completed-with-failures"
     | "failed"
     | "cancelled";
   readonly revision: number;
+  readonly maxConcurrency: number;
+  readonly failureMode: AgentDelegationPlan["failureMode"];
+  readonly budgetEnvelope: AgentDelegationBudgetEnvelope;
+  readonly budgetReservation: {
+    readonly reservationId: string;
+    readonly status: AgentDelegationBudgetReservationStatus;
+    readonly updatedAt: string;
+  };
+  readonly cancellation?: AgentDelegationCancellationReceipt;
+  readonly failure?: {
+    readonly code: string;
+    readonly message: string;
+    readonly taskId?: string;
+  };
   readonly tasks: readonly AgentDelegationTaskRun[];
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly completedAt?: string;
 };
+
+export type AgentDelegationCancellationReceipt = {
+  readonly receiptId: string;
+  readonly idempotencyKey: string;
+  readonly reason: string;
+  readonly requestedAt: string;
+};
+
+export type AgentDelegationEventType =
+  | "delegation.submitted"
+  | "delegation.budget-reserved"
+  | "delegation.cancellation-requested"
+  | "delegation.completed"
+  | "delegation.completed-with-failures"
+  | "delegation.failed"
+  | "delegation.cancelled"
+  | "task.ready"
+  | "task.claimed"
+  | "task.child-submitted"
+  | "task.running"
+  | "task.completed"
+  | "task.failed"
+  | "task.blocked"
+  | "task.cancelled";
+
+export type AgentDelegationEvent = {
+  readonly schemaVersion: typeof AGENT_DELEGATION_SCHEMA_VERSION;
+  readonly eventId: string;
+  readonly delegationRunId: string;
+  readonly sequence: number;
+  readonly type: AgentDelegationEventType;
+  readonly createdAt: string;
+  readonly data: Readonly<Record<string, unknown>>;
+};
+
+export type AgentDelegationEventDraft = Omit<
+  AgentDelegationEvent,
+  "eventId" | "sequence"
+>;
 
 export type AgentDelegationSchedulerPort = {
   submit(input: {
@@ -228,6 +306,7 @@ export type AgentDelegationSchedulerPort = {
     readonly run: AgentDelegationRunSnapshot;
   }>;
   inspect(delegationRunId: string): Promise<AgentDelegationRunSnapshot>;
+  resume(delegationRunId: string): Promise<AgentDelegationRunSnapshot>;
   cancel(input: {
     readonly delegationRunId: string;
     readonly idempotencyKey: string;

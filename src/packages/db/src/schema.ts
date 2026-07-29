@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   bigint,
   boolean,
@@ -415,7 +416,15 @@ export const musesAgentRun = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
-  (table) => [uniqueIndex("muses_agent_run_driver_idx").on(table.driverRunId)],
+  (table) => [
+    uniqueIndex("muses_agent_run_driver_idx").on(table.driverRunId),
+    uniqueIndex("muses_agent_run_delegation_scope_idx").on(
+      table.id,
+      table.workspaceId,
+      table.projectId,
+      table.sessionId,
+    ),
+  ],
 );
 
 export const musesAgentEvent = pgTable(
@@ -432,6 +441,108 @@ export const musesAgentEvent = pgTable(
   (table) => [
     primaryKey({ columns: [table.runId, table.sequence] }),
     uniqueIndex("muses_agent_event_id_idx").on(table.eventId),
+  ],
+);
+
+export const musesAgentDelegationRun = pgTable(
+  "muses_agent_delegation_run",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    rootRunId: text("root_run_id").notNull(),
+    parentRunId: text("parent_run_id").notNull(),
+    planId: text("plan_id").notNull(),
+    planRevision: integer("plan_revision").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    planFingerprint: text("plan_fingerprint").notNull(),
+    authorityFingerprint: text("authority_fingerprint").notNull(),
+    status: text("status").notNull(),
+    revision: integer("revision").notNull().default(0),
+    record: jsonb("record").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("muses_agent_delegation_workspace_idempotency_idx").on(
+      table.workspaceId,
+      table.idempotencyKey,
+    ),
+    uniqueIndex("muses_agent_delegation_budget_scope_idx").on(
+      table.id,
+      table.workspaceId,
+      table.parentRunId,
+    ),
+    index("muses_agent_delegation_parent_created_idx").on(
+      table.workspaceId,
+      table.parentRunId,
+      table.createdAt,
+    ),
+    index("muses_agent_delegation_root_created_idx").on(
+      table.workspaceId,
+      table.rootRunId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const musesAgentDelegationEvent = pgTable(
+  "muses_agent_delegation_event",
+  {
+    delegationRunId: text("delegation_run_id").notNull(),
+    sequence: integer("sequence").notNull(),
+    eventId: text("event_id").notNull(),
+    schemaVersion: text("schema_version").notNull(),
+    type: text("type").notNull(),
+    data: jsonb("data").notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.delegationRunId, table.sequence] }),
+    uniqueIndex("muses_agent_delegation_event_id_idx").on(table.eventId),
+    index("muses_agent_delegation_event_type_idx").on(
+      table.delegationRunId,
+      table.type,
+      table.sequence,
+    ),
+  ],
+);
+
+export const musesAgentDelegationBudgetReservation = pgTable(
+  "muses_agent_delegation_budget_reservation",
+  {
+    id: text("id").primaryKey(),
+    delegationRunId: text("delegation_run_id").notNull(),
+    workspaceId: text("workspace_id").notNull(),
+    parentRunId: text("parent_run_id").notNull(),
+    parentReservationId: text("parent_reservation_id"),
+    taskId: text("task_id"),
+    scope: text("scope").notNull(),
+    status: text("status").notNull().default("active"),
+    reservationIdempotencyKey: text("reservation_idempotency_key").notNull(),
+    finalizationIdempotencyKey: text("finalization_idempotency_key"),
+    limitSnapshot: jsonb("limit_snapshot").notNull(),
+    usageSnapshot: jsonb("usage_snapshot"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    finalizedAt: timestamp("finalized_at", { withTimezone: true }),
+  },
+  (table) => [
+    uniqueIndex("muses_agent_delegation_budget_envelope_idx")
+      .on(table.delegationRunId)
+      .where(sql`${table.scope} = 'envelope'`),
+    uniqueIndex("muses_agent_delegation_budget_task_idx")
+      .on(table.delegationRunId, table.taskId)
+      .where(sql`${table.scope} = 'task'`),
+    index("muses_agent_delegation_budget_parent_active_idx")
+      .on(table.workspaceId, table.parentRunId, table.status)
+      .where(sql`${table.scope} = 'envelope' and ${table.status} = 'active'`),
   ],
 );
 

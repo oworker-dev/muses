@@ -35,7 +35,7 @@ multi-Agent tree. Those remain subsequent A10 tasks.
 | Context | exact parent Run/Context version, bounded explicit facts, allowed classifications and authorized Artifact refs only | Context invalid/not-granted tests | Passed |
 | Result | JSON object Schema, result byte ceiling and non-empty unique evidence kinds | Result-contract test | Passed |
 | Budget | valid child limits and conservative aggregate envelope fit parent remaining authority; malformed server values fail as data | Budget invalid/exceeded/BigInt regression tests | Passed |
-| Runtime scheduler | durable plan submission, budget reservation, task claim/lease, child receipts, result aggregation and linked cancellation | Not implemented in this slice | Pending |
+| Runtime scheduler | durable plan submission, budget reservation, task claim/lease, child receipts, result aggregation and linked cancellation | Core state machine and PostgreSQL durability are recorded in `delivery/agent-orchestration-a10-scheduler.md`; production adapters remain | In progress |
 
 ## Framework boundary evidence
 
@@ -63,7 +63,7 @@ git diff --check
 apcc doctor check
 ```
 
-The focused Agent Core suite currently contains 62 passing tests, including the
+The contract-slice Agent Core suite contained 62 passing tests, including the
 new delegation protocol and child lineage cases. Platform-wide counts belong to
 the final verification output for the commit and should not be frozen here.
 

@@ -11,7 +11,7 @@ description: Muses Agent Orchestration 的父子 Run、显式上下文、服务�
 
 协议服务 AI 设计平台，不把 Muses 扩展成通用 Coze/Dify 式 AI 应用开发平台。多 Agent 只用于将真实创作任务拆成可控、可追踪、可聚合的专业工作，例如需求梳理、视觉方向、素材研究、图像生成、版式设计和 QA。简单任务仍应由一个 AgentRun 或一个 Capability 完成。
 
-当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘和 Run 级逻辑沙盒重验。本文还定义后续 Runtime Scheduler 的持久化行为；尚未实现的调度、Profile Registry、生产多 Agent 执行和物理计算沙盒不得被描述为已经可用。
+当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease 与逻辑预算预留 Gate。尚未实现的生产 Profile Registry、结果与 Artifact 授权、Child Runtime、Workflow SDK 驱动、生产多 Agent 执行和物理计算沙盒不得被描述为已经可用。
 
 ## 2. 不固定组织层级
 

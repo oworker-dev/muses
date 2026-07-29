@@ -1054,7 +1054,7 @@ items:
     statusChangedAt: 2026-07-29T08:22:04.811Z
   - id: build-agent-runtime-scheduler
     name: 交付持久 Runtime Scheduler
-    summary: 在 MusesAgent 之前实现服务端权威的计划提交、Profile 解析、预算预留、task claim/lease、child receipt、Workflow SDK adapter、失败模式、取消传播、结果/证据聚合与恢复 eval。
+    summary: 框架无关 Scheduler 状态机、PostgreSQL Store/Event、CAS、claim/lease、并发逻辑预算预留和持久化验证已完成；继续交付 Profile/结果与 Artifact 授权、Child Runtime、Workflow SDK 驱动、Trace/Billing 血缘和恢复 eval。
     status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
@@ -1063,5 +1063,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T15:20:01.963Z
-    updatedAt: 2026-07-29T15:20:01.963Z
+    updatedAt: 2026-07-29T16:58:04.920Z
     statusChangedAt: 2026-07-29T15:20:01.963Z

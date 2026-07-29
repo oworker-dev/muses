@@ -111,6 +111,18 @@ export type AgentClockPort = {
 
 export type AgentIdPort = {
   create(
-    prefix: "arun" | "amsg" | "aevent" | "approval" | "checkpoint",
+    prefix:
+      | "arun"
+      | "amsg"
+      | "aevent"
+      | "approval"
+      | "checkpoint"
+      | "delegation"
+      | "delegation-receipt"
+      | "delegation-event"
+      | "delegation-attempt"
+      | "delegation-child"
+      | "delegation-budget"
+      | "delegation-cancel",
   ): string;
 };
