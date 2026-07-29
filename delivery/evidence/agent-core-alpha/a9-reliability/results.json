@@ -10,12 +10,12 @@
   },
   "verification": {
     "domainTests": { "passed": 39, "total": 39 },
-    "agentCoreTests": { "passed": 19, "total": 19 },
+    "agentCoreTests": { "passed": 21, "total": 21 },
     "agentHarnessTests": { "passed": 3, "total": 3 },
     "webUnitTests": { "passed": 18, "total": 18 },
     "driverRecoveryStateTests": { "passed": 4, "total": 4 },
     "workflowValidation": {
-      "files": 198,
+      "files": 200,
       "workflowPatterns": 2,
       "serdeIssues": 0
     },
@@ -83,6 +83,49 @@
         "textModelRateMode": "zero-rate-environment"
       }
     },
+    "approvalCancellation": {
+      "status": "passed",
+      "postgresProbe": {
+        "passed": true,
+        "approvalDenied": true,
+        "approvalExecutions": 0,
+        "agentStatus": "cancelled",
+        "idempotentReplay": true,
+        "conflictingIdentity": "idempotency-conflict",
+        "newChildAfterCancel": "caller-inactive",
+        "receiptStatus": "completed",
+        "childCount": 0,
+        "reviewRequired": false
+      },
+      "browserProbes": {
+        "linkedWorkflowCancellation": {
+          "passed": true,
+          "durationSeconds": 0.845,
+          "parentStatus": "cancelled",
+          "childStatus": "cancelled",
+          "cancellationReceipts": 1,
+          "cancellationEvents": 1,
+          "idempotentReplay": true,
+          "conflictStatus": 409
+        },
+        "realImageApproval": {
+          "passed": true,
+          "durationSeconds": 56.6,
+          "tool": "image.generate",
+          "approvalPersistedBeforeExecution": true,
+          "generatedAssets": 1,
+          "refreshRestored": true
+        },
+        "exactWorkflowApproval": {
+          "passed": true,
+          "durationSeconds": 19.5,
+          "discoveryTools": ["workflow.list", "workflow.inspect"],
+          "approvedTool": "workflow.invoke",
+          "exactPublishedVersion": true,
+          "parentAgentLineage": true
+        }
+      }
+    },
     "migrations": [
       {
         "name": "0010_agent_driver_lease.sql",
@@ -95,13 +138,19 @@
         "applied": true,
         "receiptColumns": 23,
         "ownerConstraint": true
+      },
+      {
+        "name": "0012_agent_approval_cancellation.sql",
+        "applied": true,
+        "receiptColumns": 12,
+        "indexes": 3
       }
     ]
   },
   "residualRisks": [
     "Post-provider outcomes that cannot be proven become review_required and need an operator reconciliation surface.",
     "Live text-model rates are zero; versioned text-model prices still need catalog authority.",
-    "Approval/cancellation propagation, isolation/tracing and fixed evals remain open A9 tasks.",
+    "Workspace isolation, end-to-end trace continuity and fixed evals remain open A9 tasks.",
     "Provider-specific tokenization and semantic-summary quality still require model-profile evals.",
     "Workflow/Postgres activity emits a known pg@9 query-concurrency deprecation warning."
   ]

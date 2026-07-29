@@ -34,6 +34,7 @@ export class OperationGatewayStoreError extends Error {
       | "project-not-found"
       | "target-not-found"
       | "actor-mismatch"
+      | "actor-not-authorized"
       | "command-id-conflict"
       | "receipt-incomplete"
       | "document-invalid",
@@ -100,6 +101,7 @@ export async function executeOperationCommand(input: {
       await client.query("commit")
       return { ...replay, duplicate: true }
     }
+    await requireActiveAgentActor(client, input.command)
     await rejectReusedCommandId(client, input.command)
 
     const actorId = getActorId(input.command.actor)
@@ -777,6 +779,46 @@ async function findReceipt(
     )
   }
   return receipt.response
+}
+
+async function requireActiveAgentActor(
+  client: PoolClient,
+  command: OperationCommandEnvelope
+) {
+  if (command.actor.kind !== "agent") return
+  const actor = (
+    await client.query<{ status: string }>(
+      `
+        select agent.status
+        from muses_agent_run agent
+        where agent.id = $1
+          and agent.workspace_id = $2
+          and agent.project_id = $3
+          and exists (
+            select 1
+            from muses_workspace_member member
+            where member.workspace_id = agent.workspace_id
+              and member.user_id = agent.snapshot #>> '{metadata,initiatedByUserId}'
+              and member.status = 'active'
+              and member.role <> 'viewer'
+          )
+          and not exists (
+            select 1
+            from muses_agent_cancel_receipt cancellation
+            where cancellation.workspace_id = agent.workspace_id
+              and cancellation.agent_run_id = agent.id
+          )
+        for share
+      `,
+      [command.actor.agentRunId, command.workspaceId, command.projectId]
+    )
+  ).rows[0]
+  if (!actor || (actor.status !== "queued" && actor.status !== "running")) {
+    throw new OperationGatewayStoreError(
+      "actor-not-authorized",
+      "The AgentRun is no longer active."
+    )
+  }
 }
 
 async function rejectReusedCommandId(

@@ -112,7 +112,7 @@ const imageGenerateDefinition: AgentToolDefinition = {
     additionalProperties: false,
   },
   requiredPermissions: ["image.generate", "canvas.write"],
-  sideEffect: "project-write",
+  sideEffect: "external",
 }
 
 const workflowListDefinition: AgentToolDefinition = {
@@ -158,7 +158,7 @@ const workflowInvokeDefinition: AgentToolDefinition = {
     },
   },
   requiredPermissions: ["workflow.invoke"],
-  sideEffect: "project-write",
+  sideEffect: "external",
 }
 
 const canvasItemSchema = z.object({
@@ -327,6 +327,8 @@ async function invokePublishedWorkflow(
       throw new Error(
         `Workflow invocation needs ${result.requiredMicros} credit micros; ${result.availableMicros} are available.`
       )
+    case "caller-inactive":
+      throw new Error("The AgentRun is no longer active.")
     case "runtime-unavailable":
       throw new Error("The workflow runtime is temporarily unavailable.")
   }
@@ -471,8 +473,9 @@ async function generateImageAndPlace(
 
   let workflowRunId: string
   if (claim.state === "claimed") {
+    let run: Awaited<ReturnType<typeof start>> | undefined
     try {
-      const run = await start(workflowDefinitionInterpreter, [
+      run = await start(workflowDefinitionInterpreter, [
         compilation.definition,
         inputs,
         {
@@ -483,6 +486,7 @@ async function generateImageAndPlace(
       workflowRunId = run.runId
       await attachWorkflowSdkRun(claim.submissionId, workflowRunId)
     } catch (error) {
+      if (run) await run.cancel().catch(() => undefined)
       await failWorkflowStart(
         claim.submissionId,
         "Agent image workflow could not be started."
@@ -500,6 +504,8 @@ async function generateImageAndPlace(
     throw new Error(
       `Image generation needs ${claim.requiredMicros} credit micros; ${claim.availableMicros} are available.`
     )
+  } else if (claim.state === "caller-inactive") {
+    throw new Error("The AgentRun is no longer active.")
   } else {
     throw new Error(
       "The image generation idempotency key conflicts with another request."

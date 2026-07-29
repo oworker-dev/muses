@@ -36,6 +36,7 @@ export type StartPublishedWorkflowInvocationResult =
     }
   | { state: "in-progress" }
   | { state: "idempotency-conflict" }
+  | { state: "caller-inactive" }
   | {
       state: "insufficient-credits"
       requiredMicros: bigint
@@ -95,8 +96,9 @@ export async function startPublishedWorkflowInvocation(input: {
   }
   if (claim.state !== "claimed") return claim
 
+  let run: Awaited<ReturnType<typeof start>> | undefined
   try {
-    const run = await start(workflowDefinitionInterpreter, [
+    run = await start(workflowDefinitionInterpreter, [
       inspection.definition,
       input.inputs,
       {
@@ -117,6 +119,7 @@ export async function startPublishedWorkflowInvocation(input: {
       topologicalOrder: inspection.definition.executionOrder,
     }
   } catch {
+    if (run) await run.cancel().catch(() => undefined)
     await failWorkflowStart(
       claim.submissionId,
       "Workflow SDK did not accept the run submission."

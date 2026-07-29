@@ -1,6 +1,7 @@
 "use client"
 
 import {
+  BanIcon,
   CheckIcon,
   CircleStopIcon,
   LoaderCircleIcon,
@@ -33,6 +34,10 @@ type AgentRunResponse = {
   accepted?: boolean
   error?: string
   message?: string
+  cancellation?: {
+    idempotentReplay: boolean
+    summary: { reviewRequired?: boolean }
+  }
 }
 
 type ImageToolOutput = {
@@ -151,6 +156,7 @@ export function StudioAgentPanel({
           action: "cancel",
           workspaceId,
           runId: run.runId,
+          idempotencyKey: `${run.runId}:studio-cancel:v1`,
           reason: "Cancelled from Muses Studio.",
         }),
       })
@@ -166,6 +172,41 @@ export function StudioAgentPanel({
     }
   }, [run, submitting, t, workspaceId])
 
+  const decideApproval = useCallback(
+    async (decision: "approved" | "denied") => {
+      if (!run?.pendingApproval || submitting) return
+      setSubmitting(true)
+      setError(null)
+      try {
+        const response = await fetch("/api/studio/agent-runs", {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "approve",
+            workspaceId,
+            runId: run.runId,
+            approvalId: run.pendingApproval.approvalId,
+            decision,
+            reason:
+              decision === "approved"
+                ? "Approved from Muses Studio."
+                : "Denied from Muses Studio.",
+          }),
+        })
+        const result = (await response.json()) as AgentRunResponse
+        if (!response.ok || !result.run) {
+          throw new Error(result.message || t("requestFailed"))
+        }
+        setRun(result.run)
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : t("requestFailed"))
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [run, submitting, t, workspaceId]
+  )
+
   const latestAssistant = useMemo(
     () =>
       [...(run?.context.messages || [])]
@@ -180,7 +221,7 @@ export function StudioAgentPanel({
     [run]
   )
   const stages = agentStages(run, events)
-  const running = Boolean(run && !isSettled(run.status))
+  const running = Boolean(run && !isTerminal(run.status))
 
   return (
     <aside
@@ -288,6 +329,55 @@ export function StudioAgentPanel({
             </details>
           ) : null}
 
+          {run.status === "waiting-approval" && run.pendingApproval ? (
+            <section
+              className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
+              data-testid="studio-agent-approval"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold text-foreground">
+                    {t("approval.title")}
+                  </p>
+                  <p className="mt-0.5 text-[9px] leading-4 text-muted-foreground">
+                    {run.pendingApproval.reason}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[8px] text-foreground">
+                  {run.pendingApproval.toolCall.name}
+                </span>
+              </div>
+              <details className="mt-2 rounded border border-border bg-background/70">
+                <summary className="cursor-pointer list-none px-2 py-1.5 text-[9px] font-medium text-muted-foreground">
+                  {t("approval.input")}
+                </summary>
+                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[8px] leading-4 whitespace-pre-wrap text-foreground">
+                  {formatApprovalInput(run.pendingApproval.toolCall.input)}
+                </pre>
+              </details>
+              <div className="mt-2 flex justify-end gap-1.5">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => void decideApproval("denied")}
+                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[9px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                >
+                  <BanIcon className="size-3" />
+                  {t("approval.deny")}
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => void decideApproval("approved")}
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[9px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                >
+                  <CheckIcon className="size-3" />
+                  {t("approval.approve")}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
           {imageOutput?.assets?.length ? (
             <div className="mt-3 grid gap-2">
               {imageOutput.assets.map((asset) => (
@@ -385,6 +475,13 @@ function findLatestImageOutput(messages: readonly AgentMessage[]) {
     }
   }
   return null
+}
+
+function formatApprovalInput(input: Readonly<Record<string, unknown>>) {
+  const formatted = JSON.stringify(input, null, 2)
+  return formatted.length > 4_000
+    ? `${formatted.slice(0, 4_000)}\n…`
+    : formatted
 }
 
 function agentStages(

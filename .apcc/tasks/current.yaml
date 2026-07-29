@@ -1015,8 +1015,8 @@ items:
     statusChangedAt: 2026-07-29T04:33:52.183Z
   - id: implement-agent-approval-cancellation
     name: 交付 Agent 审批与子运行联动取消
-    summary: 让高影响工具在服务端审批后执行，并让 Agent 取消传播到仍活动的子 WorkflowRun，保留竞态和迟到结果事实。
-    status: in_progress
+    summary: 服务端持久化 external 工具审批门禁已通过：决策记录操作者并支持幂等重放/冲突关闭，拒绝零工具副作用；Muses 取消收据联动 Agent durable driver 与全部活动子 Workflow SDK run，竞态围栏、迟到模型结果、计费处置和真实浏览器证据均已验证。
+    status: done
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1024,12 +1024,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.403Z
-    updatedAt: 2026-07-29T04:33:52.380Z
-    statusChangedAt: 2026-07-29T04:33:52.380Z
+    updatedAt: 2026-07-29T05:20:19.816Z
+    statusChangedAt: 2026-07-29T05:20:19.816Z
   - id: verify-agent-isolation-tracing
     name: 验证 Agent 隔离与端到端追踪
-    summary: 验证 Workspace、会话、沙盒、Skill/MCP 与工具权限隔离，并用成熟追踪上下文关联 AgentRun、工具、WorkflowRun、模型、用量和费用。
-    status: pending
+    summary: 下一 A9 切片：验证跨 Workspace 访问、Run 级逻辑/计算沙盒与 Skill/MCP 策略快照隔离，并用成熟观测边界串联 AgentRun、模型、工具、WorkflowRun、Asset、用量和积分事实。
+    status: in_progress
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1037,8 +1037,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.611Z
-    updatedAt: 2026-07-29T01:30:59.611Z
-    statusChangedAt: 2026-07-29T01:30:59.611Z
+    updatedAt: 2026-07-29T05:20:20.085Z
+    statusChangedAt: 2026-07-29T05:20:20.085Z
   - id: establish-agent-fixed-evals
     name: 建立固定 Agent eval 与 A9 证据
     summary: 建立可重复的成功、恢复、拒绝、预算、审批、取消、隔离和无副作用 eval 集，形成 A9 工程证据与残余风险。

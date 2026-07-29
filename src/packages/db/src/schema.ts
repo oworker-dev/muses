@@ -435,6 +435,39 @@ export const musesAgentEvent = pgTable(
   ],
 );
 
+export const musesAgentCancelReceipt = pgTable(
+  "muses_agent_cancel_receipt",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    agentRunId: text("agent_run_id").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    requestedByUserId: text("requested_by_user_id").notNull(),
+    reason: text("reason"),
+    status: text("status").notNull().default("processing"),
+    attemptId: text("attempt_id").notNull(),
+    leaseExpiresAt: timestamp("lease_expires_at", {
+      withTimezone: true,
+    }).notNull(),
+    summary: jsonb("summary"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.workspaceId, table.agentRunId, table.idempotencyKey],
+    }),
+    uniqueIndex("muses_agent_cancel_receipt_run_idx").on(
+      table.workspaceId,
+      table.agentRunId,
+    ),
+  ],
+);
+
 export const musesAgentModelCall = pgTable(
   "muses_agent_model_call",
   {

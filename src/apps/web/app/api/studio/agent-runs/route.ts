@@ -13,6 +13,7 @@ import {
   toPublicAgentEvent,
   toPublicAgentFailure,
 } from "@/lib/agent-client-projection"
+import { cancelAgentRunAndChildren } from "@/lib/agent-cancellation"
 import { ensureAgentDriver } from "@/lib/agent-driver"
 import {
   createMusesAgentRuntime,
@@ -66,6 +67,7 @@ const patchSchema = z.discriminatedUnion("action", [
     action: z.literal("cancel"),
     workspaceId: z.string().trim().min(1),
     runId: z.string().trim().min(1),
+    idempotencyKey: z.string().trim().min(8).max(200),
     reason: z.string().max(2000).optional(),
   }),
 ])
@@ -76,6 +78,9 @@ export async function POST(request: Request) {
     return invalidRequest("A prompt and idempotency key are required.")
   const access = await requireStudioApiAccess(parsed.data.workspaceId)
   if (!access.ok) return access.response
+  if (access.context.workspace.role === "viewer") {
+    return agentActionNotAuthorized()
+  }
 
   const gateway = await getOrCreateOperationGatewaySnapshot({
     workspaceId: parsed.data.workspaceId,
@@ -173,6 +178,9 @@ export async function PATCH(request: Request) {
   if (!(await authorizeAgentRun(parsed.data.workspaceId, parsed.data.runId))) {
     return runNotFound()
   }
+  if (access.context.workspace.role === "viewer") {
+    return agentActionNotAuthorized()
+  }
   const runtime = createMusesAgentRuntime()
   try {
     switch (parsed.data.action) {
@@ -186,19 +194,61 @@ export async function PATCH(request: Request) {
         )
         break
       case "approve":
-        await runtime.approve(parsed.data.runId, {
+        await decideApprovalWithRetry(runtime, parsed.data.runId, {
           approvalId: parsed.data.approvalId,
           decision: parsed.data.decision,
           reason: parsed.data.reason,
+          decidedBy: { kind: "user", actorId: access.user.id },
         })
         break
       case "resume":
         break
       case "cancel":
-        await runtime.cancel(parsed.data.runId, parsed.data.reason)
+        const cancellation = await cancelAgentRunAndChildren({
+          workspaceId: parsed.data.workspaceId,
+          runId: parsed.data.runId,
+          requestedByUserId: access.user.id,
+          idempotencyKey: parsed.data.idempotencyKey,
+          reason: parsed.data.reason,
+        })
+        if (cancellation.state === "in-progress") {
+          return Response.json(
+            {
+              accepted: false,
+              error: "agent-cancellation-in-progress",
+              message: "Agent cancellation is still being coordinated.",
+            },
+            { status: 409, headers: { "retry-after": "2" } }
+          )
+        }
+        if (cancellation.state === "idempotency-conflict") {
+          return Response.json(
+            {
+              accepted: false,
+              error: "idempotency-key-conflict",
+              message:
+                "This Agent cancellation has a different request identity.",
+            },
+            { status: 409 }
+          )
+        }
+        if (cancellation.state === "run-state-conflict") {
+          return Response.json(
+            {
+              accepted: false,
+              error: "agent-run-state-conflict",
+              message: "This AgentRun can no longer be cancelled.",
+            },
+            { status: 409 }
+          )
+        }
         return Response.json({
           accepted: true,
           run: publicRun(await runtime.inspect(parsed.data.runId)),
+          cancellation: {
+            idempotentReplay: cancellation.idempotentReplay,
+            summary: cancellation.summary,
+          },
         })
     }
     const driver = await ensureAgentDriver(parsed.data.runId)
@@ -215,6 +265,27 @@ export async function PATCH(request: Request) {
       )
     }
     throw error
+  }
+}
+
+async function decideApprovalWithRetry(
+  runtime: ReturnType<typeof createMusesAgentRuntime>,
+  runId: string,
+  decision: Parameters<typeof runtime.approve>[1]
+) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await runtime.approve(runId, decision)
+      return
+    } catch (error) {
+      if (
+        !(error instanceof AgentRuntimeError) ||
+        error.code !== "revision-conflict" ||
+        attempt === 2
+      ) {
+        throw error
+      }
+    }
   }
 }
 
@@ -281,5 +352,16 @@ function runNotFound() {
       message: "AgentRun was not found.",
     },
     { status: 404 }
+  )
+}
+
+function agentActionNotAuthorized() {
+  return Response.json(
+    {
+      accepted: false,
+      error: "agent-action-not-authorized",
+      message: "This Workspace role cannot change Agent runs.",
+    },
+    { status: 403 }
   )
 }

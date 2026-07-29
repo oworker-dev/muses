@@ -53,6 +53,7 @@ export class AgentRuntimeError extends Error {
       | "revision-conflict"
       | "plan-revision-conflict"
       | "approval-not-found"
+      | "approval-decision-conflict"
       | "context-compaction-invalid"
       | "budget-exceeded"
       | "tool-not-found"

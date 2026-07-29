@@ -161,7 +161,7 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 
 生成图片同时写入 Muses 自有 `muses_generated_asset` 记录，保存对象键、媒体类型、字节数、尺寸、Prompt、Provider、Model 和 Workflow/Node/Step 来源。图片读取先经过 Muses Workspace 与 WorkflowRun 授权，再按 Asset 记录访问对象存储，不再把 Workflow SDK `returnValue` 当成 Asset 权威；因此 Workflow World 清理、过期或切换不能让已确认 Asset 失去产品身份。
 
-首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它仍不等于完整创作模式或 Codex 级可靠性全部通过：审批 UI、子图像工作流联动取消、文本模型目录计价、上下文压缩、进程恢复、隔离、追踪与固定 eval 仍属于后续 Gate。A8 指定工作流调用也已通过，下一步只进入 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
+首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它仍不等于完整创作模式或 Codex 级可靠性全部通过。A9 已完成进程恢复、上下文压缩、预算/幂等费用和审批/联动取消切片；文本模型目录计价、隔离、追踪与固定 eval 仍属于后续 Gate。A8 指定工作流调用也已通过，下一步只继续 A9 可靠性，不提前增加多 Agent 或 PPT 场景。
 
 首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。供应商额度不足期间的重试均保持零模型用量、零图像、零积分与零画布副作用；供应商原始诊断现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录。额度恢复后，同一 Run 完成计划修订，Agent 在一次无效参考 Asset 的无副作用失败后自纠，只创建一个真实图像 Workflow、新增一个 Asset 并扣费一次；新图在旧图右侧非重叠放置，中文浏览器刷新恢复 Run、两张图片和位置。A7 因而通过，后续缺口转入 A8/A9。
 
@@ -196,7 +196,7 @@ durable driver 在模型或工具之前自绑定 SDK run。该机制不虚构模
 exactly-once：供应商响应后、Agent checkpoint 前的崩溃歧义仍必须在 A9
 预算、费用与固定 eval 中显式验证。
 
-2026-07-29 的前三个 A9 切片已通过。恢复切片证明过期未绑定 claim 和过期已绑定终态 SDK
+2026-07-29 的前四个 A9 切片已通过。恢复切片证明过期未绑定 claim 和过期已绑定终态 SDK
 run 均可在 Studio 轮询中重新认领，旧 attempt 无法执行，恢复夹具在模型、
 子工作流、图片和积分预留上均为零副作用。证据位于
 `delivery/evidence/agent-core-alpha/a9-reliability/`。上下文切片使用消息数与
@@ -215,7 +215,9 @@ Asset、待处理动作与已省略工具结果以结构化 facts 保存；Agent
 证明 2 次文本模型调用对应 2 条完成收据，临时图像子 Workflow 以父 AgentRun 为
 caller、不伪装成发布版本，最终只生成 1 个 Asset 并结算 1 个图像预留。
 
-联动取消、审批、隔离、追踪和固定 eval 仍未通过，不能把三个切片描述成完整
+审批与联动取消切片把 `image.generate`、`workflow.invoke` 和未来 `external` 工具统一放在服务端审批门禁后。Studio 显示持久化工具名、原因和有界参数；相同决策可重放，冲突决策被拒绝，拒绝不执行工具。取消先落 Muses 收据并终结 AgentRun，再取消 durable driver 与全部仍活动的 Agent 子 Workflow。取消收据和 AgentRun 行锁共同阻止新子提交与画布写入；已完成子运行保留事实，已知用量结算，未发生用量释放，供应商结果不明转人工复核。真实图片、精确发布工作流和等待 Selector 子运行分别通过审批、调用和联动取消浏览器证据。
+
+隔离、追踪和固定 eval 仍未通过，不能把四个切片描述成完整
 A9 Gate。文本模型生产费率当前仍需进入版本化模型目录；本次真实环境费率为零，
 非零文本费用的一次性账本语义由隔离夹具证明。
 

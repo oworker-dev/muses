@@ -58,6 +58,16 @@ also records generated-image identity and storage provenance independently
 from Workflow SDK `returnValue`. A7 and A8 do not claim the A9 reliability or
 multi-media experience.
 
+Four A9 reliability slices now pass: durable driver recovery, bounded context
+compaction, model-call budget/billing receipts, and server-authoritative tool
+approval with linked cancellation. External-effect Agent tools wait on a
+persisted approval id, denial executes no tool, and identical decisions replay
+idempotently. Cancelling an AgentRun records one Muses-owned receipt, fences
+new canvas or child-run effects, cancels active Workflow SDK children, and
+keeps completed facts and known billing outcomes intact. Workspace isolation,
+an end-to-end trace joining every effect, and the fixed eval bundle still block
+the overall A9 Gate and therefore multi-Agent or PPT expansion.
+
 The professional Studio now has protected Start/End nodes, typed Start inputs,
 a framework-independent publication validator, a pure
 `WorkflowDocument → WorkflowDefinition` compiler, and a supported-node domain

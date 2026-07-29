@@ -239,6 +239,27 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         !pending?.approval ||
         pending.approval.approvalId !== decision.approvalId
       ) {
+        const decided = (await this.dependencies.store.readEvents(runId)).find(
+          (event) =>
+            event.type === "approval.decided" &&
+            event.data.approvalId === decision.approvalId,
+        );
+        if (decided) {
+          const sameDecision = decided.data.decision === decision.decision;
+          const sameReason =
+            String(decided.data.reason || "") === (decision.reason || "");
+          const priorActor = approvalActor(decided.data.decidedBy);
+          const sameActor =
+            !priorActor ||
+            !decision.decidedBy ||
+            (priorActor.kind === decision.decidedBy.kind &&
+              priorActor.actorId === decision.decidedBy.actorId);
+          if (sameDecision && sameReason && sameActor) return;
+          throw new AgentRuntimeError(
+            "approval-decision-conflict",
+            "The Agent approval already has a different decision.",
+          );
+        }
         throw new AgentRuntimeError(
           "approval-not-found",
           "The pending Agent approval was not found.",
@@ -250,6 +271,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         status: decision.decision,
         decidedAt: now,
         decisionReason: decision.reason,
+        decidedBy: decision.decidedBy,
       };
       const remaining = run.pendingToolCalls.slice(1);
       const nextPending: readonly AgentPendingToolCall[] =
@@ -288,6 +310,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
             approvalId: approval.approvalId,
             decision: decision.decision,
             reason: decision.reason || "",
+            decidedBy: decision.decidedBy || null,
           }),
         ],
       );
@@ -937,6 +960,18 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
   private now() {
     return this.clock.now().toISOString();
   }
+}
+
+function approvalActor(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const candidate = value as { kind?: unknown; actorId?: unknown };
+  if (
+    (candidate.kind !== "user" && candidate.kind !== "service") ||
+    typeof candidate.actorId !== "string"
+  ) {
+    return null;
+  }
+  return { kind: candidate.kind, actorId: candidate.actorId };
 }
 
 export class DefaultAgentPolicy implements AgentPolicyPort {

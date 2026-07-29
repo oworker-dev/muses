@@ -119,6 +119,7 @@ export async function POST(request: Request) {
   if (
     result.state === "in-progress" ||
     result.state === "idempotency-conflict" ||
+    result.state === "caller-inactive" ||
     result.state === "insufficient-credits" ||
     result.state === "runtime-unavailable"
   ) {
@@ -933,6 +934,8 @@ function publishedWorkflowInvocationFailureResponse(
         },
         { status: 409 }
       )
+    case "caller-inactive":
+      return workflowRunStateConflictResponse()
     case "insufficient-credits":
       return Response.json(
         {
@@ -986,6 +989,8 @@ function workflowSubmissionClaimResponse(
         },
         { status: 409 }
       )
+    case "caller-inactive":
+      return workflowRunStateConflictResponse()
     case "insufficient-credits":
       return Response.json(
         {

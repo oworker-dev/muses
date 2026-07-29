@@ -55,6 +55,7 @@ export type WorkflowSubmissionClaim =
     }
   | { state: "in-progress"; submissionId: string }
   | { state: "idempotency-conflict" }
+  | { state: "caller-inactive" }
   | {
       state: "insufficient-credits"
       requiredMicros: bigint
@@ -114,6 +115,42 @@ export async function claimWorkflowSubmission(input: {
         }
       }
       return { state: "in-progress", submissionId: prior.id }
+    }
+
+    if (input.caller?.kind === "agent") {
+      const caller = (
+        await client.query<{ status: string }>(
+          `
+            select agent.status
+            from muses_agent_run agent
+            where agent.id = $1
+              and agent.workspace_id = $2
+              and exists (
+                select 1
+                from muses_workspace_member member
+                where member.workspace_id = agent.workspace_id
+                  and member.user_id = $3
+                  and member.status = 'active'
+                  and member.role <> 'viewer'
+              )
+              and not exists (
+                select 1
+                from muses_agent_cancel_receipt cancellation
+                where cancellation.workspace_id = agent.workspace_id
+                  and cancellation.agent_run_id = agent.id
+              )
+            for share
+          `,
+          [input.caller.agentRunId, input.workspaceId, input.userId]
+        )
+      ).rows[0]
+      if (
+        !caller ||
+        (caller.status !== "queued" && caller.status !== "running")
+      ) {
+        await client.query("rollback")
+        return { state: "caller-inactive" }
+      }
     }
 
     const account = (
@@ -326,6 +363,7 @@ export async function attachWorkflowSdkRun(
           status = case when status = 'starting' then 'running' else status end,
           started_at = coalesce(started_at, now())
       where id = $1 and (sdk_run_id is null or sdk_run_id = $2)
+        and status in ('starting', 'running')
     `,
     [submissionId, sdkRunId]
   )
@@ -348,7 +386,7 @@ export async function failWorkflowStart(submissionId: string, reason: string) {
     `
       update muses_workflow_run
       set status = 'failed', completed_at = now()
-      where id = $1 and sdk_run_id is null
+      where id = $1 and sdk_run_id is null and status = 'starting'
       returning reservation_id as "reservationId"
     `,
     [submissionId]
@@ -368,7 +406,7 @@ export async function failWorkflowStart(submissionId: string, reason: string) {
 
 export async function finalizeUnreservedWorkflowSubmission(input: {
   submissionId: string
-  workflowRunId: string
+  workflowRunId: string | null
   status: "completed" | "failed" | "cancelled"
 }) {
   const result = await getPgPool().query(
@@ -379,7 +417,7 @@ export async function finalizeUnreservedWorkflowSubmission(input: {
           completed_at = coalesce(completed_at, now())
       where id = $1
         and reservation_id is null
-        and (sdk_run_id is null or sdk_run_id = $3)
+        and ($3::text is null or sdk_run_id is null or sdk_run_id = $3)
     `,
     [input.submissionId, input.status, input.workflowRunId]
   )

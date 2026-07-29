@@ -17,7 +17,7 @@ path alone is insufficient.
 | Driver recovery | Muses `AgentRun` driver attempt/lease plus Workflow SDK run status | Crash before SDK start; crash after SDK start before DB attachment; stale attached run; concurrent reclaim. At most one attempt may own side effects, and an old durable run must fail closed after ownership changes. | State-machine tests, PostgreSQL migration/constraint check, Workflow SDK restart probe, no duplicate model/tool/credit/canvas facts | Passed |
 | Context compaction | Versioned `AgentContextSnapshot` summary plus retained messages/facts | Force compaction across follow-up and restart. Plan, permissions, tool outputs, provenance, budget usage and unresolved approvals must not drift. | Fixed long-context eval comparing pre/post-compaction facts and resulting commands | Passed |
 | Budget and billing | Agent budget snapshot, model-call receipt, model/tool usage, credit reservation and immutable ledger | Duplicate delivery, provider failure before/after an ambiguous response, retry and child workflow completion. Every known charge/reservation settles once, ambiguous calls retain review funds, and limits stop new work before the side effect. | Unit state machine, isolated PostgreSQL ledger probe and real Agent image chain correlated to AgentRun/model/WorkflowRun/Asset | Passed |
-| Approval and cancellation | Agent Core approval state, Muses cancellation command and child-run links | External tool waits for server-authorized approval; deny, cancel while model runs, cancel while child workflow runs, and late success. Cancellation prevents new effects but preserves facts that actually completed. | Approval UI/API probe, Workflow World cancellation record, child-run terminal projection and race tests | Pending |
+| Approval and cancellation | Agent Core approval state, Muses cancellation command and child-run links | External tool waits for server-authorized approval; deny, cancel while model runs, cancel while child workflow runs, and late success. Cancellation prevents new effects but preserves facts that actually completed. | Approval UI/API probe, Workflow World cancellation record, child-run terminal projection and race tests | Passed |
 | Isolation and tracing | Workspace authorization, Run-scoped logical sandbox, policy snapshots and correlation identifiers | Cross-Workspace Run/Asset/tool access, stale Skill/MCP snapshot, sandbox escape attempt and trace discontinuity. No caller receives another Workspace's data or credentials. | Negative authorization suite and one trace joining AgentRun, model, tool, WorkflowRun, Asset, usage and credit | Pending |
 | Fixed evals | Versioned eval fixtures and sanitized evidence bundle | Success, recovery, refusal, budget, approval, cancellation, isolation and no-side-effect cases run against fixed inputs. Failures must be reproducible without private customer content. | Machine-readable results, commands, versions and residual-risk record under `delivery/evidence/agent-core-alpha/a9-reliability/` | Pending |
 
@@ -105,6 +105,34 @@ Agent-created image workflows are ad-hoc child runs: they carry `caller_kind =
 agent` and the parent AgentRun id, but no published definition id/version. This
 keeps billing and tracing lineage without representing an ephemeral definition
 as a callable published contract.
+
+## Approval and cancellation contract
+
+Approval is a durable execution gate, not a replacement for authorization or
+idempotency. `image.generate`, `workflow.invoke` and future tools classified as
+`external` pause before execution. Studio renders the server-persisted tool
+name, reason and bounded input projection, then submits an exact approval id.
+The API revalidates the authenticated Workspace membership, rejects viewer
+mutations, records the deciding user, allows an identical decision to replay,
+and rejects a conflicting second decision. A denial becomes a tool result for
+the next model turn and executes no tool side effect.
+
+Cancellation first persists one Muses-owned receipt and marks the AgentRun
+terminal. The receipt itself fences new Agent child submissions and canvas
+writes during the narrow interval before the terminal snapshot commits. Both
+boundaries lock the same AgentRun row: a child committed first is visible to
+the coordinator; a cancellation committed first blocks the child. The
+coordinator then cancels the durable Agent driver and every still-active child
+Workflow SDK run linked by `caller_kind = agent` and `caller_id = AgentRun`.
+
+Completed or failed child runs keep their actual terminal state. A child that
+finishes while cancellation races is therefore not rewritten as cancelled.
+Known image usage is settled once; no-usage cancellation releases the
+reservation; an interrupted provider attempt or missing charged SDK run moves
+the reservation to `review_required`. A late model result cannot revive a
+cancelled AgentRun because its checkpoint loses the persisted revision race.
+Exact cancellation retries replay the stored summary; a different key, reason
+or requester conflicts.
 
 ## Gate rule
 

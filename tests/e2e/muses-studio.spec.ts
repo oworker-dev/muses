@@ -93,6 +93,11 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
     .fill("Create a minimal red product poster on a white background.");
   await panel.getByRole("button", { name: "Send" }).click();
 
+  const approval = page.getByTestId("studio-agent-approval");
+  await expect(approval).toBeVisible({ timeout: 2 * 60_000 });
+  await expect(approval).toContainText("image.generate");
+  await approval.getByRole("button", { name: "Approve" }).click();
+
   await expect(panel.getByText("Result ready", { exact: true })).toBeVisible({
     timeout: 5 * 60_000,
   });
@@ -1945,6 +1950,48 @@ test("MusesAgent discovers, inspects, and invokes one exact published workflow",
           `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
         );
         const body = (await response.json()) as {
+          run?: {
+            status?: string;
+            pendingApproval?: {
+              approvalId: string;
+              toolCall: { name: string };
+            };
+          };
+        };
+        return body.run?.status === "waiting-approval"
+          ? body.run.pendingApproval?.toolCall.name
+          : undefined;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .toBe("workflow.invoke");
+  const approvalProjection = await page.request.get(
+    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
+  );
+  const approvalId = (
+    (await approvalProjection.json()) as {
+      run: { pendingApproval: { approvalId: string } };
+    }
+  ).run.pendingApproval.approvalId;
+  const approved = await page.request.patch("/api/studio/agent-runs", {
+    data: {
+      action: "approve",
+      workspaceId,
+      runId: agentRunId,
+      approvalId,
+      decision: "approved",
+      reason: "Approved by the A9 callable workflow evidence.",
+    },
+  });
+  expect(approved.status()).toBe(200);
+
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
+        );
+        const body = (await response.json()) as {
           run?: { status?: string };
         };
         return body.run?.status;
@@ -2024,6 +2071,100 @@ test("MusesAgent discovers, inspects, and invokes one exact published workflow",
         (await readWorkflowInvocationAudit(invocation.runId)).workflowStatus,
     )
     .toBe("cancelled");
+});
+
+test("Agent cancellation stops linked Workflow SDK children and replays one receipt", async ({
+  page,
+}) => {
+  test.setTimeout(2 * 60_000);
+  const target = await publishDurableHarness(page);
+  const agentRunId = await createActiveAgentCancellationFixture(workspaceId);
+  let workflowRunId: string | null = null;
+  try {
+    const started = await page.request.post("/api/studio/workflow-runs", {
+      data: {
+        workspaceId,
+        target,
+        idempotencyKey: `agent-cancel-child:${Date.now()}`,
+      },
+    });
+    expect(started.status()).toBe(202);
+    workflowRunId = ((await started.json()) as { runId: string }).runId;
+    await expect
+      .poll(async () => {
+        const response = await page.request.get(
+          `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${workflowRunId}`,
+        );
+        return ((await response.json()) as { status?: string }).status;
+      })
+      .toBe("waiting");
+    await linkWorkflowRunToAgent(workflowRunId, agentRunId);
+
+    const request = {
+      action: "cancel",
+      workspaceId,
+      runId: agentRunId,
+      idempotencyKey: `agent-cancel:${agentRunId}`,
+      reason: "A9 linked Workflow SDK cancellation fixture",
+    };
+    const cancelled = await page.request.patch("/api/studio/agent-runs", {
+      data: request,
+    });
+    expect(cancelled.status()).toBe(200);
+    expect(await cancelled.json()).toMatchObject({
+      accepted: true,
+      run: { status: "cancelled" },
+      cancellation: {
+        idempotentReplay: false,
+        summary: {
+          children: [
+            {
+              runId: workflowRunId,
+              state: "cancelled",
+              knownCreditMicros: "0",
+            },
+          ],
+          reviewRequired: false,
+        },
+      },
+    });
+    await expect
+      .poll(async () => {
+        const response = await page.request.get(
+          `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${workflowRunId}`,
+        );
+        return ((await response.json()) as { sdkStatus?: string }).sdkStatus;
+      })
+      .toBe("cancelled");
+
+    const replay = await page.request.patch("/api/studio/agent-runs", {
+      data: request,
+    });
+    expect(replay.status()).toBe(200);
+    expect(await replay.json()).toMatchObject({
+      accepted: true,
+      cancellation: { idempotentReplay: true },
+    });
+    const conflict = await page.request.patch("/api/studio/agent-runs", {
+      data: {
+        ...request,
+        idempotencyKey: `${request.idempotencyKey}:different`,
+        reason: "Different cancellation identity",
+      },
+    });
+    expect(conflict.status()).toBe(409);
+    expect(await conflict.json()).toMatchObject({
+      error: "idempotency-key-conflict",
+    });
+    expect(await readAgentCancellationFacts(agentRunId)).toEqual({
+      agentStatus: "cancelled",
+      childStatus: "cancelled",
+      receipts: 1,
+      cancellationEvents: 1,
+    });
+  } finally {
+    await restoreWorkflowCallerAndDeleteAgentFixture(agentRunId, workflowRunId);
+  }
 });
 
 test("insufficient credits reject a real image run before provider execution", async ({
@@ -2357,6 +2498,199 @@ async function deleteAgentDriverFixture(runId: string) {
   await client.connect();
   try {
     await client.query("delete from muses_agent_run where id = $1", [runId]);
+  } finally {
+    await client.end();
+  }
+}
+
+async function createActiveAgentCancellationFixture(
+  currentWorkspaceId: string,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const target = (
+      await client.query<{ projectId: string; canvasId: string | null }>(
+        `
+          select project.id as "projectId", canvas.id as "canvasId"
+          from muses_project project
+          left join muses_creative_canvas canvas
+            on canvas.workspace_id = project.workspace_id
+           and canvas.project_id = project.id
+          where project.workspace_id = $1
+          order by project.created_at
+          limit 1
+        `,
+        [currentWorkspaceId],
+      )
+    ).rows[0];
+    expect(target?.projectId).toBeTruthy();
+    const runId = `arun_cancel_${randomBytes(16).toString("hex")}`;
+    const now = new Date().toISOString();
+    const snapshot = {
+      schemaVersion: "0.1.0-draft",
+      runId,
+      session: {
+        schemaVersion: "0.1.0-draft",
+        sessionId: `asession_cancel_${randomBytes(12).toString("hex")}`,
+        workspaceId: currentWorkspaceId,
+        projectId: target!.projectId,
+        canvasId: target!.canvasId || undefined,
+        createdAt: now,
+        updatedAt: now,
+      },
+      profile: {
+        profileId: "a9-cancellation-fixture",
+        version: "1.0.0",
+        modelRef: "test/no-model",
+        instructions: "Sanitized linked cancellation fixture.",
+        toolNames: [],
+        skillRefs: [],
+        mcpConnectionRefs: [],
+      },
+      status: "running",
+      revision: 0,
+      turn: 0,
+      context: {
+        version: 1,
+        messages: [],
+        artifactRefs: [],
+        createdAt: now,
+      },
+      budget: {
+        limit: {
+          maxTurns: 1,
+          maxModelCalls: 1,
+          maxToolCalls: 1,
+          maxInputTokens: 1000,
+          maxOutputTokens: 1000,
+          maxCreditMicros: "0",
+          maxDurationMs: 900000,
+        },
+        usage: {
+          turns: 0,
+          modelCalls: 0,
+          toolCalls: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          creditMicros: "0",
+          startedAt: now,
+        },
+      },
+      permissions: [],
+      metadata: { fixture: "a9-linked-cancellation" },
+      pendingMessages: [],
+      pendingToolCalls: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    await client.query(
+      `
+        insert into muses_agent_run (
+          id, workspace_id, project_id, canvas_id, session_id,
+          profile_id, profile_version, model_ref, status, revision,
+          snapshot, driver_status, created_at, updated_at
+        )
+        values ($1, $2, $3, $4, $5, $6, $7, $8, 'running', 0, $9, 'unclaimed', $10, $10)
+      `,
+      [
+        runId,
+        currentWorkspaceId,
+        target!.projectId,
+        target!.canvasId,
+        snapshot.session.sessionId,
+        snapshot.profile.profileId,
+        snapshot.profile.version,
+        snapshot.profile.modelRef,
+        JSON.stringify(snapshot),
+        now,
+      ],
+    );
+    return runId;
+  } finally {
+    await client.end();
+  }
+}
+
+async function linkWorkflowRunToAgent(
+  workflowRunId: string,
+  agentRunId: string,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const updated = await client.query(
+      `
+        update muses_workflow_run
+        set caller_kind = 'agent', caller_id = $2
+        where sdk_run_id = $1
+      `,
+      [workflowRunId, agentRunId],
+    );
+    expect(updated.rowCount).toBe(1);
+  } finally {
+    await client.end();
+  }
+}
+
+async function readAgentCancellationFacts(agentRunId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const row = (
+      await client.query<{
+        agentStatus: string;
+        childStatus: string;
+        receipts: string;
+        cancellationEvents: string;
+      }>(
+        `
+          select
+            agent.status as "agentStatus",
+            child.status as "childStatus",
+            (select count(*) from muses_agent_cancel_receipt
+              where agent_run_id = agent.id) as receipts,
+            (select count(*) from muses_agent_event
+              where run_id = agent.id and type = 'run.cancelled') as "cancellationEvents"
+          from muses_agent_run agent
+          join muses_workflow_run child
+            on child.caller_kind = 'agent' and child.caller_id = agent.id
+          where agent.id = $1
+        `,
+        [agentRunId],
+      )
+    ).rows[0];
+    return {
+      agentStatus: row?.agentStatus,
+      childStatus: row?.childStatus,
+      receipts: Number(row?.receipts || 0),
+      cancellationEvents: Number(row?.cancellationEvents || 0),
+    };
+  } finally {
+    await client.end();
+  }
+}
+
+async function restoreWorkflowCallerAndDeleteAgentFixture(
+  agentRunId: string,
+  workflowRunId: string | null,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    if (workflowRunId) {
+      await client.query(
+        `
+          update muses_workflow_run
+          set caller_kind = 'user', caller_id = submitted_by_user_id
+          where sdk_run_id = $1 and caller_id = $2
+        `,
+        [workflowRunId, agentRunId],
+      );
+    }
+    await client.query("delete from muses_agent_run where id = $1", [
+      agentRunId,
+    ]);
   } finally {
     await client.end();
   }

@@ -245,6 +245,12 @@
       "followUpPlaceholder": "Describe the next change",
       "send": "Send",
       "cancel": "Cancel Agent run",
+      "approval": {
+        "title": "Approval required",
+        "input": "Review action input",
+        "approve": "Approve",
+        "deny": "Deny"
+      },
       "requestFailed": "MusesAgent could not complete this request.",
       "modelFailed": "The model service could not complete this turn. Try again in a moment.",
       "plan": "Execution plan",

@@ -156,6 +156,13 @@ describe("HeadlessAgentRuntime", () => {
       approvalId: waiting.pendingApproval!.approvalId,
       decision: "approved",
       reason: "Approved by the project owner",
+      decidedBy: { kind: "user", actorId: "user-1" },
+    });
+    await fixture.runtime.approve(ref.runId, {
+      approvalId: waiting.pendingApproval!.approvalId,
+      decision: "approved",
+      reason: "Approved by the project owner",
+      decidedBy: { kind: "user", actorId: "user-1" },
     });
     await fixture.runtime.resume(ref.runId);
 
@@ -164,6 +171,109 @@ describe("HeadlessAgentRuntime", () => {
       budget: { usage: { toolCalls: 1 } },
     });
     expect(fixture.tools.executions[0]?.callId).toBe("publish-1");
+    await expect(
+      fixture.runtime.approve(ref.runId, {
+        approvalId: waiting.pendingApproval!.approvalId,
+        decision: "denied",
+        reason: "Changed after approval",
+        decidedBy: { kind: "user", actorId: "user-1" },
+      }),
+    ).rejects.toMatchObject({ code: "approval-decision-conflict" });
+  });
+
+  it("records a denied external action without executing it", async () => {
+    const fixture = createRuntime(
+      [
+        {
+          content: "I need to publish this asset.",
+          finishReason: "tool-calls",
+          toolCalls: [
+            {
+              id: "publish-denied",
+              name: "social.publish",
+              input: { assetId: "a1" },
+            },
+          ],
+          usage: { inputTokens: 10, outputTokens: 5, creditMicros: "10" },
+        },
+        stop("The publish action was denied."),
+      ],
+      new DefaultAgentPolicy(),
+    );
+    fixture.tools.definitions.push({
+      name: "social.publish",
+      description: "Publish an asset",
+      inputSchema: { type: "object" },
+      requiredPermissions: ["social.publish"],
+      sideEffect: "external",
+    });
+    const ref = await fixture.runtime.start(
+      startInput({
+        toolNames: ["social.publish"],
+        permissions: ["social.publish"],
+      }),
+    );
+    await fixture.runtime.resume(ref.runId);
+    const waiting = await fixture.runtime.inspect(ref.runId);
+
+    await fixture.runtime.approve(ref.runId, {
+      approvalId: waiting.pendingApproval!.approvalId,
+      decision: "denied",
+      reason: "Do not publish externally.",
+      decidedBy: { kind: "user", actorId: "user-1" },
+    });
+    await fixture.runtime.resume(ref.runId);
+
+    expect(fixture.tools.executions).toHaveLength(0);
+    expect(await fixture.runtime.inspect(ref.runId)).toMatchObject({
+      status: "completed",
+      budget: { usage: { toolCalls: 0 } },
+    });
+    const events = await fixture.store.readEvents(ref.runId);
+    expect(
+      events.find(({ type }) => type === "approval.decided")?.data,
+    ).toMatchObject({
+      decision: "denied",
+      decidedBy: { kind: "user", actorId: "user-1" },
+    });
+  });
+
+  it("does not revive a run when a model result arrives after cancellation", async () => {
+    let releaseModel!: (result: AgentModelResult) => void;
+    const pendingModel = new Promise<AgentModelResult>((resolve) => {
+      releaseModel = resolve;
+    });
+    const model: AgentModelPort = {
+      estimate: () => ({ inputTokens: 1, outputTokens: 1, creditMicros: "1" }),
+      complete: () => pendingModel,
+    };
+    const fixture = createRuntimeWithModel(model);
+    const ref = await fixture.runtime.start(startInput());
+    const driving = fixture.runtime.resume(ref.runId);
+    await waitForStatus(fixture.runtime, ref.runId, "running");
+
+    const cancellingRuntime = new HeadlessAgentRuntime({
+      model,
+      tools: fixture.tools,
+      policy: new AllowPolicy(),
+      store: fixture.store,
+      clock: fixture.clock,
+      ids: fixture.ids,
+    });
+    await cancellingRuntime.cancel(ref.runId, "Cancelled during model call");
+    releaseModel(stop("Late provider result"));
+
+    await expect(driving).rejects.toMatchObject({ code: "revision-conflict" });
+    expect(await fixture.runtime.inspect(ref.runId)).toMatchObject({
+      status: "cancelled",
+      turn: 0,
+      budget: { usage: { modelCalls: 0, creditMicros: "0" } },
+    });
+    const events = await fixture.store.readEvents(ref.runId);
+    expect(events.filter(({ type }) => type === "run.cancelled")).toHaveLength(
+      1,
+    );
+    expect(events.some(({ type }) => type === "model.completed")).toBe(false);
   });
 
   it("fails closed when a model response exceeds the run budget", async () => {
@@ -815,6 +925,18 @@ function defaultBudget() {
     maxCreditMicros: "1000000",
     maxDurationMs: 60_000,
   };
+}
+
+async function waitForStatus(
+  runtime: HeadlessAgentRuntime,
+  runId: string,
+  status: AgentRunSnapshot["status"],
+) {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    if ((await runtime.inspect(runId)).status === status) return;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  throw new Error(`AgentRun did not reach ${status}.`);
 }
 
 function stop(content: string): AgentModelResult {

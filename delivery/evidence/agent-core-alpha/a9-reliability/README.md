@@ -7,9 +7,9 @@ Environment: local PostgreSQL and Workflow SDK Postgres World with Studio at
 
 ## Outcome
 
-The driver-recovery, context-compaction and budget/billing A9 slices passed.
-The overall A9 gate remains in progress; approval/cancellation,
-isolation/tracing and the fixed eval bundle are still blocking.
+The driver-recovery, context-compaction, budget/billing and
+approval/cancellation A9 slices passed. The overall A9 gate remains in
+progress; isolation/tracing and the fixed eval bundle are still blocking.
 
 Agent driver ownership is now Muses-owned rather than inferred from a nullable
 Workflow SDK run id:
@@ -60,8 +60,9 @@ retain `review_required` funds; definite non-timeout 4xx rejection releases
 once; timeout/network/5xx/unknown failure never auto-retries. Actual usage over
 the reservation retains the result for review and is not silently completed.
 
-The isolated PostgreSQL fixture applied all 11 migrations in a disposable
-schema and proved duplicate fencing, completed replay, expired claim reclaim,
+The isolated PostgreSQL fixture applied all 11 migrations available to that
+budget/billing slice in a disposable schema and proved duplicate fencing,
+completed replay, expired claim reclaim,
 calling-lease ambiguity, definite failure idempotence, over-reservation review
 and insufficient-balance rejection. Its known settlement posted 600 micros,
 retained 1,100 reserved micros across the two review cases, and produced one
@@ -76,6 +77,26 @@ passed in 48.8 seconds: one AgentRun completed with two completed model receipts
 one tool call, one completed ad-hoc child WorkflowRun, one generated Asset and
 one settled image reservation. Refresh and canvas position recovery passed.
 
+External-effect tools now use a server-authoritative approval state rather than
+inferring consent from chat. `image.generate` and `workflow.invoke` always
+pause before execution and expose a bounded tool-input projection. Approval and
+denial record the deciding member, identical decisions replay idempotently, and
+conflicting decisions fail closed. Denial is returned to Agent context without
+executing the tool. Workspace viewers cannot start, steer, follow up, approve,
+deny or cancel, and execution rechecks that the original requester is still an
+active non-viewer member before a child workflow or canvas mutation commits.
+
+Agent cancellation now has a Muses-owned receipt and intent fence. One
+idempotent request cancels the AgentRun and durable driver, discovers all child
+Workflow SDK runs by `caller_kind = agent` and parent AgentRun id, cancels only
+active children, and stores the resulting summary. Child submission and canvas
+commands lock the same AgentRun authority, so a cancellation committed first
+blocks later effects while a child committed first remains enumerable. Late
+model output cannot revive a cancelled Run because its checkpoint conflicts
+with the cancellation revision. Completed or failed child facts remain
+truthful; known use settles once, definite no-use releases, and an interrupted
+active provider call or unresolved reservation moves to `review_required`.
+
 ## Verification
 
 ```bash
@@ -89,18 +110,24 @@ pnpm --filter ./src/apps/web run verify:agent-context
 set -a; source .env.development; set +a
 pnpm --filter ./src/apps/web run verify:agent-billing
 set -a; source .env.development; set +a
+pnpm --filter ./src/apps/web run verify:agent-cancellation
+set -a; source .env.development; set +a
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'expired Agent driver claims'
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'MusesAgent generates a real image'
+OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
+  tests/e2e/muses-studio.spec.ts --grep 'Agent cancellation stops linked Workflow SDK children'
+OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
+  tests/e2e/muses-studio.spec.ts --grep 'discovers, inspects, and invokes one exact published workflow'
 ```
 
 - Domain: 39/39 tests passed.
-- Agent Core: 19/19 tests passed.
+- Agent Core: 21/21 tests passed.
 - Agent Harness adapters: 3/3 tests passed.
 - Web unit: 18/18 tests passed, including 9 model-receipt adapter cases.
 - Recovery state-machine tests: 4/4 passed.
-- Workflow validation: 198 files scanned, 2 workflow patterns, no serde issues.
+- Workflow validation: 200 files scanned, 2 workflow patterns, no serde issues.
 - Production build, repository typecheck, migration application and targeted
   driver lint passed.
 - Real Studio recovery probe: 1/1 passed. It covered an expired unbound claim
@@ -110,9 +137,28 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   columns plus lease constraint were verified through PostgreSQL metadata.
 - Database migration `0011_agent_model_call_receipts.sql` was applied; the
   23-column receipt table and credit-reservation owner constraint were verified.
+- Database migration `0012_agent_approval_cancellation.sql` was applied; the
+  12-column cancellation receipt table and all three indexes were verified.
 - Real PostgreSQL context probe passed with summary version 1, 26 source
   messages, 21 retained messages, one compaction event, 15 model calls, zero
   tool calls and zero credit usage.
+- PostgreSQL approval/cancellation probe passed: denial executed zero tools;
+  cancellation reached `cancelled`; exact replay returned the saved receipt;
+  conflicting requester identity returned `idempotency-conflict`; a new child
+  after cancellation returned `caller-inactive`; and the receipt completed
+  without review-required usage.
+- Real linked-child cancellation E2E passed in 0.845 seconds against the final
+  build. It cancelled the registered Workflow SDK child and parent AgentRun,
+  persisted one receipt and one `run.cancelled` event, replayed an identical
+  request, and rejected a conflicting request with 409.
+- Real OpenAI image approval E2E passed in 56.6 seconds. It observed a persisted
+  `image.generate` approval before provider execution, approved it, produced
+  exactly one Asset, then restored the image and moved canvas position after
+  refresh.
+- Exact published-workflow approval E2E passed in 19.5 seconds. The Agent used
+  `workflow.list` and `workflow.inspect`, waited for approval on
+  `workflow.invoke`, then invoked one immutable version with parent AgentRun
+  lineage.
 
 ## Boundaries and residual risk
 
@@ -123,8 +169,8 @@ operator reconciliation UI remains part of tracing/admin work. Live text-model
 credit rates were zero in this environment, so the real image E2E created no
 text-model ledger entries; nonzero single-settlement behavior is proven by the
 isolated PostgreSQL fixture, while versioned text-model prices remain catalog
-work. Cancellation propagation to child WorkflowRuns, approval UX, full
-tracing, isolation evals and fixed eval bundles remain separate A9 tasks. The
+work. Full tracing, isolation evals and fixed eval bundles remain separate A9
+tasks. The
 deterministic compactor bounds conversational history; provider-specific
 tokenization and semantic-summary quality still need model-profile evals.
 

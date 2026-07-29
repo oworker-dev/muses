@@ -95,12 +95,19 @@ export type AgentApprovalRequest = {
   readonly status: "pending" | "approved" | "denied";
   readonly decidedAt?: string;
   readonly decisionReason?: string;
+  readonly decidedBy?: AgentApprovalActor;
+};
+
+export type AgentApprovalActor = {
+  readonly kind: "user" | "service";
+  readonly actorId: string;
 };
 
 export type ApprovalDecision = {
   readonly approvalId: string;
   readonly decision: "approved" | "denied";
   readonly reason?: string;
+  readonly decidedBy?: AgentApprovalActor;
 };
 
 export type AgentPendingToolCall = {
