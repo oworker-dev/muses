@@ -1,3 +1,5 @@
+import type { AgentRunExtensionSnapshot } from "./extensions";
+
 export const AGENT_CORE_SCHEMA_VERSION = "0.1.0-draft" as const;
 
 export type AgentRunStatus =
@@ -183,6 +185,7 @@ export type AgentRunSnapshot = {
     readonly usage: AgentBudgetUsage;
   };
   readonly permissions: readonly string[];
+  readonly extensions?: AgentRunExtensionSnapshot;
   readonly metadata: Readonly<Record<string, unknown>>;
   readonly pendingMessages: readonly AgentMessage[];
   readonly pendingToolCalls: readonly AgentPendingToolCall[];
@@ -241,6 +244,7 @@ export type StartAgentRun = {
   readonly input: string;
   readonly budget: AgentBudgetLimit;
   readonly permissions: readonly string[];
+  readonly extensions?: AgentRunExtensionSnapshot;
   readonly plan?: Omit<AgentExecutionPlan, "revision" | "updatedAt">;
   readonly metadata?: Readonly<Record<string, unknown>>;
 };

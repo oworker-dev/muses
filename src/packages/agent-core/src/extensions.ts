@@ -1,4 +1,7 @@
-import { AGENT_CORE_SCHEMA_VERSION } from "./contracts";
+import {
+  AGENT_CORE_SCHEMA_VERSION,
+  type AgentProfileSnapshot,
+} from "./contracts";
 
 export type AgentSkillRef = {
   readonly skillId: string;
@@ -166,6 +169,7 @@ export type AgentRunExtensionSnapshot = {
   readonly mcpTools: readonly AgentMcpToolSnapshot[];
   readonly logicalSandbox: AgentLogicalSandbox;
   readonly capturedAt: string;
+  readonly integrityFingerprint: string;
 };
 
 export type CreateAgentRunExtensionSnapshotResult =
@@ -178,12 +182,18 @@ export type CreateAgentRunExtensionSnapshotResult =
         | "duplicate-mcp-connection"
         | "duplicate-mcp-tool"
         | "permission-not-granted"
+        | "tool-not-granted"
+        | "skill-snapshot-mismatch"
+        | "mcp-snapshot-mismatch"
+        | "extension-integrity-mismatch"
         | "sandbox-scope-mismatch";
       readonly message: string;
     };
 
 export function createAgentRunExtensionSnapshot(input: {
   readonly runId: string;
+  readonly runScope: AgentSandboxScope;
+  readonly profile: AgentProfileSnapshot;
   readonly runPermissions: readonly string[];
   readonly skills: readonly AgentSkillSnapshot[];
   readonly mcpConnections: readonly AgentMcpConnectionSnapshot[];
@@ -191,15 +201,68 @@ export function createAgentRunExtensionSnapshot(input: {
   readonly logicalSandbox: AgentLogicalSandbox;
   readonly capturedAt: string;
 }): CreateAgentRunExtensionSnapshotResult {
-  if (!input.runId.trim() || input.logicalSandbox.scope.runId !== input.runId) {
+  const snapshotWithoutFingerprint = {
+    schemaVersion: AGENT_CORE_SCHEMA_VERSION,
+    runId: input.runId,
+    skills: structuredClone(input.skills),
+    mcpConnections: structuredClone(input.mcpConnections),
+    mcpTools: structuredClone(input.mcpTools),
+    logicalSandbox: structuredClone(input.logicalSandbox),
+    capturedAt: input.capturedAt,
+  };
+  const snapshot: AgentRunExtensionSnapshot = {
+    ...snapshotWithoutFingerprint,
+    integrityFingerprint: fingerprintExtensionSnapshot(
+      snapshotWithoutFingerprint,
+    ),
+  };
+  const validation = validateAgentRunExtensionSnapshot({
+    snapshot,
+    runId: input.runId,
+    runScope: input.runScope,
+    profile: input.profile,
+    runPermissions: input.runPermissions,
+  });
+  return validation.ok ? { ok: true, snapshot } : validation;
+}
+
+export function validateAgentRunExtensionSnapshot(input: {
+  readonly snapshot: AgentRunExtensionSnapshot;
+  readonly runId: string;
+  readonly runScope: AgentSandboxScope;
+  readonly profile: AgentProfileSnapshot;
+  readonly runPermissions: readonly string[];
+}): CreateAgentRunExtensionSnapshotResult {
+  const { snapshot } = input;
+  if (
+    snapshot.integrityFingerprint !== fingerprintExtensionSnapshot(snapshot)
+  ) {
+    return {
+      ok: false,
+      code: "extension-integrity-mismatch",
+      message: "The frozen Agent extension snapshot has changed.",
+    };
+  }
+  if (
+    snapshot.schemaVersion !== AGENT_CORE_SCHEMA_VERSION ||
+    snapshot.logicalSandbox.schemaVersion !== AGENT_CORE_SCHEMA_VERSION ||
+    !input.runId.trim() ||
+    snapshot.runId !== input.runId ||
+    !sameScope(snapshot.logicalSandbox.scope, input.runScope) ||
+    snapshot.logicalSandbox.filesystem.persistence !== "ephemeral" ||
+    snapshot.logicalSandbox.filesystem.namespace !==
+      `agent-run/${input.runId}` ||
+    snapshot.logicalSandbox.network.default !== "deny"
+  ) {
     return {
       ok: false,
       code: "sandbox-scope-mismatch",
-      message: "The logical sandbox must be scoped to this AgentRun.",
+      message:
+        "The logical sandbox must be deny-by-default and scoped exactly to this AgentRun.",
     };
   }
   const skillKeys = new Set<string>();
-  for (const skill of input.skills) {
+  for (const skill of snapshot.skills) {
     const key = `${skill.skillId}@${skill.version}`;
     if (skillKeys.has(key)) {
       return {
@@ -220,9 +283,17 @@ export function createAgentRunExtensionSnapshot(input: {
       };
     }
   }
+  if (!sameSet(skillKeys, new Set(input.profile.skillRefs))) {
+    return {
+      ok: false,
+      code: "skill-snapshot-mismatch",
+      message: "Skill snapshots must match the immutable Agent profile refs.",
+    };
+  }
 
   const connectionIds = new Set<string>();
-  for (const connection of input.mcpConnections) {
+  const connectionKeys = new Set<string>();
+  for (const connection of snapshot.mcpConnections) {
     if (connectionIds.has(connection.connectionId)) {
       return {
         ok: false,
@@ -231,10 +302,19 @@ export function createAgentRunExtensionSnapshot(input: {
       };
     }
     connectionIds.add(connection.connectionId);
+    connectionKeys.add(`${connection.connectionId}@${connection.version}`);
+  }
+  if (!sameSet(connectionKeys, new Set(input.profile.mcpConnectionRefs))) {
+    return {
+      ok: false,
+      code: "mcp-snapshot-mismatch",
+      message:
+        "MCP connection snapshots must match the immutable Agent profile refs.",
+    };
   }
 
   const toolKeys = new Set<string>();
-  for (const tool of input.mcpTools) {
+  for (const tool of snapshot.mcpTools) {
     const key = `${tool.connectionId}:${tool.name}`;
     if (!connectionIds.has(tool.connectionId)) {
       return {
@@ -263,32 +343,90 @@ export function createAgentRunExtensionSnapshot(input: {
     }
   }
 
-  const sandboxPermissions = new Set(input.logicalSandbox.permissions);
-  if (
-    input.runPermissions.some(
-      (permission) => !sandboxPermissions.has(permission),
-    )
-  ) {
+  const sandboxPermissions = new Set(snapshot.logicalSandbox.permissions);
+  if (!sameSet(sandboxPermissions, new Set(input.runPermissions))) {
     return {
       ok: false,
       code: "permission-not-granted",
       message:
-        "The logical sandbox cannot omit permissions required by the Run snapshot.",
+        "The logical sandbox permissions must exactly match the Run snapshot.",
     };
+  }
+
+  const allowedToolNames = new Set(snapshot.logicalSandbox.allowedToolNames);
+  const expectedToolNames = new Set([
+    ...input.profile.toolNames,
+    ...snapshot.mcpTools.map(qualifiedMcpToolName),
+  ]);
+  if (!sameSet(allowedToolNames, expectedToolNames)) {
+    return {
+      ok: false,
+      code: "tool-not-granted",
+      message:
+        "The logical sandbox tools must exactly match the pinned Agent and MCP tool surface.",
+    };
+  }
+  for (const skill of snapshot.skills) {
+    if (skill.toolNames.some((toolName) => !allowedToolNames.has(toolName))) {
+      return {
+        ok: false,
+        code: "tool-not-granted",
+        message: `Skill "${skill.skillId}@${skill.version}" references an unavailable tool.`,
+      };
+    }
   }
 
   return {
     ok: true,
-    snapshot: structuredClone({
-      schemaVersion: AGENT_CORE_SCHEMA_VERSION,
-      runId: input.runId,
-      skills: input.skills,
-      mcpConnections: input.mcpConnections,
-      mcpTools: input.mcpTools,
-      logicalSandbox: input.logicalSandbox,
-      capturedAt: input.capturedAt,
-    }),
+    snapshot: structuredClone(snapshot),
   };
+}
+
+function qualifiedMcpToolName(tool: AgentMcpToolSnapshot) {
+  return `${tool.connectionId}__${tool.name}`;
+}
+
+function sameScope(left: AgentSandboxScope, right: AgentSandboxScope) {
+  return (
+    left.workspaceId === right.workspaceId &&
+    left.projectId === right.projectId &&
+    left.sessionId === right.sessionId &&
+    left.runId === right.runId &&
+    left.parentRunId === right.parentRunId
+  );
+}
+
+function sameSet(left: ReadonlySet<string>, right: ReadonlySet<string>) {
+  return (
+    left.size === right.size && [...left].every((value) => right.has(value))
+  );
+}
+
+function fingerprintExtensionSnapshot(
+  snapshot: Omit<AgentRunExtensionSnapshot, "integrityFingerprint"> |
+    AgentRunExtensionSnapshot,
+) {
+  const { integrityFingerprint: _ignored, ...content } = snapshot as
+    AgentRunExtensionSnapshot;
+  const bytes = new TextEncoder().encode(stableJson(content));
+  let hash = BigInt("14695981039346656037");
+  for (const byte of bytes) {
+    hash ^= BigInt(byte);
+    hash = BigInt.asUintN(64, hash * BigInt("1099511628211"));
+  }
+  return `fnv1a64:${hash.toString(16).padStart(16, "0")}`;
+}
+
+function stableJson(value: unknown): string {
+  if (value === undefined) return "undefined";
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) return `[${value.map(stableJson).join(",")}]`;
+  return `{${Object.entries(value as Record<string, unknown>)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, item]) => `${JSON.stringify(key)}:${stableJson(item)}`)
+    .join(",")}}`;
 }
 
 export function createLogicalAgentSandbox(input: {

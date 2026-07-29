@@ -10,12 +10,12 @@
   },
   "verification": {
     "domainTests": { "passed": 39, "total": 39 },
-    "agentCoreTests": { "passed": 21, "total": 21 },
+    "agentCoreTests": { "passed": 34, "total": 34 },
     "agentHarnessTests": { "passed": 3, "total": 3 },
     "webUnitTests": { "passed": 18, "total": 18 },
     "driverRecoveryStateTests": { "passed": 4, "total": 4 },
     "workflowValidation": {
-      "files": 200,
+      "files": 203,
       "workflowPatterns": 2,
       "serdeIssues": 0
     },
@@ -126,6 +126,34 @@
         }
       }
     },
+    "isolationTracing": {
+      "status": "passed",
+      "postgresProbe": {
+        "passed": true,
+        "agentEvents": 23,
+        "modelCalls": 2,
+        "toolCommands": 1,
+        "childWorkflowRuns": 1,
+        "workflowWorldRuns": 2,
+        "workflowSteps": 13,
+        "workflowEvents": 45,
+        "generatedAssets": 1,
+        "creditReservations": 1,
+        "ledgerEntries": 1,
+        "crossWorkspaceRun": "denied",
+        "crossWorkspaceAsset": "denied",
+        "toolScopeOverride": "denied",
+        "tamperedSnapshot": "failed-closed",
+        "sensitiveFields": "absent"
+      },
+      "traceAuthorizationE2E": {
+        "passed": true,
+        "durationSeconds": 0.230,
+        "ownerStatus": 200,
+        "forgedWorkspaceStatus": 404,
+        "foreignRunStatus": 404
+      }
+    },
     "migrations": [
       {
         "name": "0010_agent_driver_lease.sql",
@@ -150,8 +178,8 @@
   "residualRisks": [
     "Post-provider outcomes that cannot be proven become review_required and need an operator reconciliation surface.",
     "Live text-model rates are zero; versioned text-model prices still need catalog authority.",
-    "Workspace isolation, end-to-end trace continuity and fixed evals remain open A9 tasks.",
+    "A physical or provider-backed compute sandbox is not provisioned; code, browser, untrusted-file and media-processing execution must remain disabled until it is.",
     "Provider-specific tokenization and semantic-summary quality still require model-profile evals.",
-    "Workflow/Postgres activity emits a known pg@9 query-concurrency deprecation warning."
+    "The fixed eval bundle remains the final open A9 task."
   ]
 }

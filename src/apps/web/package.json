@@ -15,6 +15,7 @@
     "verify:agent-context": "tsx scripts/verify-agent-context-compaction.ts",
     "verify:agent-billing": "tsx scripts/verify-agent-model-billing.ts",
     "verify:agent-cancellation": "tsx scripts/verify-agent-approval-cancellation.ts",
+    "verify:agent-isolation-tracing": "tsx scripts/verify-agent-isolation-tracing.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },

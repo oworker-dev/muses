@@ -670,9 +670,7 @@ async function readSnapshot(
   projectId: string
 ): Promise<OperationGatewaySnapshot> {
   const project = await requireProject(client, workspaceId, projectId)
-  const [canvasResult, professionalResult, definitionsResult] =
-    await Promise.all([
-      client.query<{ document: CreativeCanvas }>(
+  const canvasResult = await client.query<{ document: CreativeCanvas }>(
         `
           select document
           from muses_creative_canvas
@@ -680,8 +678,9 @@ async function readSnapshot(
           limit 1
         `,
         [workspaceId, projectId]
-      ),
-      client.query<{ document: ProfessionalWorkspace }>(
+  )
+  const professionalResult =
+    await client.query<{ document: ProfessionalWorkspace }>(
         `
           select document
           from muses_professional_workspace
@@ -689,15 +688,15 @@ async function readSnapshot(
           limit 1
         `,
         [workspaceId, projectId]
-      ),
-      client.query<{
+    )
+  const definitionsResult = await client.query<{
         id: string
         name: string
         description: string
         revision: number
         lifecycleStatus: "draft" | "published" | "archived"
         document: MusesWorkspaceDraft
-      }>(
+    }>(
         `
           select
             id,
@@ -711,8 +710,7 @@ async function readSnapshot(
           order by created_at, id
         `,
         [workspaceId, projectId]
-      ),
-    ])
+    )
   const creativeCanvas = canvasResult.rows[0]?.document
   const professionalWorkspace = professionalResult.rows[0]?.document
   if (!creativeCanvas || !professionalWorkspace) {

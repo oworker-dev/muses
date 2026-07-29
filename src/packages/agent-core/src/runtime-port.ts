@@ -55,6 +55,7 @@ export class AgentRuntimeError extends Error {
       | "approval-not-found"
       | "approval-decision-conflict"
       | "context-compaction-invalid"
+      | "extension-snapshot-invalid"
       | "budget-exceeded"
       | "tool-not-found"
       | "cursor-invalid"

@@ -2167,6 +2167,62 @@ test("Agent cancellation stops linked Workflow SDK children and replays one rece
   }
 });
 
+test("Agent trace is Workspace-scoped and excludes sensitive payloads", async ({
+  page,
+}) => {
+  const initialized = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(initialized.ok()).toBeTruthy();
+  const agentRunId = await createActiveAgentCancellationFixture(workspaceId);
+  try {
+    const response = await page.request.get(
+      `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=${agentRunId}`,
+    );
+    expect(response.ok()).toBeTruthy();
+    const trace = (await response.json()) as Record<string, unknown>;
+    expect(trace).toMatchObject({
+      schemaVersion: "agent-trace-v1",
+      traceId: agentRunId,
+      workspaceId,
+      run: { runId: agentRunId, status: "running" },
+      isolation: { state: "legacy-unpinned" },
+      agentEvents: [],
+      modelCalls: [],
+      toolCommands: [],
+      workflowRuns: [],
+      assets: [],
+      reservations: [],
+      ledgerEntries: [],
+    });
+    expect(collectObjectKeys(trace)).not.toEqual(
+      expect.arrayContaining([
+        "prompt",
+        "content",
+        "input",
+        "output",
+        "result",
+        "objectKey",
+        "authRef",
+        "credentialRefs",
+        "initiatedByEmail",
+      ]),
+    );
+
+    const forgedWorkspace = await page.request.get(
+      `/api/studio/agent-runs/trace?workspaceId=mws_forged_${Date.now()}&runId=${agentRunId}`,
+    );
+    expect(forgedWorkspace.status()).toBe(404);
+
+    const foreignRun = await page.request.get(
+      `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=arun_foreign_${Date.now()}`,
+    );
+    expect(foreignRun.status()).toBe(404);
+  } finally {
+    await deleteAgentDriverFixture(agentRunId);
+  }
+});
+
 test("insufficient credits reject a real image run before provider execution", async ({
   page,
 }) => {
@@ -2992,6 +3048,19 @@ async function readWorkflowInvocationAudit(runId: string) {
 function createIsolatedAuthIp(workerIndex: number) {
   const entropy = randomBytes(2).readUInt16BE(0);
   return `198.18.${(entropy >> 8) ^ workerIndex}.${entropy & 0xff}`;
+}
+
+function collectObjectKeys(value: unknown, keys: string[] = []) {
+  if (!value || typeof value !== "object") return keys;
+  if (Array.isArray(value)) {
+    for (const item of value) collectObjectKeys(item, keys);
+    return keys;
+  }
+  for (const [key, item] of Object.entries(value)) {
+    keys.push(key);
+    collectObjectKeys(item, keys);
+  }
+  return keys;
 }
 
 function getDatabaseUrl() {

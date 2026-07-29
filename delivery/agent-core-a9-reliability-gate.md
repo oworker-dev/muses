@@ -18,7 +18,7 @@ path alone is insufficient.
 | Context compaction | Versioned `AgentContextSnapshot` summary plus retained messages/facts | Force compaction across follow-up and restart. Plan, permissions, tool outputs, provenance, budget usage and unresolved approvals must not drift. | Fixed long-context eval comparing pre/post-compaction facts and resulting commands | Passed |
 | Budget and billing | Agent budget snapshot, model-call receipt, model/tool usage, credit reservation and immutable ledger | Duplicate delivery, provider failure before/after an ambiguous response, retry and child workflow completion. Every known charge/reservation settles once, ambiguous calls retain review funds, and limits stop new work before the side effect. | Unit state machine, isolated PostgreSQL ledger probe and real Agent image chain correlated to AgentRun/model/WorkflowRun/Asset | Passed |
 | Approval and cancellation | Agent Core approval state, Muses cancellation command and child-run links | External tool waits for server-authorized approval; deny, cancel while model runs, cancel while child workflow runs, and late success. Cancellation prevents new effects but preserves facts that actually completed. | Approval UI/API probe, Workflow World cancellation record, child-run terminal projection and race tests | Passed |
-| Isolation and tracing | Workspace authorization, Run-scoped logical sandbox, policy snapshots and correlation identifiers | Cross-Workspace Run/Asset/tool access, stale Skill/MCP snapshot, sandbox escape attempt and trace discontinuity. No caller receives another Workspace's data or credentials. | Negative authorization suite and one trace joining AgentRun, model, tool, WorkflowRun, Asset, usage and credit | Pending |
+| Isolation and tracing | Workspace authorization, Run-scoped logical sandbox, policy snapshots and correlation identifiers | Cross-Workspace Run/Asset/tool access, stale Skill/MCP snapshot, sandbox escape attempt and trace discontinuity. No caller receives another Workspace's data or credentials. | Negative authorization suite and one trace joining AgentRun, model, tool, WorkflowRun, Asset, usage and credit | Passed |
 | Fixed evals | Versioned eval fixtures and sanitized evidence bundle | Success, recovery, refusal, budget, approval, cancellation, isolation and no-side-effect cases run against fixed inputs. Failures must be reproducible without private customer content. | Machine-readable results, commands, versions and residual-risk record under `delivery/evidence/agent-core-alpha/a9-reliability/` | Pending |
 
 ## Driver recovery contract
@@ -133,6 +133,36 @@ the reservation to `review_required`. A late model result cannot revive a
 cancelled AgentRun because its checkpoint loses the persisted revision race.
 Exact cancellation retries replay the stored summary; a different key, reason
 or requester conflicts.
+
+## Isolation and trace contract
+
+Every new AgentRun freezes a logical sandbox snapshot scoped exactly to its
+verified Workspace, Project, Session and Run. Its filesystem namespace is
+ephemeral and unique to the Run, network policy defaults to deny, and its
+permissions and available tools must exactly match the immutable Run/Profile
+surface. Skill versions/checksums, MCP connection versions, discovered tool
+schemas and the complete extension snapshot carry deterministic integrity
+facts. A Skill can reference an authorized tool but cannot add one; neither a
+Skill nor MCP connection can grant a permission. Runtime reads validate the
+snapshot again and fail closed before model or tool execution if any scope,
+permission, tool, schema, checksum or namespace fact drifts.
+
+Muses derives tenant identity only from the authenticated route and persisted
+Run, never from prompt or tool input. Credentials remain trusted-runtime
+references and are not copied into the trace or logical sandbox projection.
+The current Alpha creates this enforceable logical boundary and compute
+sandbox port; provisioning a provider-backed process sandbox remains required
+before enabling code, browser, untrusted-file or media-processing execution.
+
+The read-only Agent trace uses AgentRun id as `traceId`. It joins Muses-owned
+Agent events, AI SDK model-call receipts, Operation Gateway commands, child
+WorkflowRuns, Assets, reservations and append-only credit entries. Workflow
+SDK World remains authoritative for durable runs, steps, events and correlation
+ids and is queried only with `resolveData: none`; Muses does not duplicate or
+hydrate Workflow input/output. The API omits prompts, model text, tool payloads,
+object keys, credential references, user email and provider request bodies.
+AI SDK telemetry uses `muses-agent-model`, records only non-sensitive ids and
+turn/context numbers, and explicitly disables input/output recording.
 
 ## Gate rule
 

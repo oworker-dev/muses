@@ -7,9 +7,9 @@ Environment: local PostgreSQL and Workflow SDK Postgres World with Studio at
 
 ## Outcome
 
-The driver-recovery, context-compaction, budget/billing and
-approval/cancellation A9 slices passed. The overall A9 gate remains in
-progress; isolation/tracing and the fixed eval bundle are still blocking.
+The driver-recovery, context-compaction, budget/billing,
+approval/cancellation and isolation/tracing A9 slices passed. The overall A9
+gate remains in progress; the fixed eval bundle is the final blocking slice.
 
 Agent driver ownership is now Muses-owned rather than inferred from a nullable
 Workflow SDK run id:
@@ -97,6 +97,26 @@ with the cancellation revision. Completed or failed child facts remain
 truthful; known use settles once, definite no-use releases, and an interrupted
 active provider call or unresolved reservation moves to `review_required`.
 
+Every new AgentRun now freezes a logical sandbox scoped to its exact
+Workspace, Project, Session and Run. The snapshot has a unique ephemeral
+filesystem namespace, deny-by-default network policy, exact permissions and
+tool surface, and pinned Skill/MCP versions, schemas and checksums. A
+deterministic integrity fingerprint is validated again on Runtime reads;
+persisted extension drift therefore fails closed with
+`extension-snapshot-invalid` before model or tool execution. A Skill or MCP
+connection cannot add a permission or tool outside the server-authoritative
+Run profile.
+
+The authenticated read-only trace uses AgentRun id as its root and joins Agent
+events, stable model-call receipts, Operation Gateway commands, Agent child
+workflows, Workflow SDK World runs/steps/events/correlation ids, generated
+Assets, credit reservations and immutable ledger entries. Workflow World is
+queried with `resolveData: none`; the projection omits prompts, model and tool
+payloads, object keys, credential references, email addresses and provider
+request details. AI SDK telemetry uses the stable `muses-agent-model` function
+id, includes only non-sensitive correlation facts, and disables input/output
+recording.
+
 ## Verification
 
 ```bash
@@ -112,6 +132,7 @@ pnpm --filter ./src/apps/web run verify:agent-billing
 set -a; source .env.development; set +a
 pnpm --filter ./src/apps/web run verify:agent-cancellation
 set -a; source .env.development; set +a
+pnpm --filter ./src/apps/web run verify:agent-isolation-tracing
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'expired Agent driver claims'
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
@@ -120,14 +141,16 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'Agent cancellation stops linked Workflow SDK children'
 OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   tests/e2e/muses-studio.spec.ts --grep 'discovers, inspects, and invokes one exact published workflow'
+OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
+  tests/e2e/muses-studio.spec.ts --grep 'Agent trace is Workspace-scoped'
 ```
 
 - Domain: 39/39 tests passed.
-- Agent Core: 21/21 tests passed.
+- Agent Core: 34/34 tests passed.
 - Agent Harness adapters: 3/3 tests passed.
 - Web unit: 18/18 tests passed, including 9 model-receipt adapter cases.
 - Recovery state-machine tests: 4/4 passed.
-- Workflow validation: 200 files scanned, 2 workflow patterns, no serde issues.
+- Workflow validation: 203 files scanned, 2 workflow patterns, no serde issues.
 - Production build, repository typecheck, migration application and targeted
   driver lint passed.
 - Real Studio recovery probe: 1/1 passed. It covered an expired unbound claim
@@ -159,6 +182,16 @@ OWORKER_WEB_URL=http://127.0.0.1:4730 pnpm exec playwright test \
   `workflow.list` and `workflow.inspect`, waited for approval on
   `workflow.invoke`, then invoked one immutable version with parent AgentRun
   lineage.
+- The PostgreSQL isolation/tracing probe passed with 23 Agent events, 2 model
+  calls, 1 Operation Gateway command, 1 child WorkflowRun, 2 Workflow World
+  runs, 13 steps, 45 SDK events, 1 generated Asset, 1 credit reservation and 1
+  ledger entry. Cross-Workspace Run and Asset access was denied, a tool input
+  could not override verified scope, and a tampered extension snapshot failed
+  closed. The sanitized projection contained none of the forbidden sensitive
+  fields.
+- The Agent trace authorization E2E passed in 0.230 seconds against Studio on
+  port 4730: the owning Workspace received 200, a forged Workspace received
+  404, and a foreign Run id received 404.
 
 ## Boundaries and residual risk
 
@@ -169,14 +202,12 @@ operator reconciliation UI remains part of tracing/admin work. Live text-model
 credit rates were zero in this environment, so the real image E2E created no
 text-model ledger entries; nonzero single-settlement behavior is proven by the
 isolated PostgreSQL fixture, while versioned text-model prices remain catalog
-work. Full tracing, isolation evals and fixed eval bundles remain separate A9
-tasks. The
-deterministic compactor bounds conversational history; provider-specific
-tokenization and semantic-summary quality still need model-profile evals.
-
-The local server still emits a known `pg@9` query-concurrency deprecation
-warning during Workflow/Postgres activity. It is recorded as an A9 diagnostic
-item and is not treated as silent recovery success.
+work. The current logical sandbox and compute-sandbox port do not provision a
+physical or provider-backed process sandbox; code execution, browsers,
+untrusted files and media-processing tools must remain disabled until that
+boundary exists. The deterministic compactor bounds conversational history;
+provider-specific tokenization and semantic-summary quality still need
+model-profile evals. The fixed eval bundle is the final A9 task.
 
 ## Artifacts
 

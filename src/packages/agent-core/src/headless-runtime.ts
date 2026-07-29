@@ -16,6 +16,11 @@ import {
   type StartAgentRun,
 } from "./contracts";
 import {
+  createAgentRunExtensionSnapshot,
+  createLogicalAgentSandbox,
+  validateAgentRunExtensionSnapshot,
+} from "./extensions";
+import {
   agentContextCharacterCount,
   compactAgentContext,
   DEFAULT_AGENT_CONTEXT_MAX_CHARACTERS,
@@ -90,6 +95,42 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     }
     const now = this.now();
     const runId = input.runId || this.ids.create("arun");
+    const runScope = {
+      workspaceId: input.session.workspaceId,
+      projectId: input.session.projectId,
+      sessionId: input.session.sessionId,
+      runId,
+    };
+    const extensionResult = input.extensions
+      ? validateAgentRunExtensionSnapshot({
+          snapshot: input.extensions,
+          runId,
+          runScope,
+          profile: input.profile,
+          runPermissions: input.permissions,
+        })
+      : createAgentRunExtensionSnapshot({
+          runId,
+          runScope,
+          profile: input.profile,
+          runPermissions: input.permissions,
+          skills: [],
+          mcpConnections: [],
+          mcpTools: [],
+          logicalSandbox: createLogicalAgentSandbox({
+            sandboxId: `logical-${runId}`,
+            scope: runScope,
+            permissions: input.permissions,
+            allowedToolNames: input.profile.toolNames,
+          }),
+          capturedAt: now,
+        });
+    if (!extensionResult.ok) {
+      throw new AgentRuntimeError(
+        "extension-snapshot-invalid",
+        extensionResult.message,
+      );
+    }
     const userMessage = this.message("user", input.input, now);
     const systemMessage = this.message(
       "system",
@@ -123,6 +164,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         usage: zeroUsage(now),
       },
       permissions: [...input.permissions],
+      extensions: extensionResult.snapshot,
       metadata: structuredClone(input.metadata || {}),
       pendingMessages: [],
       pendingToolCalls: [],
@@ -548,6 +590,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
       );
       const events: AgentEventDraft[] = [
         this.event(runId, "model.completed", now, {
+          callId: modelInput.callId,
           turn: run.turn + 1,
           finishReason: modelResult.finishReason,
           toolCallCount: modelResult.toolCalls.length,
@@ -817,7 +860,9 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
   }
 
   private async availableTools(run: AgentRunSnapshot) {
-    const allowedNames = new Set(run.profile.toolNames);
+    const allowedNames = new Set(
+      run.extensions?.logicalSandbox.allowedToolNames || run.profile.toolNames,
+    );
     return (await this.dependencies.tools.list(run)).filter(
       (tool) =>
         allowedNames.has(tool.name) &&
@@ -887,6 +932,26 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     const run = await this.dependencies.store.read(runId);
     if (!run) {
       throw new AgentRuntimeError("run-not-found", "AgentRun was not found.");
+    }
+    if (run.extensions) {
+      const validation = validateAgentRunExtensionSnapshot({
+        snapshot: run.extensions,
+        runId: run.runId,
+        runScope: {
+          workspaceId: run.session.workspaceId,
+          projectId: run.session.projectId,
+          sessionId: run.session.sessionId,
+          runId: run.runId,
+        },
+        profile: run.profile,
+        runPermissions: run.permissions,
+      });
+      if (!validation.ok) {
+        throw new AgentRuntimeError(
+          "extension-snapshot-invalid",
+          validation.message,
+        );
+      }
     }
     return run;
   }

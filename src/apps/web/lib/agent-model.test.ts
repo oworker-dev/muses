@@ -44,6 +44,32 @@ describe("AiSdkAgentModel durable receipts", () => {
       usage: { inputTokens: 7, outputTokens: 3, creditMicros: "10" },
     })
     expect(generate).toHaveBeenCalledOnce()
+    expect(generate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        runtimeContext: {
+          agentRunId: "agent-run-1",
+          workspaceId: "workspace-1",
+          projectId: "project-1",
+          modelCallId: "agent-run-1:model:1:context:1",
+          turn: 1,
+          contextVersion: 1,
+        },
+        telemetry: {
+          isEnabled: true,
+          functionId: "muses-agent-model",
+          recordInputs: false,
+          recordOutputs: false,
+          includeRuntimeContext: {
+            agentRunId: true,
+            workspaceId: true,
+            projectId: true,
+            modelCallId: true,
+            turn: true,
+            contextVersion: true,
+          },
+        },
+      })
+    )
     expect(calls.beginCalls).toBe(1)
     expect(calls.completeCalls).toBe(1)
     expect(calls.lastProviderRequestId).toBe("provider-request-1")
@@ -239,6 +265,7 @@ function modelInput() {
       artifactRefs: [],
       createdAt: "2026-07-29T00:00:00.000Z",
     },
+    session: { workspaceId: "workspace-1", projectId: "project-1" },
     profile: { modelRef: "openai/gpt-5.6-sol" },
     budget: {
       limit: { maxOutputTokens: 100 },

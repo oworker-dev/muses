@@ -1029,7 +1029,7 @@ items:
   - id: verify-agent-isolation-tracing
     name: 验证 Agent 隔离与端到端追踪
     summary: 下一 A9 切片：验证跨 Workspace 访问、Run 级逻辑/计算沙盒与 Skill/MCP 策略快照隔离，并用成熟观测边界串联 AgentRun、模型、工具、WorkflowRun、Asset、用量和积分事实。
-    status: in_progress
+    status: done
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1037,12 +1037,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.611Z
-    updatedAt: 2026-07-29T05:20:20.085Z
-    statusChangedAt: 2026-07-29T05:20:20.085Z
+    updatedAt: 2026-07-29T08:05:58.149Z
+    statusChangedAt: 2026-07-29T08:05:58.149Z
   - id: establish-agent-fixed-evals
     name: 建立固定 Agent eval 与 A9 证据
     summary: 建立可重复的成功、恢复、拒绝、预算、审批、取消、隔离和无副作用 eval 集，形成 A9 工程证据与残余风险。
-    status: pending
+    status: in_progress
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1050,5 +1050,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.813Z
-    updatedAt: 2026-07-29T01:30:59.813Z
-    statusChangedAt: 2026-07-29T01:30:59.813Z
+    updatedAt: 2026-07-29T08:05:58.375Z
+    statusChangedAt: 2026-07-29T08:05:58.375Z

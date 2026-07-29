@@ -103,6 +103,9 @@ describe("HeadlessAgentRuntime", () => {
     expect(events.map(({ sequence }) => sequence)).toEqual(
       events.map((_, index) => index + 1),
     );
+    expect(
+      events.find(({ type }) => type === "model.completed")?.data,
+    ).toMatchObject({ callId: "agent-run-1:model:1:context:1" });
   });
 
   it("pauses external side effects for approval and resumes the same tool call", async () => {
