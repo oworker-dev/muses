@@ -1,4 +1,5 @@
 import type {
+  AgentContextSummary,
   AgentEvent,
   AgentEventDraft,
   AgentMessage,
@@ -73,6 +74,14 @@ export type AgentStateStorePort = {
     afterSequence?: number,
   ): Promise<readonly AgentEvent[]>;
   stream(runId: string, afterSequence?: number): AsyncIterable<AgentEvent>;
+};
+
+export type AgentContextCompactorPort = {
+  compact(input: {
+    readonly run: AgentRunSnapshot;
+    readonly maxMessages: number;
+    readonly maxCharacters: number;
+  }): AgentContextSummary | Promise<AgentContextSummary>;
 };
 
 export type AgentClockPort = {

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  compactAgentContext,
+  DEFAULT_AGENT_CONTEXT_HISTORY_CHARACTERS,
   DefaultAgentPolicy,
   HeadlessAgentHarness,
   HeadlessAgentRuntime,
@@ -232,6 +234,309 @@ describe("HeadlessAgentRuntime", () => {
     );
   });
 
+  it("compacts context into versioned facts and rehydrates them after recovery", async () => {
+    const fixture = createRuntime([
+      {
+        content: "I will place the image.",
+        finishReason: "tool-calls",
+        toolCalls: [
+          {
+            id: "compact-tool-1",
+            name: "canvas.item.put",
+            input: { itemId: "asset-compact" },
+          },
+        ],
+        usage: { inputTokens: 10, outputTokens: 5, creditMicros: "10" },
+      },
+      stop("The image is placed."),
+      stop("The compacted context is available."),
+    ]);
+    const ref = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(ref.runId);
+    await fixture.runtime.followUp(ref.runId, {
+      id: "compact-follow-up",
+      role: "user",
+      content: "Keep the same asset and make the background warmer.",
+      createdAt: "2026-07-29T00:00:05.000Z",
+    });
+    await fixture.runtime.resume(ref.runId);
+    await fixture.runtime.updatePlan(ref.runId, -1, {
+      goal: "Preserve the asset identity while revising the background.",
+      steps: [
+        {
+          id: "preserve-asset",
+          title: "Preserve asset identity",
+          status: "completed",
+          dependsOn: [],
+          evidenceRefs: ["asset-compact"],
+        },
+      ],
+    });
+
+    const before = await fixture.runtime.inspect(ref.runId);
+    const beforeAuthorities = {
+      permissions: before.permissions,
+      budget: before.budget,
+      plan: before.plan,
+      artifacts: before.context.artifactRefs,
+    };
+    const summary = await fixture.runtime.compact(ref.runId, {
+      maxMessages: 3,
+    });
+    const compacted = await fixture.runtime.inspect(ref.runId);
+
+    expect(summary).toMatchObject({
+      schemaVersion: "0.1.0-draft",
+      version: 1,
+      sourceMessageCount: 7,
+    });
+    expect(summary.facts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: "user-intent" }),
+        expect.objectContaining({ kind: "tool-result", key: "compact-tool-1" }),
+        expect.objectContaining({ kind: "plan", key: "revision:0" }),
+        expect.objectContaining({ kind: "permissions" }),
+        expect.objectContaining({ kind: "budget" }),
+      ]),
+    );
+    expect(compacted.context.messages.length).toBeLessThanOrEqual(3);
+    expect(compacted.context.summary?.retainedMessageIds).toEqual(
+      compacted.context.messages.map(({ id }) => id),
+    );
+    expect({
+      permissions: compacted.permissions,
+      budget: compacted.budget,
+      plan: compacted.plan,
+      artifacts: compacted.context.artifactRefs,
+    }).toEqual(beforeAuthorities);
+
+    const recoveredModel = new ScriptedModel([
+      stop("Recovered without drift."),
+    ]);
+    const recoveredRuntime = new HeadlessAgentRuntime({
+      model: recoveredModel,
+      tools: fixture.tools,
+      policy: new AllowPolicy(),
+      store: fixture.store,
+      clock: fixture.clock,
+      ids: fixture.ids,
+    });
+    await recoveredRuntime.followUp(ref.runId, {
+      id: "recovered-follow-up",
+      role: "user",
+      content: "Confirm the preserved asset identity.",
+      createdAt: "2026-07-29T00:00:06.000Z",
+    });
+    await recoveredRuntime.resume(ref.runId);
+
+    expect(recoveredModel.seenMessages[0]?.[0]?.content).toContain(
+      "Muses context summary v1.",
+    );
+    expect(recoveredModel.seenMessages[0]?.[0]?.content).toContain(
+      "compact-tool-1",
+    );
+    expect(await recoveredRuntime.inspect(ref.runId)).toMatchObject({
+      status: "completed",
+      context: { summary: { version: 1 } },
+      plan: beforeAuthorities.plan,
+      permissions: beforeAuthorities.permissions,
+      budget: {
+        usage: {
+          modelCalls: 4,
+          toolCalls: 1,
+        },
+      },
+    });
+  });
+
+  it("automatically compacts long follow-up sessions before the next model call", async () => {
+    const fixture = createRuntime(
+      Array.from({ length: 14 }, (_, index) => stop(`Result ${index + 1}`)),
+    );
+    const ref = await fixture.runtime.start(
+      startInput({
+        budget: {
+          ...defaultBudget(),
+          maxTurns: 32,
+          maxModelCalls: 32,
+          maxDurationMs: 1_000_000,
+        },
+      }),
+    );
+    await fixture.runtime.resume(ref.runId);
+    for (let index = 1; index < 14; index += 1) {
+      await fixture.runtime.followUp(ref.runId, {
+        id: `long-follow-up-${index}`,
+        role: "user",
+        content: `Revision request ${index}`,
+        createdAt: `2026-07-29T00:01:${String(index).padStart(2, "0")}.000Z`,
+      });
+      await fixture.runtime.resume(ref.runId);
+    }
+
+    const completed = await fixture.runtime.inspect(ref.runId);
+    const events = await fixture.store.readEvents(ref.runId);
+    expect(completed.status).toBe("completed");
+    expect(completed.context.summary).toMatchObject({
+      schemaVersion: "0.1.0-draft",
+      version: 1,
+      sourceMessageCount: expect.any(Number),
+    });
+    expect(completed.context.summary!.sourceMessageCount).toBeGreaterThan(24);
+    expect(completed.context.messages.length).toBeLessThanOrEqual(19);
+    expect(
+      events.filter(({ type }) => type === "context.compacted"),
+    ).toHaveLength(1);
+  });
+
+  it("compacts by character pressure before the message limit", async () => {
+    const fixture = createRuntime(
+      Array.from({ length: 7 }, (_, index) => stop(`Result ${index + 1}`)),
+    );
+    const ref = await fixture.runtime.start(
+      startInput({
+        budget: {
+          ...defaultBudget(),
+          maxTurns: 16,
+          maxModelCalls: 16,
+          maxDurationMs: 1_000_000,
+        },
+      }),
+    );
+    await fixture.runtime.resume(ref.runId);
+    for (let index = 1; index < 7; index += 1) {
+      await fixture.runtime.followUp(ref.runId, {
+        id: `large-follow-up-${index}`,
+        role: "user",
+        content: `Large revision ${index}: ${"x".repeat(10_000)}`,
+        createdAt: `2026-07-29T00:03:${String(index).padStart(2, "0")}.000Z`,
+      });
+      await fixture.runtime.resume(ref.runId);
+    }
+
+    const completed = await fixture.runtime.inspect(ref.runId);
+    expect(completed.context.summary).toMatchObject({
+      version: 1,
+      sourceMessageCount: expect.any(Number),
+    });
+    expect(completed.context.summary!.sourceMessageCount).toBeLessThan(24);
+    expect(
+      completed.context.summary!.facts.find(
+        ({ kind, key }) => kind === "message" && key === "history",
+      )?.value.length,
+    ).toBeLessThanOrEqual(DEFAULT_AGENT_CONTEXT_HISTORY_CHARACTERS);
+  });
+
+  it("keeps rolling conversation history bounded across repeated compactions", async () => {
+    const fixture = createRuntime(
+      Array.from({ length: 30 }, (_, index) => stop(`Result ${index + 1}`)),
+    );
+    const ref = await fixture.runtime.start(
+      startInput({
+        budget: {
+          ...defaultBudget(),
+          maxTurns: 64,
+          maxModelCalls: 64,
+          maxDurationMs: 1_000_000,
+        },
+      }),
+    );
+    await fixture.runtime.resume(ref.runId);
+    for (let index = 1; index < 30; index += 1) {
+      await fixture.runtime.followUp(ref.runId, {
+        id: `rolling-follow-up-${index}`,
+        role: "user",
+        content: `Rolling revision ${index}: ${"x".repeat(1_200)}`,
+        createdAt: `2026-07-29T00:05:${String(index).padStart(2, "0")}.000Z`,
+      });
+      await fixture.runtime.resume(ref.runId);
+    }
+
+    const completed = await fixture.runtime.inspect(ref.runId);
+    const historyFacts =
+      completed.context.summary?.facts.filter(
+        ({ kind }) => kind === "message",
+      ) || [];
+    expect(completed.context.summary?.version).toBeGreaterThan(1);
+    expect(historyFacts).toHaveLength(1);
+    expect(historyFacts[0]?.key).toBe("history");
+    expect(historyFacts[0]?.value.length).toBeLessThanOrEqual(
+      DEFAULT_AGENT_CONTEXT_HISTORY_CHARACTERS,
+    );
+  });
+
+  it("supports an async compactor and injects structured facts independently of its prose", async () => {
+    const fixture = createRuntime([stop("Initial"), stop("Recovered")]);
+    const ref = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(ref.runId);
+    const recoveredModel = new ScriptedModel([stop("Recovered")]);
+    const runtime = new HeadlessAgentRuntime({
+      model: recoveredModel,
+      tools: fixture.tools,
+      policy: new AllowPolicy(),
+      store: fixture.store,
+      clock: fixture.clock,
+      ids: fixture.ids,
+      contextCompactor: {
+        async compact({ run, maxMessages, maxCharacters }) {
+          await Promise.resolve();
+          return {
+            ...compactAgentContext(run, maxMessages, maxCharacters).summary,
+            text: "Custom semantic summary.",
+          };
+        },
+      },
+    });
+    await runtime.compact(ref.runId, { maxMessages: 2 });
+    await runtime.followUp(ref.runId, {
+      id: "async-compactor-follow-up",
+      role: "user",
+      content: "Continue from the compacted facts.",
+      createdAt: "2026-07-29T00:04:00.000Z",
+    });
+    await runtime.resume(ref.runId);
+
+    const injected = recoveredModel.seenMessages[0]?.[0]?.content || "";
+    expect(injected).toContain("Custom semantic summary.");
+    expect(injected).toContain("permissions [run]: canvas.write");
+    expect(injected).toContain("budget [usage]:");
+  });
+
+  it("rejects a compactor that drops authoritative context", async () => {
+    const fixture = createRuntime([stop("Unused")]);
+    const runtime = new HeadlessAgentRuntime({
+      model: new ScriptedModel([stop("Unused")]),
+      tools: fixture.tools,
+      policy: new AllowPolicy(),
+      store: fixture.store,
+      clock: fixture.clock,
+      ids: fixture.ids,
+      contextCompactor: {
+        compact: ({ run }) => ({
+          schemaVersion: "0.1.0-draft",
+          version: 1,
+          sourceContextVersion: run.context.version,
+          sourceMessageCount: run.context.messages.length,
+          retainedMessageIds: [],
+          facts: [],
+          text: "Lossy summary",
+          createdAt: run.updatedAt,
+        }),
+      },
+    });
+    const ref = await runtime.start(startInput());
+
+    await expect(
+      runtime.compact(ref.runId, { maxMessages: 2 }),
+    ).rejects.toMatchObject({ code: "context-compaction-invalid" });
+    const unchanged = await runtime.inspect(ref.runId);
+    expect(unchanged).toMatchObject({
+      revision: 0,
+      context: { version: 1 },
+    });
+    expect(unchanged.context.summary).toBeUndefined();
+  });
+
   it("starts a fresh duration window for follow-up after an idle interval", async () => {
     const fixture = createRuntime([
       stop("Initial result"),
@@ -301,10 +606,12 @@ describe("HeadlessAgentRuntime", () => {
 
 class ScriptedModel implements AgentModelPort {
   private index = 0;
+  readonly seenMessages: Array<readonly AgentMessage[]> = [];
 
   constructor(private readonly results: readonly AgentModelResult[]) {}
 
-  async complete() {
+  async complete(input: Parameters<AgentModelPort["complete"]>[0]) {
+    this.seenMessages.push(structuredClone(input.messages));
     const result = this.results[this.index];
     this.index += 1;
     if (!result) throw new Error("Scripted model result is missing.");
@@ -392,7 +699,7 @@ function createRuntime(
     clock,
     ids,
   });
-  return { runtime, store, tools, clock };
+  return { runtime, store, tools, clock, ids };
 }
 
 function startInput(

@@ -961,3 +961,94 @@ items:
     createdAt: 2026-07-28T23:07:30.752Z
     updatedAt: 2026-07-28T23:50:38.336Z
     statusChangedAt: 2026-07-28T23:50:38.336Z
+  - id: audit-agent-reliability-gate
+    name: 冻结 A9 可靠性验收矩阵
+    summary: 逐项盘点恢复、压缩、费用/预算、审批/取消、隔离、追踪和固定 eval 的现状、故障夹具、权威状态与通过证据，先锁定阻断顺序。
+    status: done
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:58.592Z
+    updatedAt: 2026-07-29T02:10:29.842Z
+    statusChangedAt: 2026-07-29T02:10:29.842Z
+  - id: verify-agent-driver-recovery
+    name: 验证 Agent 进程恢复与重新认领
+    summary: 验证 AgentRun 在浏览器刷新、Web/Workflow 进程中断和驱动重新认领后恢复，不重复模型、工具、画布或计费副作用。
+    status: done
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:58.788Z
+    updatedAt: 2026-07-29T02:33:04.599Z
+    statusChangedAt: 2026-07-29T02:33:04.599Z
+  - id: implement-agent-context-compaction
+    name: 实现 Agent 上下文压缩与无漂移恢复
+    summary: 以版本化摘要和保留事实压缩长上下文，证明计划、权限、工具结果、来源和预算在恢复后不漂移。
+    status: done
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:58.978Z
+    updatedAt: 2026-07-29T03:06:17.400Z
+    statusChangedAt: 2026-07-29T03:06:17.400Z
+  - id: enforce-agent-budget-billing-idempotency
+    name: 关闭 Agent 预算与幂等费用边界
+    summary: 覆盖重复投递、模型/工具/Token/积分预算停止、子运行计费归属及失败或取消后的单次结算。
+    status: in_progress
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:59.172Z
+    updatedAt: 2026-07-29T03:06:17.602Z
+    statusChangedAt: 2026-07-29T03:06:17.602Z
+  - id: implement-agent-approval-cancellation
+    name: 交付 Agent 审批与子运行联动取消
+    summary: 让高影响工具在服务端审批后执行，并让 Agent 取消传播到仍活动的子 WorkflowRun，保留竞态和迟到结果事实。
+    status: pending
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:59.403Z
+    updatedAt: 2026-07-29T01:30:59.403Z
+    statusChangedAt: 2026-07-29T01:30:59.403Z
+  - id: verify-agent-isolation-tracing
+    name: 验证 Agent 隔离与端到端追踪
+    summary: 验证 Workspace、会话、沙盒、Skill/MCP 与工具权限隔离，并用成熟追踪上下文关联 AgentRun、工具、WorkflowRun、模型、用量和费用。
+    status: pending
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:59.611Z
+    updatedAt: 2026-07-29T01:30:59.611Z
+    statusChangedAt: 2026-07-29T01:30:59.611Z
+  - id: establish-agent-fixed-evals
+    name: 建立固定 Agent eval 与 A9 证据
+    summary: 建立可重复的成功、恢复、拒绝、预算、审批、取消、隔离和无副作用 eval 集，形成 A9 工程证据与残余风险。
+    status: pending
+    planRef: agent-reliability-gate
+    parentTaskId: verify-agent-safety-recovery
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T01:30:59.813Z
+    updatedAt: 2026-07-29T01:30:59.813Z
+    statusChangedAt: 2026-07-29T01:30:59.813Z

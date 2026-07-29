@@ -137,6 +137,22 @@ export async function GET(request: Request) {
   if (!access.ok) return access.response
   const owned = await authorizeAgentRun(workspaceId, runId)
   if (!owned) return runNotFound()
+  let driver: { status: string; runId: string | null } = {
+    status: owned.driverStatus,
+    runId: owned.driverRunId,
+  }
+  if (needsDriverRecovery(owned)) {
+    const recovered = await ensureAgentDriver(runId).catch(() => null)
+    driver = recovered
+      ? {
+          status: recovered.state,
+          runId:
+            "driverRunId" in recovered
+              ? recovered.driverRunId
+              : owned.driverRunId,
+        }
+      : { status: "recovery-deferred", runId: owned.driverRunId }
+  }
   const events = await new PostgresAgentStateStore().readEvents(
     runId,
     afterSequence
@@ -145,10 +161,7 @@ export async function GET(request: Request) {
     schemaVersion: AGENT_CORE_SCHEMA_VERSION,
     run: publicRun(owned.snapshot),
     events: events.map(toPublicAgentEvent),
-    driver: {
-      status: owned.driverStatus,
-      runId: owned.driverRunId,
-    },
+    driver,
   })
 }
 
@@ -231,6 +244,26 @@ function parseAfterSequence(value: string | null) {
   if (!value) return 0
   const parsed = Number(value)
   return Number.isInteger(parsed) && parsed >= 0 ? parsed : null
+}
+
+function needsDriverRecovery(owned: {
+  snapshot: AgentRunSnapshot
+  driverStatus: string
+  driverLeaseExpiresAt: string | null
+}) {
+  if (
+    owned.snapshot.status !== "queued" &&
+    owned.snapshot.status !== "running"
+  ) {
+    return false
+  }
+  if (owned.driverStatus !== "starting" && owned.driverStatus !== "running") {
+    return true
+  }
+  return (
+    !owned.driverLeaseExpiresAt ||
+    Date.parse(owned.driverLeaseExpiresAt) <= Date.now()
+  )
 }
 
 function invalidRequest(message: string) {

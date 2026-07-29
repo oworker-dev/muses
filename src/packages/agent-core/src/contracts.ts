@@ -112,8 +112,33 @@ export type AgentPendingToolCall = {
 export type AgentContextSnapshot = {
   readonly version: number;
   readonly messages: readonly AgentMessage[];
-  readonly summary?: string;
+  readonly summary?: AgentContextSummary;
   readonly artifactRefs: readonly string[];
+  readonly createdAt: string;
+};
+
+export type AgentContextFact = {
+  readonly kind:
+    | "user-intent"
+    | "message"
+    | "tool-result"
+    | "plan"
+    | "permissions"
+    | "budget"
+    | "artifact"
+    | "pending-action";
+  readonly key: string;
+  readonly value: string;
+};
+
+export type AgentContextSummary = {
+  readonly schemaVersion: typeof AGENT_CORE_SCHEMA_VERSION;
+  readonly version: number;
+  readonly sourceContextVersion: number;
+  readonly sourceMessageCount: number;
+  readonly retainedMessageIds: readonly string[];
+  readonly facts: readonly AgentContextFact[];
+  readonly text: string;
   readonly createdAt: string;
 };
 
@@ -183,6 +208,7 @@ export type AgentEventType =
   | "tool.denied"
   | "approval.requested"
   | "approval.decided"
+  | "context.compacted"
   | "plan.updated"
   | "checkpoint.created";
 

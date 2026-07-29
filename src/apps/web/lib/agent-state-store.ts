@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto"
+
 import type { Pool, PoolClient } from "pg"
 
 import {
@@ -18,6 +20,8 @@ type AgentRunRow = {
   revision: number
   driverStatus: AgentDriverStatus
   driverRunId: string | null
+  driverAttemptId: string | null
+  driverLeaseExpiresAt: Date | string | null
 }
 
 type AgentEventRow = {
@@ -38,10 +42,28 @@ export type AgentDriverStatus =
   | "failed"
 
 export type AgentDriverClaim =
-  | { state: "claimed" }
-  | { state: "attached"; driverRunId: string }
-  | { state: "in-progress" }
+  | { state: "claimed"; attemptId: string; leaseExpiresAt: string }
+  | {
+      state: "attached"
+      attemptId: string
+      driverRunId: string
+      leaseExpiresAt: string
+    }
+  | { state: "in-progress"; attemptId: string; leaseExpiresAt: string }
+  | {
+      state: "stale-attached"
+      attemptId: string
+      driverRunId: string
+    }
+  | {
+      state: "suspended"
+      status: "waiting-approval" | "waiting-input"
+    }
   | { state: "terminal"; status: AgentRunSnapshot["status"] }
+
+export type AgentDriverReclaim = AgentDriverClaim | { state: "changed" }
+
+export const AGENT_DRIVER_LEASE_MS = 30_000
 
 export class PostgresAgentStateStore implements AgentStateStorePort {
   private readonly pool: Pool
@@ -254,7 +276,9 @@ export async function authorizeAgentRun(workspaceId: string, runId: string) {
         snapshot,
         revision,
         driver_status as "driverStatus",
-        driver_run_id as "driverRunId"
+        driver_run_id as "driverRunId",
+        driver_attempt_id as "driverAttemptId",
+        driver_lease_expires_at as "driverLeaseExpiresAt"
       from muses_agent_run
       where workspace_id = $1 and id = $2
       limit 1
@@ -267,11 +291,14 @@ export async function authorizeAgentRun(workspaceId: string, runId: string) {
         snapshot: cloneSnapshot(row.snapshot),
         driverStatus: row.driverStatus,
         driverRunId: row.driverRunId,
+        driverLeaseExpiresAt: toIsoString(row.driverLeaseExpiresAt),
       }
     : null
 }
 
-export async function claimAgentDriver(runId: string): Promise<AgentDriverClaim> {
+export async function claimAgentDriver(
+  runId: string
+): Promise<AgentDriverClaim> {
   const client = await getPgPool().connect()
   try {
     await client.query("begin")
@@ -282,7 +309,9 @@ export async function claimAgentDriver(runId: string): Promise<AgentDriverClaim>
             snapshot,
             revision,
             driver_status as "driverStatus",
-            driver_run_id as "driverRunId"
+            driver_run_id as "driverRunId",
+            driver_attempt_id as "driverAttemptId",
+            driver_lease_expires_at as "driverLeaseExpiresAt"
           from muses_agent_run
           where id = $1
           for update
@@ -297,27 +326,44 @@ export async function claimAgentDriver(runId: string): Promise<AgentDriverClaim>
       await client.query("commit")
       return { state: "terminal", status: row.snapshot.status }
     }
+    if (isSuspended(row.snapshot.status)) {
+      await client.query("commit")
+      return { state: "suspended", status: row.snapshot.status }
+    }
+    const leaseExpiresAt = toIsoString(row.driverLeaseExpiresAt)
+    const activeLease =
+      Boolean(row.driverAttemptId && leaseExpiresAt) &&
+      Date.parse(leaseExpiresAt!) > Date.now()
     if (
+      row.driverAttemptId &&
       row.driverRunId &&
       (row.driverStatus === "starting" || row.driverStatus === "running")
     ) {
       await client.query("commit")
-      return { state: "attached", driverRunId: row.driverRunId }
+      return activeLease
+        ? {
+            state: "attached",
+            attemptId: row.driverAttemptId,
+            driverRunId: row.driverRunId,
+            leaseExpiresAt: leaseExpiresAt!,
+          }
+        : {
+            state: "stale-attached",
+            attemptId: row.driverAttemptId,
+            driverRunId: row.driverRunId,
+          }
     }
-    if (row.driverStatus === "starting") {
+    if (row.driverStatus === "starting" && row.driverAttemptId && activeLease) {
       await client.query("commit")
-      return { state: "in-progress" }
+      return {
+        state: "in-progress",
+        attemptId: row.driverAttemptId,
+        leaseExpiresAt: leaseExpiresAt!,
+      }
     }
-    await client.query(
-      `
-        update muses_agent_run
-        set driver_status = 'starting', driver_run_id = null, updated_at = now()
-        where id = $1
-      `,
-      [runId]
-    )
+    const claim = await writeAgentDriverClaim(client, runId)
     await client.query("commit")
-    return { state: "claimed" }
+    return claim
   } catch (error) {
     await client.query("rollback").catch(() => undefined)
     throw error
@@ -326,41 +372,184 @@ export async function claimAgentDriver(runId: string): Promise<AgentDriverClaim>
   }
 }
 
-export async function attachAgentDriver(runId: string, driverRunId: string) {
-  const result = await getPgPool().query(
-    `
-      update muses_agent_run
-      set driver_status = 'running', driver_run_id = $2, updated_at = now()
-      where id = $1
-        and driver_status = 'starting'
-        and (driver_run_id is null or driver_run_id = $2)
-    `,
-    [runId, driverRunId]
-  )
-  if (result.rowCount !== 1) {
-    throw new Error("AgentRun could not be attached to its Workflow SDK driver.")
+export async function reclaimAgentDriver(
+  runId: string,
+  expectedAttemptId: string,
+  expectedDriverRunId: string
+): Promise<AgentDriverReclaim> {
+  const client = await getPgPool().connect()
+  try {
+    await client.query("begin")
+    const row = (
+      await client.query<AgentRunRow>(
+        `
+          select
+            snapshot,
+            revision,
+            driver_status as "driverStatus",
+            driver_run_id as "driverRunId",
+            driver_attempt_id as "driverAttemptId",
+            driver_lease_expires_at as "driverLeaseExpiresAt"
+          from muses_agent_run
+          where id = $1
+          for update
+        `,
+        [runId]
+      )
+    ).rows[0]
+    if (!row) {
+      throw new AgentRuntimeError("run-not-found", "AgentRun was not found.")
+    }
+    if (
+      row.driverAttemptId !== expectedAttemptId ||
+      row.driverRunId !== expectedDriverRunId
+    ) {
+      await client.query("commit")
+      return { state: "changed" }
+    }
+    if (isTerminal(row.snapshot.status)) {
+      await client.query("commit")
+      return { state: "terminal", status: row.snapshot.status }
+    }
+    if (isSuspended(row.snapshot.status)) {
+      await client.query("commit")
+      return { state: "suspended", status: row.snapshot.status }
+    }
+    const claim = await writeAgentDriverClaim(client, runId)
+    await client.query("commit")
+    return claim
+  } catch (error) {
+    await client.query("rollback").catch(() => undefined)
+    throw error
+  } finally {
+    client.release()
   }
 }
 
-export async function releaseAgentDriverClaim(runId: string) {
-  await getPgPool().query(
+export async function attachAgentDriver(
+  runId: string,
+  attemptId: string,
+  driverRunId: string
+) {
+  const leaseExpiresAt = createLeaseExpiration()
+  const result = await getPgPool().query(
     `
       update muses_agent_run
-      set driver_status = 'unclaimed', updated_at = now()
-      where id = $1 and driver_status = 'starting' and driver_run_id is null
+      set driver_status = 'running',
+          driver_run_id = $3,
+          driver_lease_expires_at = $4,
+          driver_last_heartbeat_at = now(),
+          updated_at = now()
+      where id = $1
+        and driver_attempt_id = $2
+        and driver_status in ('starting', 'running')
+        and (driver_run_id is null or driver_run_id = $3)
     `,
-    [runId]
+    [runId, attemptId, driverRunId, leaseExpiresAt]
   )
+  return result.rowCount === 1
+}
+
+export async function renewAgentDriverLease(
+  runId: string,
+  attemptId: string,
+  driverRunId: string
+) {
+  const leaseExpiresAt = createLeaseExpiration()
+  const result = await getPgPool().query(
+    `
+      update muses_agent_run
+      set driver_lease_expires_at = $4,
+          driver_last_heartbeat_at = now(),
+          updated_at = now()
+      where id = $1
+        and driver_attempt_id = $2
+        and driver_run_id = $3
+        and driver_status = 'running'
+    `,
+    [runId, attemptId, driverRunId, leaseExpiresAt]
+  )
+  return result.rowCount === 1 ? leaseExpiresAt : null
+}
+
+export async function releaseAgentDriverClaim(
+  runId: string,
+  attemptId: string
+) {
+  const result = await getPgPool().query(
+    `
+      update muses_agent_run
+      set driver_status = 'unclaimed',
+          driver_run_id = null,
+          driver_attempt_id = null,
+          driver_lease_expires_at = null,
+          driver_last_heartbeat_at = null,
+          updated_at = now()
+      where id = $1
+        and driver_attempt_id = $2
+        and driver_status = 'starting'
+        and driver_run_id is null
+    `,
+    [runId, attemptId]
+  )
+  return result.rowCount === 1
 }
 
 export async function finishAgentDriver(
   runId: string,
+  attemptId: string,
+  driverRunId: string,
   status: "completed" | "failed"
 ) {
-  await getPgPool().query(
-    `update muses_agent_run set driver_status = $2, updated_at = now() where id = $1`,
-    [runId, status]
+  const result = await getPgPool().query(
+    `
+      update muses_agent_run
+      set driver_status = $4,
+          driver_lease_expires_at = null,
+          driver_last_heartbeat_at = now(),
+          updated_at = now()
+      where id = $1
+        and driver_attempt_id = $2
+        and driver_run_id = $3
+        and driver_status = 'running'
+    `,
+    [runId, attemptId, driverRunId, status]
   )
+  return result.rowCount === 1
+}
+
+async function writeAgentDriverClaim(client: PoolClient, runId: string) {
+  const attemptId = `adriver_${randomUUID().replaceAll("-", "")}`
+  const leaseExpiresAt = createLeaseExpiration()
+  await client.query(
+    `
+      update muses_agent_run
+      set driver_status = 'starting',
+          driver_run_id = null,
+          driver_attempt_id = $2,
+          driver_lease_expires_at = $3,
+          driver_last_heartbeat_at = now(),
+          updated_at = now()
+      where id = $1
+    `,
+    [runId, attemptId, leaseExpiresAt]
+  )
+  return {
+    state: "claimed" as const,
+    attemptId,
+    leaseExpiresAt,
+  }
+}
+
+function createLeaseExpiration() {
+  return new Date(Date.now() + AGENT_DRIVER_LEASE_MS).toISOString()
+}
+
+function toIsoString(value: Date | string | null) {
+  if (!value) return null
+  return value instanceof Date
+    ? value.toISOString()
+    : new Date(value).toISOString()
 }
 
 async function insertEvents(
@@ -418,4 +607,10 @@ function cloneSnapshot(snapshot: AgentRunSnapshot) {
 
 function isTerminal(status: AgentRunSnapshot["status"]) {
   return status === "completed" || status === "failed" || status === "cancelled"
+}
+
+function isSuspended(
+  status: AgentRunSnapshot["status"]
+): status is "waiting-approval" | "waiting-input" {
+  return status === "waiting-approval" || status === "waiting-input"
 }

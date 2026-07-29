@@ -3,6 +3,7 @@ import {
   type AgentApprovalRequest,
   type AgentBudgetLimit,
   type AgentBudgetUsage,
+  type AgentContextFact,
   type AgentEventDraft,
   type AgentExecutionPlan,
   type AgentMessage,
@@ -14,8 +15,17 @@ import {
   type ApprovalDecision,
   type StartAgentRun,
 } from "./contracts";
+import {
+  agentContextCharacterCount,
+  compactAgentContext,
+  DEFAULT_AGENT_CONTEXT_MAX_CHARACTERS,
+  DEFAULT_AGENT_CONTEXT_MAX_MESSAGES,
+  DEFAULT_AGENT_CONTEXT_RETAIN_CHARACTERS,
+  DEFAULT_AGENT_CONTEXT_RETAIN_MESSAGES,
+} from "./context-compaction";
 import type {
   AgentClockPort,
+  AgentContextCompactorPort,
   AgentIdPort,
   AgentModelPort,
   AgentPolicyPort,
@@ -40,17 +50,26 @@ export type HeadlessAgentRuntimeDependencies = {
   readonly store: AgentStateStorePort;
   readonly clock?: AgentClockPort;
   readonly ids?: AgentIdPort;
+  readonly contextCompactor?: AgentContextCompactorPort;
+};
+
+const DEFAULT_CONTEXT_COMPACTOR: AgentContextCompactorPort = {
+  compact: ({ run, maxMessages, maxCharacters }) =>
+    compactAgentContext(run, maxMessages, maxCharacters).summary,
 };
 
 export class HeadlessAgentRuntime implements AgentRuntimePort {
   private readonly clock: AgentClockPort;
   private readonly ids: AgentIdPort;
+  private readonly contextCompactor: AgentContextCompactorPort;
   private readonly queues = new Map<string, Promise<unknown>>();
   private readonly closedSessions = new Set<string>();
 
   constructor(private readonly dependencies: HeadlessAgentRuntimeDependencies) {
     this.clock = dependencies.clock || new SystemAgentClock();
     this.ids = dependencies.ids || new RandomAgentIdPort();
+    this.contextCompactor =
+      dependencies.contextCompactor || DEFAULT_CONTEXT_COMPACTOR;
   }
 
   async start(input: StartAgentRun): Promise<AgentRunRef> {
@@ -307,6 +326,24 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     return this.requireRun(runId);
   }
 
+  async compact(
+    runId: string,
+    options: {
+      readonly maxMessages?: number;
+      readonly maxCharacters?: number;
+    } = {},
+  ) {
+    return this.serialize(runId, async () => {
+      const run = await this.requireRun(runId);
+      const compacted = await this.compactRunContext(
+        run,
+        options.maxMessages || DEFAULT_AGENT_CONTEXT_RETAIN_MESSAGES,
+        options.maxCharacters || DEFAULT_AGENT_CONTEXT_RETAIN_CHARACTERS,
+      );
+      return compacted.context.summary!;
+    });
+  }
+
   async updatePlan(
     runId: string,
     expectedPlanRevision: number,
@@ -385,6 +422,19 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         );
       }
 
+      if (
+        run.pendingToolCalls.length === 0 &&
+        (run.context.messages.length > DEFAULT_AGENT_CONTEXT_MAX_MESSAGES ||
+          agentContextCharacterCount(run) >
+            DEFAULT_AGENT_CONTEXT_MAX_CHARACTERS)
+      ) {
+        run = await this.compactRunContext(
+          run,
+          DEFAULT_AGENT_CONTEXT_RETAIN_MESSAGES,
+          DEFAULT_AGENT_CONTEXT_RETAIN_CHARACTERS,
+        );
+      }
+
       if (run.pendingToolCalls.length > 0) {
         const outcome = await this.processPendingTool(run);
         run = outcome.run;
@@ -397,7 +447,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
       try {
         modelResult = await this.dependencies.model.complete({
           run,
-          messages: run.context.messages,
+          messages: modelContextMessages(run),
           tools,
         });
       } catch {
@@ -663,6 +713,45 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
     return { waiting: false, run: next };
   }
 
+  private async compactRunContext(
+    run: AgentRunSnapshot,
+    maxMessages: number,
+    maxCharacters: number,
+  ) {
+    const compacted = await this.contextCompactor.compact({
+      run,
+      maxMessages,
+      maxCharacters,
+    });
+    assertContextCompaction(run, compacted, maxMessages);
+    const now = this.now();
+    return this.commit(
+      run,
+      {
+        ...run,
+        context: {
+          ...run.context,
+          version: run.context.version + 1,
+          messages: compacted.retainedMessageIds
+            .map((messageId) =>
+              run.context.messages.find(({ id }) => id === messageId),
+            )
+            .filter((message): message is AgentMessage => Boolean(message)),
+          summary: compacted,
+          createdAt: now,
+        },
+      },
+      [
+        this.event(run.runId, "context.compacted", now, {
+          summaryVersion: compacted.version,
+          sourceContextVersion: compacted.sourceContextVersion,
+          sourceMessageCount: compacted.sourceMessageCount,
+          retainedMessageCount: compacted.retainedMessageIds.length,
+        }),
+      ],
+    );
+  }
+
   private async availableTools(run: AgentRunSnapshot) {
     const allowedNames = new Set(run.profile.toolNames);
     return (await this.dependencies.tools.list(run)).filter(
@@ -741,9 +830,14 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
   private serialize<T>(runId: string, operation: () => Promise<T>): Promise<T> {
     const previous = this.queues.get(runId) || Promise.resolve();
     const current = previous.then(operation, operation);
-    const queued = current.finally(() => {
-      if (this.queues.get(runId) === queued) this.queues.delete(runId);
-    });
+    const queued = current
+      .then(
+        () => undefined,
+        () => undefined,
+      )
+      .finally(() => {
+        if (this.queues.get(runId) === queued) this.queues.delete(runId);
+      });
     this.queues.set(runId, queued);
     return current;
   }
@@ -864,6 +958,163 @@ function appendContextMessages(
   };
 }
 
+function modelContextMessages(run: AgentRunSnapshot) {
+  const summary = run.context.summary;
+  if (!summary) return run.context.messages;
+  const summaryMessage: AgentMessage = {
+    id: `amsg_context_summary_${summary.version}`,
+    role: "system",
+    content: [
+      summary.text,
+      "Authoritative structured facts follow. Preserve their identifiers and values; do not invent replacements.",
+      ...summary.facts.map(
+        ({ kind, key, value }) => `- ${kind} [${key}]: ${value}`,
+      ),
+    ].join("\n"),
+    createdAt: summary.createdAt,
+    metadata: {
+      kind: "context-summary",
+      summaryVersion: summary.version,
+      sourceContextVersion: summary.sourceContextVersion,
+    },
+  };
+  return [summaryMessage, ...run.context.messages];
+}
+
+function assertContextCompaction(
+  run: AgentRunSnapshot,
+  summary: NonNullable<AgentRunSnapshot["context"]["summary"]>,
+  maxMessages: number,
+) {
+  const messageById = new Map(
+    run.context.messages.map((message) => [message.id, message]),
+  );
+  const retained = new Set(summary.retainedMessageIds);
+  const facts = new Set(summary.facts.map(({ kind, key }) => `${kind}:${key}`));
+  const invalid = (reason: string): never => {
+    throw new AgentRuntimeError(
+      "context-compaction-invalid",
+      `Agent context compaction was rejected: ${reason}.`,
+    );
+  };
+
+  if (
+    summary.schemaVersion !== AGENT_CORE_SCHEMA_VERSION ||
+    summary.version !== (run.context.summary?.version || 0) + 1 ||
+    summary.sourceContextVersion !== run.context.version ||
+    summary.sourceMessageCount !== run.context.messages.length ||
+    !summary.text.trim()
+  ) {
+    invalid("source identity does not match the current ContextSnapshot");
+  }
+  if (retained.size !== summary.retainedMessageIds.length) {
+    invalid("retained message ids are duplicated");
+  }
+  if (facts.size !== summary.facts.length) {
+    invalid("structured fact identities are duplicated");
+  }
+  const requiredRetained = run.context.messages.filter(
+    (message) =>
+      message.role === "system" ||
+      run.pendingToolCalls.some((pending) =>
+        message.toolCalls?.some((call) => call.id === pending.call.id),
+      ),
+  ).length;
+  if (retained.size > Math.max(maxMessages, requiredRetained)) {
+    invalid("retained message count exceeds the compaction target");
+  }
+  for (const id of retained) {
+    if (!messageById.has(id)) invalid(`retained message ${id} does not exist`);
+  }
+  for (const message of run.context.messages) {
+    if (message.role === "system" && !retained.has(message.id)) {
+      invalid(`system message ${message.id} was removed`);
+    }
+    if (
+      message.role === "tool" &&
+      !retained.has(message.id) &&
+      !facts.has(`tool-result:${message.toolCallId || message.id}`)
+    ) {
+      invalid(
+        `tool result ${message.toolCallId || message.id} was not retained`,
+      );
+    }
+  }
+  for (const pending of run.pendingToolCalls) {
+    const source = run.context.messages.find((message) =>
+      message.toolCalls?.some((call) => call.id === pending.call.id),
+    );
+    if (source && !retained.has(source.id)) {
+      invalid(`pending tool call ${pending.call.id} lost its source message`);
+    }
+    if (!facts.has(`pending-action:${pending.call.id}`)) {
+      invalid(`pending tool call ${pending.call.id} lost its action fact`);
+    }
+    assertFactValue(
+      summary,
+      "pending-action",
+      pending.call.id,
+      JSON.stringify({ call: pending.call, approval: pending.approval }),
+      invalid,
+    );
+  }
+  if (!facts.has("permissions:run") || !facts.has("budget:usage")) {
+    invalid("permission or budget authority is missing");
+  }
+  assertFactValue(
+    summary,
+    "permissions",
+    "run",
+    run.permissions.join(",") || "(none)",
+    invalid,
+  );
+  assertFactValue(
+    summary,
+    "budget",
+    "usage",
+    JSON.stringify(run.budget),
+    invalid,
+  );
+  if (run.plan && !facts.has(`plan:revision:${run.plan.revision}`)) {
+    invalid("current plan authority is missing");
+  }
+  if (run.plan) {
+    assertFactValue(
+      summary,
+      "plan",
+      `revision:${run.plan.revision}`,
+      JSON.stringify(run.plan),
+      invalid,
+    );
+  }
+  for (const ref of run.context.artifactRefs) {
+    if (!facts.has(`artifact:${ref}`)) {
+      invalid(`artifact reference ${ref} is missing`);
+    }
+    assertFactValue(summary, "artifact", ref, ref, invalid);
+  }
+  const firstUser = run.context.messages.find(({ role }) => role === "user");
+  if (firstUser && !retained.has(firstUser.id) && !run.context.summary) {
+    const intent = summary.facts.find(
+      ({ kind, key }) => kind === "user-intent" && key === firstUser.id,
+    );
+    if (!intent?.value.trim()) invalid("initial user intent is missing");
+  }
+}
+
+function assertFactValue(
+  summary: NonNullable<AgentRunSnapshot["context"]["summary"]>,
+  kind: AgentContextFact["kind"],
+  key: string,
+  expected: string,
+  invalid: (reason: string) => never,
+) {
+  const fact = summary.facts.find(
+    (candidate) => candidate.kind === kind && candidate.key === key,
+  );
+  if (fact?.value !== expected) invalid(`${kind} fact ${key} drifted`);
+}
+
 function zeroUsage(startedAt: string): AgentBudgetUsage {
   return {
     turns: 0,
@@ -981,7 +1232,9 @@ function assertIdempotentStart(
 }
 
 function isRevisionConflict(error: unknown) {
-  return error instanceof AgentRuntimeError && error.code === "revision-conflict";
+  return (
+    error instanceof AgentRuntimeError && error.code === "revision-conflict"
+  );
 }
 
 function isTerminal(status: AgentRunSnapshot["status"]) {

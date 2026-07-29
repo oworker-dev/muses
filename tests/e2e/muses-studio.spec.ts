@@ -210,6 +210,71 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   ).toBeVisible();
 });
 
+test("expired Agent driver claims recover without model or credit side effects", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const gateway = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(gateway.ok()).toBeTruthy();
+  const fixtureRunIds: string[] = [];
+  const fixture = await createExpiredAgentDriverFixture(workspaceId);
+  fixtureRunIds.push(fixture.runId);
+  try {
+    const initial = await page.request.get(
+      `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${fixture.runId}`,
+    );
+    expect(initial.ok()).toBeTruthy();
+    await expectRecoveredAgentDriver(page, fixture.runId);
+
+    const facts = await readAgentDriverFixtureFacts(fixture.runId);
+    expect(facts).toMatchObject({
+      agentStatus: "failed",
+      driverStatus: "completed",
+      driverRunId: expect.stringMatching(/^wrun_/),
+      childWorkflowRuns: 0,
+      generatedAssets: 0,
+      creditReservations: 0,
+      modelEvents: 0,
+    });
+    expect(facts.driverAttemptId).not.toBe(fixture.attemptId);
+    expect(facts.driverRunId).toBeTruthy();
+
+    await deleteAgentDriverFixture(fixture.runId);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const attachedFixture = await createExpiredAgentDriverFixture(
+      workspaceId,
+      facts.driverRunId!,
+    );
+    fixtureRunIds.push(attachedFixture.runId);
+    const reconciled = await page.request.get(
+      `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${attachedFixture.runId}`,
+    );
+    expect(reconciled.ok()).toBeTruthy();
+    await expectRecoveredAgentDriver(page, attachedFixture.runId);
+
+    const reconciledFacts = await readAgentDriverFixtureFacts(
+      attachedFixture.runId,
+    );
+    expect(reconciledFacts).toMatchObject({
+      agentStatus: "failed",
+      driverStatus: "completed",
+      driverRunId: expect.stringMatching(/^wrun_/),
+      childWorkflowRuns: 0,
+      generatedAssets: 0,
+      creditReservations: 0,
+      modelEvents: 0,
+    });
+    expect(reconciledFacts.driverAttemptId).not.toBe(attachedFixture.attemptId);
+    expect(reconciledFacts.driverRunId).not.toBe(facts.driverRunId);
+  } finally {
+    for (const runId of fixtureRunIds) {
+      await deleteAgentDriverFixture(runId);
+    }
+  }
+});
+
 test("Operation Gateway persists independent workflows with idempotent revisions", async ({
   page,
 }) => {
@@ -2084,6 +2149,218 @@ type OperationGatewayTestResult = {
   resultingRevision: number;
   snapshot: OperationGatewayTestSnapshot;
 };
+
+type AgentDriverFixture = {
+  runId: string;
+  attemptId: string;
+};
+
+async function createExpiredAgentDriverFixture(
+  currentWorkspaceId: string,
+  driverRunId: string | null = null,
+): Promise<AgentDriverFixture> {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const project = await client.query<{
+      projectId: string;
+      canvasId: string | null;
+    }>(
+      `
+        select
+          project.id as "projectId",
+          canvas.id as "canvasId"
+        from muses_project project
+        left join muses_creative_canvas canvas
+          on canvas.workspace_id = project.workspace_id
+         and canvas.project_id = project.id
+        where project.workspace_id = $1
+        order by project.created_at
+        limit 1
+      `,
+      [currentWorkspaceId],
+    );
+    const row = project.rows[0];
+    expect(row?.projectId).toBeTruthy();
+    const runId = `arun_${randomBytes(16).toString("hex")}`;
+    const attemptId = `adriver_fixture_${randomBytes(8).toString("hex")}`;
+    const now = new Date().toISOString();
+    const snapshot = {
+      schemaVersion: "0.1.0-draft",
+      runId,
+      session: {
+        schemaVersion: "0.1.0-draft",
+        sessionId: `asession_${randomBytes(12).toString("hex")}`,
+        workspaceId: currentWorkspaceId,
+        projectId: row!.projectId,
+        canvasId: row!.canvasId || undefined,
+        createdAt: now,
+        updatedAt: now,
+      },
+      profile: {
+        profileId: "a9-recovery-fixture",
+        version: "1.0.0",
+        modelRef: "test/no-model",
+        instructions: "This is a sanitized A9 recovery fixture.",
+        toolNames: [],
+        skillRefs: [],
+        mcpConnectionRefs: [],
+      },
+      status: "queued",
+      revision: 0,
+      turn: 0,
+      context: {
+        version: 1,
+        messages: [],
+        artifactRefs: [],
+        createdAt: now,
+      },
+      budget: {
+        limit: {
+          maxTurns: 1,
+          maxModelCalls: 1,
+          maxToolCalls: 1,
+          maxInputTokens: 1000,
+          maxOutputTokens: 1000,
+          maxCreditMicros: "0",
+          maxDurationMs: 900000,
+        },
+        usage: {
+          turns: 1,
+          modelCalls: 1,
+          toolCalls: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          creditMicros: "0",
+          startedAt: now,
+        },
+      },
+      permissions: [],
+      metadata: { fixture: "a9-driver-recovery" },
+      pendingMessages: [],
+      pendingToolCalls: [],
+      createdAt: now,
+      updatedAt: now,
+    };
+    await client.query(
+      `
+        insert into muses_agent_run (
+          id, workspace_id, project_id, canvas_id, session_id,
+          profile_id, profile_version, model_ref, status, revision,
+          snapshot, driver_status, driver_run_id, driver_attempt_id,
+          driver_lease_expires_at, driver_last_heartbeat_at,
+          created_at, updated_at
+        )
+        values (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+          $11, $12, $13, $14, now() - interval '1 minute',
+          now() - interval '2 minutes', $15, $15
+        )
+      `,
+      [
+        runId,
+        currentWorkspaceId,
+        row!.projectId,
+        row!.canvasId,
+        snapshot.session.sessionId,
+        snapshot.profile.profileId,
+        snapshot.profile.version,
+        snapshot.profile.modelRef,
+        snapshot.status,
+        snapshot.revision,
+        JSON.stringify(snapshot),
+        driverRunId ? "running" : "starting",
+        driverRunId,
+        attemptId,
+        now,
+      ],
+    );
+    return { runId, attemptId };
+  } finally {
+    await client.end();
+  }
+}
+
+async function expectRecoveredAgentDriver(page: Page, runId: string) {
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${runId}`,
+        );
+        const body = (await response.json()) as {
+          run?: { status?: string };
+          driver?: { status?: string };
+        };
+        return {
+          run: body.run?.status,
+          driver: body.driver?.status,
+        };
+      },
+      { timeout: 60_000, intervals: [250, 500, 1000] },
+    )
+    .toEqual({ run: "failed", driver: "completed" });
+}
+
+async function readAgentDriverFixtureFacts(runId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const result = await client.query<{
+      agentStatus: string;
+      driverStatus: string;
+      driverAttemptId: string | null;
+      driverRunId: string | null;
+      childWorkflowRuns: string;
+      generatedAssets: string;
+      creditReservations: string;
+      modelEvents: string;
+    }>(
+      `
+        select
+          agent.status as "agentStatus",
+          agent.driver_status as "driverStatus",
+          agent.driver_attempt_id as "driverAttemptId",
+          agent.driver_run_id as "driverRunId",
+          (select count(*) from muses_workflow_run
+            where caller_kind = 'agent' and caller_id = agent.id
+          ) as "childWorkflowRuns",
+          (select count(*) from muses_generated_asset where workflow_run_id in (
+            select sdk_run_id from muses_workflow_run
+            where caller_kind = 'agent' and caller_id = agent.id
+          )) as "generatedAssets",
+          (select count(*) from credit_reservation where submission_id in (
+            select id from muses_workflow_run
+            where caller_kind = 'agent' and caller_id = agent.id
+          )) as "creditReservations",
+          (select count(*) from muses_agent_event where run_id = agent.id and type = 'model.completed') as "modelEvents"
+        from muses_agent_run agent
+        where agent.id = $1
+      `,
+      [runId],
+    );
+    const row = result.rows[0];
+    return {
+      ...row,
+      childWorkflowRuns: Number(row?.childWorkflowRuns || 0),
+      generatedAssets: Number(row?.generatedAssets || 0),
+      creditReservations: Number(row?.creditReservations || 0),
+      modelEvents: Number(row?.modelEvents || 0),
+    };
+  } finally {
+    await client.end();
+  }
+}
+
+async function deleteAgentDriverFixture(runId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    await client.query("delete from muses_agent_run where id = $1", [runId]);
+  } finally {
+    await client.end();
+  }
+}
 
 function studioLastRunStorageKey(id: string, harness: boolean) {
   return `muses.platform-core-alpha.last-durable-run.${id}${harness ? ".harness" : ""}`;

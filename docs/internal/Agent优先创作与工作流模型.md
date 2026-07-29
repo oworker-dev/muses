@@ -183,6 +183,30 @@ UI 与 Agent 都通过同一服务端 invocation 函数解析 `definitionId + ve
 
 A8 不改变后续 Gate：公开外部 API 的服务身份/密钥产品化、Workspace 删除与不可变版本保留策略、Agent 子运行联动取消、审批、追踪、隔离和固定 eval 仍在 A9 或其后的显式任务中解决。特别是当前不可变版本触发器会阻止发布版本随 Workspace 级联物理删除；在实现 Workspace 删除前必须先确定归档、保留或受控清除政策，不能静默绕过不可变历史。
 
+## 13.2 A9 可靠性验收矩阵
+
+A9 的权威状态、故障夹具、通过证据和残余风险已冻结在
+`delivery/agent-core-a9-reliability-gate.md`。执行顺序固定为 driver
+恢复与重新认领、上下文压缩、预算与幂等费用、审批与联动取消、隔离与
+追踪、固定 eval；每项都必须提供失败注入证据，不能用一次正常生图代替。
+
+安装的 `workflow@4.6.2` 没有调用方指定 WorkflowRun id 或 start
+幂等键，因此 Muses 使用自有 attempt/lease 保护 claim/attach 窗口，并让
+durable driver 在模型或工具之前自绑定 SDK run。该机制不虚构模型调用
+exactly-once：供应商响应后、Agent checkpoint 前的崩溃歧义仍必须在 A9
+预算、费用与固定 eval 中显式验证。
+
+2026-07-29 的前两个 A9 切片已通过。恢复切片证明过期未绑定 claim 和过期已绑定终态 SDK
+run 均可在 Studio 轮询中重新认领，旧 attempt 无法执行，恢复夹具在模型、
+子工作流、图片和积分预留上均为零副作用。证据位于
+`delivery/evidence/agent-core-alpha/a9-reliability/`。上下文切片使用消息数与
+字符数双高水位及更低保留水位，滚动对话历史有界，当前 plan、权限、预算、
+Asset、待处理动作与已省略工具结果以结构化 facts 保存；Agent Core 而非
+可替换 compactor 负责把权威 facts 注入模型。PostgreSQL 夹具完成 14 轮后
+重建 Runtime 并完成第 15 轮，全程只压缩一次且事实无漂移。预算与幂等费用、
+联动取消、审批、隔离、追踪和固定 eval 仍未通过，不能把两个切片描述成完整
+A9 Gate。
+
 ## 14. 当前非目标
 
 - 不在 Agent Core Gate 内完成完整 Lovart UI、Coze 节点全集或通用 AI 应用平台。

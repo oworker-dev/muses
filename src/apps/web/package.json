@@ -12,6 +12,7 @@
     "workflow:db:migrate": "bootstrap",
     "lint": "eslint",
     "test:unit": "vitest run",
+    "verify:agent-context": "tsx scripts/verify-agent-context-compaction.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },

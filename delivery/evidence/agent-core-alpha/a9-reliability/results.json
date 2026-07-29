@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "0.1.0",
+  "gate": "a9-reliability",
+  "date": "2026-07-29",
+  "status": "in-progress",
+  "environment": {
+    "studioUrl": "http://127.0.0.1:4730/studio",
+    "database": "local-postgresql",
+    "workflowWorld": "@workflow/world-postgres"
+  },
+  "verification": {
+    "domainTests": { "passed": 39, "total": 39 },
+    "agentCoreTests": { "passed": 17, "total": 17 },
+    "agentHarnessTests": { "passed": 3, "total": 3 },
+    "webUnitTests": { "passed": 9, "total": 9 },
+    "driverRecoveryStateTests": { "passed": 4, "total": 4 },
+    "workflowValidation": {
+      "files": 196,
+      "workflowPatterns": 2,
+      "serdeIssues": 0
+    },
+    "realRecoveryProbe": {
+      "passed": 1,
+      "total": 1,
+      "paths": ["expired-unbound-claim", "expired-attached-terminal-run"],
+      "modelEvents": 0,
+      "childWorkflowRuns": 0,
+      "generatedAssets": 0,
+      "creditReservations": 0
+    },
+    "contextCompaction": {
+      "status": "passed",
+      "messageHighWatermark": 24,
+      "messageRetainedTarget": 16,
+      "characterHighWatermark": 48000,
+      "characterRetainedTarget": 32000,
+      "historyCharacterLimit": 16000,
+      "postgresProbe": {
+        "passed": true,
+        "summaryVersion": 1,
+        "sourceMessageCount": 26,
+        "retainedMessageCount": 21,
+        "compactionEvents": 1,
+        "historyCharacters": 720,
+        "modelCalls": 15,
+        "toolCalls": 0,
+        "creditMicros": "0"
+      }
+    },
+    "migration": {
+      "name": "0010_agent_driver_lease.sql",
+      "applied": true,
+      "leaseColumns": 3,
+      "leaseConstraint": true
+    }
+  },
+  "residualRisks": [
+    "Provider model calls are not yet proven exactly once across a crash after provider response.",
+    "Approval/cancellation propagation, isolation/tracing and fixed evals remain open A9 tasks.",
+    "Provider-specific tokenization and semantic-summary quality still require model-profile evals.",
+    "Workflow/Postgres activity emits a known pg@9 query-concurrency deprecation warning."
+  ]
+}

@@ -17,6 +17,9 @@ rules for professional-mode nodes are recorded in
 The current outcome-first sequence, parallel first-image evidence, Agent gate,
 and later PPT expansion rules are recorded in
 `docs/internal/用户成果驱动交付计划.md`.
+The frozen A9 failure fixtures, product authorities, passing evidence and
+residual-risk rules are recorded in
+`delivery/agent-core-a9-reliability-gate.md`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.
 The corrected durable execution boundary, supported-node interpreter, and its

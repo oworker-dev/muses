@@ -1,4 +1,5 @@
 import type {
+  AgentContextSummary,
   AgentEvent,
   AgentExecutionPlan,
   AgentMessage,
@@ -17,6 +18,13 @@ export type AgentRuntimePort = {
   cancel(runId: string, reason?: string): Promise<void>;
   resume(runId: string): Promise<void>;
   inspect(runId: string): Promise<AgentRunSnapshot>;
+  compact(
+    runId: string,
+    options?: {
+      readonly maxMessages?: number;
+      readonly maxCharacters?: number;
+    },
+  ): Promise<AgentContextSummary>;
   updatePlan(
     runId: string,
     expectedPlanRevision: number,
@@ -45,6 +53,7 @@ export class AgentRuntimeError extends Error {
       | "revision-conflict"
       | "plan-revision-conflict"
       | "approval-not-found"
+      | "context-compaction-invalid"
       | "budget-exceeded"
       | "tool-not-found"
       | "cursor-invalid"

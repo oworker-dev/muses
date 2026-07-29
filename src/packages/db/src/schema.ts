@@ -159,9 +159,7 @@ export const musesWorkflowDefinitionVersion = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [
-    primaryKey({ columns: [table.definitionId, table.version] }),
-  ],
+  (table) => [primaryKey({ columns: [table.definitionId, table.version] })],
 );
 
 export const musesWorkflowDeployment = pgTable(
@@ -396,6 +394,13 @@ export const musesAgentRun = pgTable(
     snapshot: jsonb("snapshot").notNull(),
     driverStatus: text("driver_status").notNull().default("unclaimed"),
     driverRunId: text("driver_run_id"),
+    driverAttemptId: text("driver_attempt_id"),
+    driverLeaseExpiresAt: timestamp("driver_lease_expires_at", {
+      withTimezone: true,
+    }),
+    driverLastHeartbeatAt: timestamp("driver_last_heartbeat_at", {
+      withTimezone: true,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -404,9 +409,7 @@ export const musesAgentRun = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
-  (table) => [
-    uniqueIndex("muses_agent_run_driver_idx").on(table.driverRunId),
-  ],
+  (table) => [uniqueIndex("muses_agent_run_driver_idx").on(table.driverRunId)],
 );
 
 export const musesAgentEvent = pgTable(
