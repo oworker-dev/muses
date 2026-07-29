@@ -27,6 +27,7 @@ export type WorkflowPublication = {
 
 export type WorkflowCatalogInspection = {
   definition: WorkflowDefinition
+  projectId: string
   deployment?: WorkflowDeployment
   inputSchema: Readonly<Record<string, unknown>>
   outputSchema: Readonly<Record<string, unknown>>
@@ -383,18 +384,25 @@ async function readDefinitionVersion(
   const row = (
     await getPgPool().query<{
       definition: WorkflowDefinition
+      projectId: string
       inputSchema: Readonly<Record<string, unknown>>
       outputSchema: Readonly<Record<string, unknown>>
       publishedAt: Date | string
     }>(
       `
         select
-          definition,
-          input_schema as "inputSchema",
-          output_schema as "outputSchema",
-          published_at as "publishedAt"
-        from muses_workflow_definition_version
-        where definition_id = $1 and version = $2 and workspace_id = $3
+          version.definition,
+          draft.project_id as "projectId",
+          version.input_schema as "inputSchema",
+          version.output_schema as "outputSchema",
+          version.published_at as "publishedAt"
+        from muses_workflow_definition_version version
+        join muses_workflow_definition_draft draft
+          on draft.id = version.definition_id
+         and draft.workspace_id = version.workspace_id
+        where version.definition_id = $1
+          and version.version = $2
+          and version.workspace_id = $3
         limit 1
       `,
       [definitionId, version, workspaceId]
@@ -416,6 +424,7 @@ async function readDefinitionVersion(
   }
   return {
     definition: row.definition,
+    projectId: row.projectId,
     inputSchema: row.inputSchema,
     outputSchema: row.outputSchema,
     publishedAt: new Date(row.publishedAt).toISOString(),

@@ -479,6 +479,7 @@ async function generateImageAndPlace(
         compilation.definition,
         inputs,
         {
+          projectId: context.projectId,
           submissionId: claim.submissionId,
           creditContext: claim.creditContext,
         },

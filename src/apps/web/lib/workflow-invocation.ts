@@ -103,6 +103,7 @@ export async function startPublishedWorkflowInvocation(input: {
       input.inputs,
       {
         ...harnessOptions,
+        projectId: inspection.projectId,
         submissionId: claim.submissionId,
         creditContext: claim.creditContext,
       },

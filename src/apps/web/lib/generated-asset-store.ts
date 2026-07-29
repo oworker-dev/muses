@@ -1,10 +1,12 @@
 import type { WorkflowRuntimeImageAsset } from "@muses/domain"
+import type { Pool } from "pg"
 
 import { getPgPool } from "@/lib/database"
 
 export type GeneratedImageAssetRecord = {
   id: string
   workspaceId: string
+  projectId: string | null
   workflowRunId: string
   nodeId: string
   stepId: string
@@ -20,14 +22,23 @@ export type GeneratedImageAssetRecord = {
   createdAt: string
 }
 
+export type NewGeneratedImageAssetRecord = Omit<
+  GeneratedImageAssetRecord,
+  "projectId"
+> & {
+  projectId: string
+}
+
 export async function recordGeneratedImageAsset(
-  asset: GeneratedImageAssetRecord
+  asset: NewGeneratedImageAssetRecord,
+  pool: Pool = getPgPool()
 ) {
-  await getPgPool().query(
+  await pool.query(
     `
       insert into muses_generated_asset (
         id,
         workspace_id,
+        project_id,
         workflow_run_id,
         node_id,
         step_id,
@@ -43,13 +54,14 @@ export async function recordGeneratedImageAsset(
         created_at
       )
       values (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
       )
       on conflict (id) do nothing
     `,
     [
       asset.id,
       asset.workspaceId,
+      asset.projectId,
       asset.workflowRunId,
       asset.nodeId,
       asset.stepId,
@@ -66,27 +78,34 @@ export async function recordGeneratedImageAsset(
     ]
   )
 
-  const persisted = await getGeneratedImageAsset({
-    workspaceId: asset.workspaceId,
-    workflowRunId: asset.workflowRunId,
-    assetId: asset.id,
-  })
+  const persisted = await getGeneratedImageAsset(
+    {
+      workspaceId: asset.workspaceId,
+      workflowRunId: asset.workflowRunId,
+      assetId: asset.id,
+    },
+    pool
+  )
   if (!persisted || !sameAssetIdentity(persisted, asset)) {
     throw new Error("Generated image Asset identity conflicts with its record.")
   }
   return persisted
 }
 
-export async function getGeneratedImageAsset(input: {
-  workspaceId: string
-  workflowRunId: string
-  assetId: string
-}) {
-  const result = await getPgPool().query<GeneratedImageAssetRecord>(
+export async function getGeneratedImageAsset(
+  input: {
+    workspaceId: string
+    workflowRunId: string
+    assetId: string
+  },
+  pool: Pool = getPgPool()
+) {
+  const result = await pool.query<GeneratedImageAssetRecord>(
     `
       select
         id,
         workspace_id as "workspaceId",
+        project_id as "projectId",
         workflow_run_id as "workflowRunId",
         node_id as "nodeId",
         step_id as "stepId",
@@ -111,11 +130,12 @@ export async function getGeneratedImageAsset(input: {
 
 function sameAssetIdentity(
   persisted: GeneratedImageAssetRecord,
-  requested: GeneratedImageAssetRecord
+  requested: NewGeneratedImageAssetRecord
 ) {
   return (
     persisted.objectKey === requested.objectKey &&
     persisted.workspaceId === requested.workspaceId &&
+    persisted.projectId === requested.projectId &&
     persisted.workflowRunId === requested.workflowRunId &&
     persisted.nodeId === requested.nodeId &&
     persisted.stepId === requested.stepId &&

@@ -55,6 +55,7 @@ export const MUSES_SUPPORTED_NODE_MAX_ATTEMPTS =
 export const MUSES_SELECTOR_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000
 
 export type WorkflowInterpreterHarnessOptions = {
+  readonly projectId?: string
   readonly retryOfRunId?: string
   readonly submissionId?: string
   readonly creditContext?: WorkflowCreditContext
@@ -278,6 +279,7 @@ export async function workflowDefinitionInterpreter(
           const request = {
             runId,
             definition: getWorkflowDefinitionRef(definition),
+            projectId: options.projectId,
             node: preparation.value.node,
             inputs: preparation.value.inputs,
             creditContext: options.creditContext,
@@ -538,6 +540,7 @@ type WorkflowNodeExecutionResult =
 async function executeSupportedNodeStep(request: {
   runId: string
   definition: WorkflowDefinitionRef
+  projectId?: string
   node: Extract<
     WorkflowDefinition["nodes"][number],
     { kind: "image-generator" | "design-document" }
@@ -641,6 +644,10 @@ async function executeRealImageNodeStep(
   if (request.node.kind !== "image-generator") {
     throw new FatalError("The real image adapter only accepts image nodes.")
   }
+  const projectId = request.projectId?.trim()
+  if (!projectId) {
+    throw new FatalError("Image generation requires an authorized Project scope.")
+  }
   const prompt = request.inputs.prompt
   if (!prompt || prompt.valueType !== "text" || !prompt.value.trim()) {
     throw new FatalError("Image generation requires a non-empty prompt.")
@@ -718,6 +725,7 @@ async function executeRealImageNodeStep(
         const prepared = await inspectGeneratedImage(image.uint8Array, mimeType)
         const stored = await storeGeneratedImage({
           workspaceId: request.definition.workspaceId,
+          projectId,
           runId: request.runId,
           nodeId: request.node.id,
           stepId: metadata.stepId,
@@ -1193,6 +1201,12 @@ export function isWorkflowInterpreterHarnessOptions(
   if (value === undefined) return true
   if (!value || typeof value !== "object" || Array.isArray(value)) return false
   const candidate = value as Partial<WorkflowInterpreterHarnessOptions>
+  if (
+    candidate.projectId !== undefined &&
+    (typeof candidate.projectId !== "string" || !candidate.projectId.trim())
+  ) {
+    return false
+  }
   if (
     candidate.retryOfRunId !== undefined &&
     typeof candidate.retryOfRunId !== "string"

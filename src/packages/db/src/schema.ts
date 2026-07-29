@@ -3,6 +3,7 @@ import {
   bigint,
   boolean,
   date,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -67,6 +68,10 @@ export const musesProject = pgTable(
       .defaultNow(),
   },
   (table) => [
+    uniqueIndex("muses_project_id_workspace_idx").on(
+      table.id,
+      table.workspaceId,
+    ),
     uniqueIndex("muses_project_workspace_name_idx").on(
       table.workspaceId,
       table.name,
@@ -361,6 +366,7 @@ export const musesGeneratedAsset = pgTable(
   {
     id: text("id").primaryKey(),
     workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id"),
     workflowRunId: text("workflow_run_id").notNull(),
     nodeId: text("node_id").notNull(),
     stepId: text("step_id").notNull(),
@@ -382,6 +388,16 @@ export const musesGeneratedAsset = pgTable(
       table.workflowRunId,
       table.createdAt,
     ),
+    index("muses_generated_asset_project_idx").on(
+      table.workspaceId,
+      table.projectId,
+      table.id,
+    ),
+    foreignKey({
+      columns: [table.projectId, table.workspaceId],
+      foreignColumns: [musesProject.id, musesProject.workspaceId],
+      name: "muses_generated_asset_project_scope_fk",
+    }).onDelete("cascade"),
   ],
 );
 

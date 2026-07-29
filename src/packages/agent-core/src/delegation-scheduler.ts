@@ -144,6 +144,17 @@ export type AgentDelegationChildRuntimePort = {
   }): Promise<AgentDelegationChildSnapshot | null>;
 };
 
+export type AgentDelegationArtifactAuthorizationPort = {
+  authorize(input: {
+    readonly workspaceId: string;
+    readonly projectId: string;
+    readonly artifactRefs: readonly string[];
+  }): Promise<
+    | { readonly ok: true }
+    | { readonly ok: false; readonly unauthorized: readonly string[] }
+  >;
+};
+
 export type AgentDelegationResultValidatorPort = {
   validate(input: {
     readonly workspaceId: string;

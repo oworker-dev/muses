@@ -14,6 +14,7 @@ let bucketReady = false
 
 export async function storeGeneratedImage(input: {
   workspaceId: string
+  projectId: string
   runId: string
   nodeId: string
   stepId: string
@@ -33,6 +34,7 @@ export async function storeGeneratedImage(input: {
   const extension = mimeExtension(input.mimeType)
   const stableIdentity = [
     input.workspaceId,
+    input.projectId,
     input.runId,
     input.nodeId,
     input.stepId,
@@ -54,6 +56,7 @@ export async function storeGeneratedImage(input: {
       CacheControl: "private, max-age=31536000, immutable",
       Metadata: {
         workspace: input.workspaceId,
+        project: input.projectId,
         run: input.runId,
         node: input.nodeId,
         asset: assetId,
@@ -64,6 +67,7 @@ export async function storeGeneratedImage(input: {
   await recordGeneratedImageAsset({
     id: assetId,
     workspaceId: input.workspaceId,
+    projectId: input.projectId,
     workflowRunId: input.runId,
     nodeId: input.nodeId,
     stepId: input.stepId,
