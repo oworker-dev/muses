@@ -14,6 +14,7 @@ import {
   toPublicAgentFailure,
 } from "@/lib/agent-client-projection"
 import { cancelAgentRunAndChildren } from "@/lib/agent-cancellation"
+import { readAgentDelegationActivity } from "@/lib/agent-delegation-activity"
 import { ensureAgentDriver } from "@/lib/agent-driver"
 import {
   createMusesAgentRuntime,
@@ -163,11 +164,16 @@ export async function GET(request: Request) {
     runId,
     afterSequence
   )
+  const delegation = await readAgentDelegationActivity({
+    workspaceId,
+    run: owned.snapshot,
+  })
   return Response.json({
     schemaVersion: AGENT_CORE_SCHEMA_VERSION,
     run: publicRun(owned.snapshot),
     events: events.map(toPublicAgentEvent),
     driver,
+    delegation,
   })
 }
 

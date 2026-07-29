@@ -186,4 +186,6 @@ SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但�
 4. 用确定性 fixture 和真实最小创作任务验证受控多 Agent 执行；
 5. 通过恢复、隔离、费用、取消和聚合 eval 后，才进入真实 PPT 场景。
 
-当前步骤 1 已完成：持久 Scheduler、Trace/Billing 血缘、6/6 固定恢复 eval 与受授权 `agent.delegate` 入口均通过；步骤 2 的 MusesAgent 已获得受控委托工具，步骤 3 已注册首个 `muses-image-specialist@0.1.0-alpha` 最小 Profile。步骤 2—3 仍需在步骤 4 的真实 provider 创作验收中共同证明，不能因配置和确定性测试通过就宣称生产多 Agent 用户体验完成。
+当前步骤 1—4 已完成：持久 Scheduler、Trace/Billing 血缘、6/6 固定恢复 eval 与受授权 `agent.delegate` 入口均通过；平台 MusesAgent 和首个 `muses-image-specialist@0.1.0-alpha` 最小 Profile 已在 2026-07-30 的真实文本/图像供应商 Gate 中完成两项并行生图、独立子审批、两个 Asset 聚合、三条 AgentRun/一条 DelegationRun Trace 和刷新恢复。模型预算规划同时改为读取确定性的父预算快照、逐字段聚合规则和单图推荐预算，服务端仍执行权威校验并预留委托调用自身的工具额度。
+
+步骤 5 的既有恢复、隔离、取消、费用和聚合确定性 eval 已通过，但真实 Gate 不等于整个 Agent 终局完成。当前父 Agent 可在委托被接受后先结束，Studio 独立观察 Scheduler；经过验证的聚合结果尚未耐久回注父 Context 触发一次新的有界综合推理，父 Run 已完成后也尚无面向用户的独立 DelegationRun 取消入口。该 parent-result bridge、委托取消入口、物理计算沙盒、生产 Skill/MCP 解析与用户可读的整树费用详情必须继续作为独立 Gate，不能因首个真实并行结果通过就宣称任意领域 Agent 或 PPT 已就绪。

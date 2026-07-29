@@ -6,8 +6,8 @@ The current A10 slices implement the framework-neutral Scheduler state machine,
 its PostgreSQL durability boundary, production Profiles, fingerprint,
 result-validation and Artifact-authorization adapters, an independent Child
 Agent Runtime, the Workflow SDK durable driver, whole-tree trace/billing
-lineage, fixed recovery evals and an authorized model-driven delegation entry
-point. Real provider-driven multi-Agent creative acceptance remains separate.
+lineage, fixed recovery evals, an authorized model-driven delegation entry and
+the first real provider-driven multi-Agent creative acceptance.
 
 Implemented in `@muses/agent-core`:
 
@@ -104,6 +104,18 @@ Implemented in the Workflow SDK driver:
 - dependency separation that lets pure PostgreSQL/Agent adapter verification
   exit without opening Workflow SDK event listeners.
 
+Implemented in the authenticated Studio projection:
+
+- root and delegated external-tool approvals remain separate and target the
+  exact persisted AgentRun that requested the action;
+- root completion does not stop polling while its DelegationRun is active;
+- bounded Specialist objectives, Profile versions, task states and aggregate
+  Artifact counts restore from PostgreSQL after refresh;
+- the model sees a deterministic parent-budget snapshot, aggregate-budget
+  semantics and a standard one-image Specialist budget before planning;
+- the executing `agent.delegate` call is reserved from the parent tool-call
+  envelope before child budgets are authorized.
+
 ## Verification
 
 Run from the repository root with the local PostgreSQL service available:
@@ -125,15 +137,35 @@ The isolated PostgreSQL verification applies every product migration through
 legacy Asset backfill/project isolation, driver ownership/recovery and the full
 Scheduler + Child Runtime aggregation path, and removes the Schemas afterward.
 It exits naturally after verification. The focused Agent Core suite has 72
-passing tests and the Web suite has 39 passing tests in this slice; Workflow
-validation scans 220 files with no serde errors.
+passing tests and the Web suite has 42 passing tests in this slice; Workflow
+validation scans 221 files with no serde errors.
+
+The authenticated real-provider browser gate is:
+
+```bash
+OWORKER_WEB_URL=http://127.0.0.1:4730 \
+  pnpm exec playwright test tests/e2e/muses-studio.spec.ts \
+  --grep 'delegates parallel image work'
+```
+
+It completed in approximately 1.5 minutes on 2026-07-30 and proved one root
+MusesAgent, two independent image Specialist AgentRuns, separate child
+approvals, two real generated Assets, Scheduler aggregation, one root-scoped
+trace containing three AgentRuns and one DelegationRun, canvas placement and
+refresh restoration. The committed evidence is sanitized in
+`delivery/evidence/agent-core-alpha/a10-orchestration/real-provider-delegation.md`;
+provider payloads, credentials, Run ids and Asset ids are not committed.
 
 ## Remaining Product Gate
 
-The persistent Scheduler engineering Gate is complete. The next gate is one
-authenticated real creative delegation using the production model, the image
-specialist and actual image provider. It must prove the user can understand and
-approve child work, resume after refresh, receive the validated Asset result,
-and inspect whole-tree cost/trace facts. This slice does not prove a
+The persistent Scheduler and first real multi-Agent creative Gate are complete.
+The next Agent orchestration gap is a durable parent-result bridge: after a
+delegation is accepted the current root Agent may finish while the Scheduler
+continues, and Studio projects Child progress and results independently. A
+later slice must inject the validated aggregate result into the parent context,
+resume the parent under a new bounded turn and preserve idempotent billing and
+approval semantics. It must also expose DelegationRun cancellation after the
+root Run has already completed; the current root cancellation action cannot
+stand in for that product entry. This slice does not prove that bridge, a
 provider-backed physical sandbox, production Skill/MCP resolution, arbitrary
-domain Agents, or PPT readiness.
+domain Agents, user-facing whole-tree cost detail, or PPT readiness.

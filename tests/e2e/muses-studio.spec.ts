@@ -215,6 +215,183 @@ test("MusesAgent generates a real image and restores it after refresh", async ({
   ).toBeVisible();
 });
 
+test("MusesAgent delegates parallel image work and restores specialist results", async ({
+  page,
+}) => {
+  test.setTimeout(10 * 60_000);
+  await page.goto("/studio");
+  const panel = page.getByTestId("studio-agent-panel");
+  await expect(panel).toBeVisible();
+  await panel
+    .getByPlaceholder("What would you like to create?")
+    .fill(
+      [
+        "Create two independent product launch poster concepts in parallel.",
+        "You must call agent.delegate exactly once with two tasks that have no dependencies and maxConcurrency 2.",
+        "Use muses-image-specialist version 0.1.0-alpha for both tasks.",
+        "Each task must use only toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
+        "Give each task a clear distinct visual objective, no input artifacts, a bounded budget, and a result JSON Schema requiring one string assetId with artifact evidence.",
+        "Do not call image.generate directly. After the delegation is accepted, report that the specialist work has started and stop.",
+      ].join(" "),
+    );
+  await panel.getByRole("button", { name: "Send" }).click();
+
+  const rootApproval = page.getByTestId("studio-agent-approval");
+  await expect(rootApproval).toBeVisible({ timeout: 3 * 60_000 });
+  await expect(rootApproval).toContainText("agent.delegate");
+  await rootApproval.getByRole("button", { name: "Approve" }).click();
+
+  let runId: string | null = null;
+  await expect
+    .poll(
+      async () => {
+        runId = await page.evaluate((currentWorkspaceId) => {
+          const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
+          const key = Object.keys(window.localStorage).find((candidate) =>
+            candidate.startsWith(prefix),
+          );
+          return key ? window.localStorage.getItem(key) : null;
+        }, workspaceId);
+        return runId;
+      },
+      { timeout: 30_000 },
+    )
+    .toMatch(/^arun_/);
+  const rootRunId = runId!;
+
+  const delegationPanel = page.getByTestId("studio-agent-delegation");
+  await expect(delegationPanel).toBeVisible({ timeout: 3 * 60_000 });
+  await expect(delegationPanel).toContainText("2 tasks");
+
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+        );
+        const body = (await response.json()) as {
+          delegation?: { approvals?: unknown[] };
+        };
+        return body.delegation?.approvals?.length;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .toBe(2);
+
+  for (let approved = 0; approved < 2; approved += 1) {
+    const childApproval = page
+      .getByTestId("studio-agent-delegated-approval")
+      .first();
+    await expect(childApproval).toBeVisible({ timeout: 3 * 60_000 });
+    await expect(childApproval).toContainText("image.generate");
+    await childApproval.getByRole("button", { name: "Approve" }).click();
+    await expect
+      .poll(
+        async () => {
+          const response = await page.request.get(
+            `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+          );
+          const body = (await response.json()) as {
+            delegation?: { approvals?: unknown[] };
+          };
+          return body.delegation?.approvals?.length;
+        },
+        { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+      )
+      .toBe(1 - approved);
+  }
+
+  let completed: {
+    active: boolean;
+    runStatus?: string;
+    taskStatuses: string[];
+    childRunIds: Array<string | undefined>;
+    artifactRefs: string[];
+  } | null = null;
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+        );
+        expect(response.ok()).toBeTruthy();
+        const body = (await response.json()) as {
+          delegation: {
+            active: boolean;
+            runs: Array<{
+              status: string;
+              tasks: Array<{
+                status: string;
+                artifactRefs: string[];
+                childRunId?: string;
+              }>;
+            }>;
+          };
+        };
+        const tasks = body.delegation.runs.flatMap(({ tasks }) => tasks);
+        completed = {
+          active: body.delegation.active,
+          runStatus: body.delegation.runs[0]?.status,
+          taskStatuses: tasks.map(({ status }) => status),
+          childRunIds: tasks.map(({ childRunId }) => childRunId),
+          artifactRefs: tasks.flatMap(({ artifactRefs }) => artifactRefs),
+        };
+        return completed;
+      },
+      { timeout: 6 * 60_000, intervals: [1000, 2000, 4000] },
+    )
+    .toMatchObject({
+      active: false,
+      runStatus: "completed",
+      taskStatuses: ["completed", "completed"],
+      childRunIds: [
+        expect.stringMatching(/^arun_/),
+        expect.stringMatching(/^arun_/),
+      ],
+      artifactRefs: [
+        expect.stringMatching(/^image_/),
+        expect.stringMatching(/^image_/),
+      ],
+    });
+  expect(new Set(completed!.artifactRefs).size).toBe(2);
+
+  const gatewayResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(gatewayResponse.ok()).toBeTruthy();
+  const gateway = (await gatewayResponse.json()) as {
+    creativeCanvas: { items: Array<{ kind: string; refId: string }> };
+  };
+  for (const assetId of completed!.artifactRefs) {
+    expect(gateway.creativeCanvas.items).toContainEqual(
+      expect.objectContaining({ kind: "asset", refId: assetId }),
+    );
+  }
+
+  const traceResponse = await page.request.get(
+    `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=${rootRunId}`,
+  );
+  expect(traceResponse.ok()).toBeTruthy();
+  const trace = (await traceResponse.json()) as {
+    delegationLineage: {
+      agentRuns: unknown[];
+      delegations: unknown[];
+    };
+    assets: Array<{ assetId: string }>;
+  };
+  expect(trace.delegationLineage.agentRuns).toHaveLength(3);
+  expect(trace.delegationLineage.delegations).toHaveLength(1);
+  expect(trace.assets.map(({ assetId }) => assetId)).toEqual(
+    expect.arrayContaining(completed!.artifactRefs),
+  );
+
+  await page.reload();
+  await expect(page.getByTestId("studio-agent-delegation")).toBeVisible();
+  await expect(page.getByTestId("studio-agent-delegation")).toContainText(
+    "2 results",
+  );
+});
+
 test("expired Agent driver claims recover without model or credit side effects", async ({
   page,
 }) => {

@@ -251,6 +251,24 @@
         "approve": "Approve",
         "deny": "Deny"
       },
+      "delegation": {
+        "title": "Specialist work",
+        "running": "Specialists are working",
+        "taskCount": "{count, plural, one {# task} other {# tasks}}",
+        "artifactCount": "{count, plural, one {# result} other {# results}}",
+        "approvalTitle": "Specialist action needs approval",
+        "status": {
+          "pending": "Queued",
+          "ready": "Ready",
+          "claimed": "Starting",
+          "running": "Working",
+          "waitingApproval": "Waiting for approval",
+          "completed": "Completed",
+          "failed": "Failed",
+          "cancelled": "Cancelled",
+          "blocked": "Blocked"
+        }
+      },
       "requestFailed": "MusesAgent could not complete this request.",
       "modelFailed": "The model service could not complete this turn. Try again in a moment.",
       "plan": "Execution plan",

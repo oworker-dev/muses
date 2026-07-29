@@ -29,7 +29,9 @@ DATABASE_URL=postgresql://oworker:oworker@127.0.0.1:5432/oworker_saas \
   pnpm --filter ./src/apps/web run verify:agent-delegation-store
 ```
 
-The product now has an authorized `agent.delegate` entry and a versioned image
-specialist Profile, but these deterministic fixtures do not claim a live
-provider-driven multi-Agent run, provider-backed physical sandbox or production
-Skill/MCP resolution.
+`real-provider-delegation.md` records the separate authenticated browser Gate
+that uses the production model and image provider. It proves the first live
+parallel Specialist result without committing provider payloads, credentials,
+Run ids or Asset ids. Neither evidence surface claims a provider-backed
+physical sandbox, production Skill/MCP resolution or durable aggregate-result
+reinjection into the parent Agent.

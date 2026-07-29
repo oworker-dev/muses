@@ -10,10 +10,22 @@ import {
   type AgentToolExecutionContext,
 } from "@muses/agent-core"
 
+const IMAGE_SPECIALIST_RECOMMENDED_BUDGET = {
+  maxTurns: 2,
+  maxModelCalls: 2,
+  maxToolCalls: 1,
+  maxInputTokens: 16_000,
+  maxOutputTokens: 2_000,
+  maxCreditMicros: "1000000",
+  maxDurationMs: 240_000,
+} as const
+
+const AGENT_DELEGATE_DESCRIPTION =
+  "Submit a bounded DAG of specialist Agent tasks through the Muses Scheduler. Use only when parallel or dependent specialist work is materially useful; simple requests should use a direct capability. The current image specialist is muses-image-specialist@0.1.0-alpha with toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing]. Every budget field is an authorization ceiling, and the Scheduler independently sums each field across all tasks before comparing it with the parent envelope."
+
 export const agentDelegateDefinition: AgentToolDefinition = {
   name: "agent.delegate",
-  description:
-    "Submit a bounded DAG of specialist Agent tasks through the Muses Scheduler. Use only when parallel or dependent specialist work is materially useful; simple requests should use a direct capability. The current image specialist is muses-image-specialist@0.1.0-alpha with toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
+  description: AGENT_DELEGATE_DESCRIPTION,
   inputSchema: {
     type: "object",
     properties: {
@@ -129,6 +141,20 @@ export const agentDelegateDefinition: AgentToolDefinition = {
   },
   requiredPermissions: ["agent.delegate"],
   sideEffect: "external",
+}
+
+export function agentDelegateDefinitionForRun(
+  run: AgentRunSnapshot
+): AgentToolDefinition {
+  const envelope = remainingBudget(run, new Date(run.updatedAt), 1)
+  return {
+    ...agentDelegateDefinition,
+    description: [
+      AGENT_DELEGATE_DESCRIPTION,
+      `The persisted parent budget snapshot, with this delegation tool call reserved but before the next planning model call, is ${JSON.stringify(envelope)}. The planning call consumes more turns, model calls, tokens, credits, and duration before submission, so keep every aggregate strictly below this snapshot.`,
+      `For a standard task that generates one image, use ${JSON.stringify(IMAGE_SPECIALIST_RECOMMENDED_BUDGET)} unless the objective demonstrably needs a smaller ceiling. Never copy the whole parent envelope into each task.`,
+    ].join(" "),
+  }
 }
 
 const budgetSchema = z
@@ -337,7 +363,7 @@ async function createAuthoritySnapshot(
       : [],
     delegableContextClassifications: ["public", "workspace"],
     delegableArtifactRefs: run.context.artifactRefs,
-    remainingBudget: remainingBudget(run, now),
+    remainingBudget: remainingBudget(run, now, 1),
   }
 }
 
@@ -396,13 +422,20 @@ function assertExecutionAuthority(
   }
 }
 
-function remainingBudget(run: AgentRunSnapshot, now: Date) {
+function remainingBudget(
+  run: AgentRunSnapshot,
+  now: Date,
+  reservedToolCalls = 0
+) {
   const { limit, usage } = run.budget
   const elapsedMs = Math.max(0, now.getTime() - Date.parse(usage.startedAt))
   return {
     maxTurns: remaining(limit.maxTurns, usage.turns),
     maxModelCalls: remaining(limit.maxModelCalls, usage.modelCalls),
-    maxToolCalls: remaining(limit.maxToolCalls, usage.toolCalls),
+    maxToolCalls: remaining(
+      limit.maxToolCalls,
+      usage.toolCalls + reservedToolCalls
+    ),
     maxInputTokens: remaining(limit.maxInputTokens, usage.inputTokens),
     maxOutputTokens: remaining(limit.maxOutputTokens, usage.outputTokens),
     maxCreditMicros: remainingMicros(limit.maxCreditMicros, usage.creditMicros),

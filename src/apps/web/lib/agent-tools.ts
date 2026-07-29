@@ -22,7 +22,7 @@ import type {
 } from "@muses/agent-core"
 
 import {
-  agentDelegateDefinition,
+  agentDelegateDefinitionForRun,
   agentDelegationToolInputSchema,
 } from "@/lib/agent-delegation-entry"
 import {
@@ -214,7 +214,7 @@ const workflowInvokeSchema = workflowTargetSchema.and(
 )
 
 export class MusesAgentToolRegistry implements AgentToolRegistryPort {
-  async list() {
+  async list(run: Parameters<AgentToolRegistryPort["list"]>[0]) {
     return [
       canvasInspectDefinition,
       canvasItemPutDefinition,
@@ -222,7 +222,7 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
       workflowListDefinition,
       workflowInspectDefinition,
       workflowInvokeDefinition,
-      agentDelegateDefinition,
+      agentDelegateDefinitionForRun(run),
     ]
   }
 

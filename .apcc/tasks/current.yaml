@@ -417,8 +417,8 @@ items:
     statusChangedAt: 2026-07-29T15:20:01.867Z
   - id: build-muses-agent
     name: 交付平台级 MusesAgent
-    summary: 平台 MusesAgent 已接入审批门禁后的 agent.delegate，仅能提出有界 DAG/Context/grant/budget/result contract，服务端派生 scope 与剩余权威；下一步用真实 provider 创作任务验证意图、计划、委托与子审批体验。
-    status: in_progress
+    summary: 平台 MusesAgent 已通过真实 provider 双任务委托验收：动态预算说明、根审批、Scheduler 提交、子审批、进度与刷新恢复均成立；Scheduler 继续拥有 scope、权限、预算和执行权威。
+    status: done
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -426,12 +426,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.050Z
-    updatedAt: 2026-07-29T18:23:59.805Z
-    statusChangedAt: 2026-07-29T18:23:59.805Z
+    updatedAt: 2026-07-29T19:35:32.937Z
+    statusChangedAt: 2026-07-29T19:35:20.999Z
   - id: build-domain-agent-profile
     name: 交付首个领域 Agent 配置
-    summary: 首个版本化 muses-image-specialist@0.1.0-alpha 已注册，只开放 image.generate 与最小 canvas.write/media-processing 权威；等待真实受控多 Agent 生图验收后关闭任务。
-    status: in_progress
+    summary: 版本化 muses-image-specialist@0.1.0-alpha 已以最小 image.generate/canvas.write/media-processing 权威完成两条独立真实生图任务，各返回一个经 Project 作用域验证的 Asset。
+    status: done
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -439,12 +439,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.215Z
-    updatedAt: 2026-07-29T18:24:00.014Z
-    statusChangedAt: 2026-07-29T18:24:00.014Z
+    updatedAt: 2026-07-29T19:35:33.194Z
+    statusChangedAt: 2026-07-29T19:35:21.222Z
   - id: build-multi-agent-execution
     name: 交付受控多 Agent 执行
-    summary: Scheduler、Child Runtime、恢复/隔离/取消/费用聚合和授权入口已就绪；下一 Gate 是认证用户发起一次真实 image specialist 委托，完成根/子审批、刷新恢复、Asset 聚合与整树 trace/cost 验收。
-    status: in_progress
+    summary: 真实双 Specialist E2E 已证明并行 Child AgentRun、独立审批、两个真实 Asset、Scheduler 聚合、三条 AgentRun/一个 DelegationRun Trace 与刷新恢复；物理沙盒和生产 Skill/MCP 仍属后续 Gate。
+    status: done
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -452,8 +452,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.386Z
-    updatedAt: 2026-07-29T18:24:00.221Z
-    statusChangedAt: 2026-07-29T18:24:00.221Z
+    updatedAt: 2026-07-29T19:35:33.418Z
+    statusChangedAt: 2026-07-29T19:35:21.443Z
   - id: collect-first-scenario-evidence
     name: 准备首个真实场景验收样本
     summary: 首图价值 Gate 通过后准备一个可脱敏真实 PPT 任务，记录 Brief、材料、旧流程、耗时、成本、返工和验收标准；先运行现有平台，不先列功能清单。

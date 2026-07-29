@@ -31,6 +31,7 @@ begin
     select 1
     from pg_constraint
     where conname = 'muses_generated_asset_project_scope_fk'
+      and conrelid = 'muses_generated_asset'::regclass
   ) then
     alter table muses_generated_asset
       add constraint muses_generated_asset_project_scope_fk

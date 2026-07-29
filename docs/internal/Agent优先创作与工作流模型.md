@@ -233,7 +233,9 @@ A10 第一切片已经冻结框架无关的委派边界，完整协议见[Agent 
 
 A10 Scheduler Gate 现进一步完成整棵 Agent 树的 Trace/Billing 血缘、6/6 固定恢复 eval，以及受现有 external-tool 审批控制的 `agent.delegate` 入口。模型只提交任务 DAG、显式 Context、精确 Profile、收窄 grant、预算和结果契约；Workspace/Project/Session、root/direct-parent、深度、Context version、策略和剩余预算全部由持久 AgentRun 派生。首个领域配置 `muses-image-specialist@0.1.0-alpha` 只拥有 `image.generate` 工具及其最小权限/媒体计算声明。
 
-下一 Gate 是使用真实文本与图像供应商完成一次经认证、可审批、可刷新恢复的多 Agent 创作验收，并让用户能处理子 Run 审批和看到聚合成果、费用与追踪。平台级 MusesAgent 只能提出计划，不能成为 Scheduler、权限或预算权威；生产 Skill/MCP 解析与物理计算沙盒也仍是明确缺口。该真实验收通过前仍不进入 PPT。
+2026-07-30 的真实供应商 Gate 已通过：一个经认证的根 MusesAgent 提交两项并行生图任务，两个独立 Image Specialist 分别经过子 Run 审批并各生成一个真实 Asset；Scheduler 聚合终态，Operation Gateway 放置两个 Asset，整树 Trace 包含三个 AgentRun 和一个 DelegationRun，Studio 刷新后恢复任务与两个成果。第一次真实尝试暴露出模型把每项四轮预算相加后超过父 Run 剩余七轮；修复没有放宽服务端校验或给测试 Prompt 硬编码预算，而是向模型投影确定性的父预算快照、逐字段聚合规则和单图推荐预算，并为当前 `agent.delegate` 调用预留父工具额度。
+
+平台级 MusesAgent 仍只能提出计划，不能成为 Scheduler、权限或预算权威。当前根 Agent 在委托接受后可以先结束，Studio 独立观察 Scheduler；经过验证的聚合结果尚未耐久回注父 Context 并触发一次有界综合推理，根 Run 已完成后的 DelegationRun 也尚无独立用户取消入口。该 parent-result bridge、委托取消入口、生产 Skill/MCP 解析、物理计算沙盒与面向用户的整树费用详情仍是明确缺口，因此本轮仍不进入 PPT。
 
 ## 14. 当前非目标
 

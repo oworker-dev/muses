@@ -25,6 +25,7 @@ import type {
 } from "@muses/agent-core"
 import type { WorkflowRuntimeImageAsset } from "@muses/domain"
 
+import type { AgentDelegationActivityProjection } from "@/lib/agent-delegation-activity"
 import { cn } from "@/lib/utils"
 
 type AgentRunResponse = {
@@ -38,6 +39,7 @@ type AgentRunResponse = {
     idempotentReplay: boolean
     summary: { reviewRequired?: boolean }
   }
+  delegation?: AgentDelegationActivityProjection
 }
 
 type ImageToolOutput = {
@@ -61,6 +63,8 @@ export function StudioAgentPanel({
   const [prompt, setPrompt] = useState("")
   const [run, setRun] = useState<AgentRunSnapshot | null>(null)
   const [events, setEvents] = useState<AgentEvent[]>([])
+  const [delegation, setDelegation] =
+    useState<AgentDelegationActivityProjection | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const interactive = useSyncExternalStore(
@@ -77,7 +81,10 @@ export function StudioAgentPanel({
       if (!response.ok) throw new Error(result.message || t("requestFailed"))
       setRun(result.run)
       setEvents(result.events || [])
-      if (isTerminal(result.run.status)) void onCanvasChanged?.()
+      setDelegation(result.delegation || null)
+      if (isTerminal(result.run.status) && !result.delegation?.active) {
+        void onCanvasChanged?.()
+      }
       return result.run
     },
     [onCanvasChanged, t, workspaceId]
@@ -95,14 +102,14 @@ export function StudioAgentPanel({
   }, [readRun, storageKey])
 
   useEffect(() => {
-    if (!run || isSettled(run.status)) return
+    if (!run || (isSettled(run.status) && !delegation?.active)) return
     const timer = window.setInterval(() => {
       void readRun(run.runId).catch((reason: unknown) => {
         setError(reason instanceof Error ? reason.message : t("requestFailed"))
       })
     }, 1200)
     return () => window.clearInterval(timer)
-  }, [readRun, run, t])
+  }, [delegation?.active, readRun, run, t])
 
   const submit = useCallback(async () => {
     const content = prompt.trim()
@@ -135,6 +142,7 @@ export function StudioAgentPanel({
       }
       setRun(result.run)
       setEvents([])
+      setDelegation(null)
       setPrompt("")
       window.localStorage.setItem(storageKey, result.run.runId)
     } catch (reason) {
@@ -207,6 +215,44 @@ export function StudioAgentPanel({
     [run, submitting, t, workspaceId]
   )
 
+  const decideDelegatedApproval = useCallback(
+    async (
+      approval: AgentDelegationActivityProjection["approvals"][number],
+      decision: "approved" | "denied"
+    ) => {
+      if (!run || submitting) return
+      setSubmitting(true)
+      setError(null)
+      try {
+        const response = await fetch("/api/studio/agent-runs", {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "approve",
+            workspaceId,
+            runId: approval.runId,
+            approvalId: approval.approvalId,
+            decision,
+            reason:
+              decision === "approved"
+                ? "Approved delegated work from Muses Studio."
+                : "Denied delegated work from Muses Studio.",
+          }),
+        })
+        const result = (await response.json()) as AgentRunResponse
+        if (!response.ok || !result.run) {
+          throw new Error(result.message || t("requestFailed"))
+        }
+        await readRun(run.runId)
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : t("requestFailed"))
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [readRun, run, submitting, t, workspaceId]
+  )
+
   const latestAssistant = useMemo(
     () =>
       [...(run?.context.messages || [])]
@@ -222,6 +268,22 @@ export function StudioAgentPanel({
   )
   const stages = agentStages(run, events)
   const running = Boolean(run && !isTerminal(run.status))
+  const delegationBusy = Boolean(delegation?.active)
+  const delegatedTaskCount =
+    delegation?.runs.reduce(
+      (count, item) => count + item.tasks.length,
+      0
+    ) || 0
+  const delegatedArtifactCount =
+    delegation?.runs.reduce(
+      (count, item) =>
+        count +
+        item.tasks.reduce(
+          (taskCount, task) => taskCount + task.artifactRefs.length,
+          0
+        ),
+      0
+    ) || 0
 
   return (
     <aside
@@ -238,7 +300,13 @@ export function StudioAgentPanel({
               {t("title")}
             </div>
             <div className="truncate text-[9px] text-muted-foreground">
-              {run ? statusLabel(run.status, t) : t("ready")}
+              {delegation?.approvals.length
+                ? t("waiting")
+                : delegationBusy
+                  ? t("delegation.running")
+                  : run
+                    ? statusLabel(run.status, t)
+                    : t("ready")}
             </div>
           </div>
         </div>
@@ -329,6 +397,55 @@ export function StudioAgentPanel({
             </details>
           ) : null}
 
+          {delegation?.runs.length ? (
+            <section
+              className="mt-3 border-y border-border py-2.5"
+              data-testid="studio-agent-delegation"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[10px] font-semibold text-foreground">
+                  {t("delegation.title")}
+                </p>
+                <span className="text-[9px] text-muted-foreground">
+                  {t("delegation.taskCount", { count: delegatedTaskCount })}
+                  {delegatedArtifactCount
+                    ? ` · ${t("delegation.artifactCount", { count: delegatedArtifactCount })}`
+                    : ""}
+                </span>
+              </div>
+              <ol className="mt-2 grid gap-2">
+                {delegation.runs.flatMap((item) =>
+                  item.tasks.map((task) => (
+                    <li
+                      key={`${item.delegationRunId}:${task.taskId}`}
+                      className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5"
+                    >
+                      {task.status === "completed" ? (
+                        <CheckIcon className="mt-0.5 size-3 shrink-0 text-emerald-600" />
+                      ) : isDelegationTaskActive(task.status) ? (
+                        <LoaderCircleIcon className="mt-0.5 size-3 shrink-0 animate-spin" />
+                      ) : (
+                        <span className="mt-0.5 size-3 shrink-0 rounded-full border border-border" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="line-clamp-2 text-[9px] leading-4 text-foreground">
+                          {task.objective}
+                        </p>
+                        <p className="text-[8px] leading-3 text-muted-foreground">
+                          {task.profile.profileId} ·{" "}
+                          {delegationStatusLabel(task.status, t)}
+                          {task.artifactRefs.length
+                            ? ` · ${t("delegation.artifactCount", { count: task.artifactRefs.length })}`
+                            : ""}
+                        </p>
+                      </div>
+                    </li>
+                  ))
+                )}
+              </ol>
+            </section>
+          ) : null}
+
           {run.status === "waiting-approval" && run.pendingApproval ? (
             <section
               className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
@@ -377,6 +494,60 @@ export function StudioAgentPanel({
               </div>
             </section>
           ) : null}
+
+          {delegation?.approvals.map((approval) => (
+            <section
+              key={approval.approvalId}
+              className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
+              data-testid="studio-agent-delegated-approval"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold text-foreground">
+                    {t("delegation.approvalTitle")}
+                  </p>
+                  <p className="mt-0.5 text-[9px] leading-4 text-muted-foreground">
+                    {approval.reason}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[8px] text-foreground">
+                  {approval.toolCall.name}
+                </span>
+              </div>
+              <details className="mt-2 rounded border border-border bg-background/70">
+                <summary className="cursor-pointer list-none px-2 py-1.5 text-[9px] font-medium text-muted-foreground">
+                  {t("approval.input")}
+                </summary>
+                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[8px] leading-4 whitespace-pre-wrap text-foreground">
+                  {formatApprovalInput(approval.toolCall.input)}
+                </pre>
+              </details>
+              <div className="mt-2 flex justify-end gap-1.5">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() =>
+                    void decideDelegatedApproval(approval, "denied")
+                  }
+                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[9px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                >
+                  <BanIcon className="size-3" />
+                  {t("approval.deny")}
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() =>
+                    void decideDelegatedApproval(approval, "approved")
+                  }
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[9px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                >
+                  <CheckIcon className="size-3" />
+                  {t("approval.approve")}
+                </button>
+              </div>
+            </section>
+          ))}
 
           {imageOutput?.assets?.length ? (
             <div className="mt-3 grid gap-2">
@@ -427,7 +598,7 @@ export function StudioAgentPanel({
         <div className="flex items-end gap-2 rounded-md border border-input bg-background p-1.5 focus-within:ring-2 focus-within:ring-ring/30">
           <textarea
             value={prompt}
-            disabled={!interactive}
+            disabled={!interactive || delegationBusy}
             onChange={(event) => setPrompt(event.target.value)}
             placeholder={run ? t("followUpPlaceholder") : t("placeholder")}
             rows={2}
@@ -441,7 +612,9 @@ export function StudioAgentPanel({
           />
           <button
             type="submit"
-            disabled={!interactive || !prompt.trim() || submitting}
+            disabled={
+              !interactive || delegationBusy || !prompt.trim() || submitting
+            }
             className="grid size-8 shrink-0 place-items-center rounded-md bg-foreground text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
             aria-label={t("send")}
             title={t("send")}
@@ -531,6 +704,33 @@ function isSettled(status: AgentRunSnapshot["status"]) {
 
 function isTerminal(status: AgentRunSnapshot["status"]) {
   return status === "completed" || status === "failed" || status === "cancelled"
+}
+
+function isDelegationTaskActive(status: string) {
+  return (
+    status === "ready" ||
+    status === "claimed" ||
+    status === "running" ||
+    status === "waiting-approval"
+  )
+}
+
+function delegationStatusLabel(
+  status: string,
+  t: ReturnType<typeof useTranslations<"Studio.agent">>
+) {
+  if (status === "pending") return t("delegation.status.pending")
+  if (status === "ready") return t("delegation.status.ready")
+  if (status === "claimed") return t("delegation.status.claimed")
+  if (status === "running") return t("delegation.status.running")
+  if (status === "waiting-approval") {
+    return t("delegation.status.waitingApproval")
+  }
+  if (status === "completed") return t("delegation.status.completed")
+  if (status === "failed") return t("delegation.status.failed")
+  if (status === "cancelled") return t("delegation.status.cancelled")
+  if (status === "blocked") return t("delegation.status.blocked")
+  return status
 }
 
 function planStepLabel(

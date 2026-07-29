@@ -9,6 +9,7 @@ import {
 } from "@muses/agent-core"
 
 import {
+  agentDelegateDefinitionForRun,
   agentDelegationToolInputSchema,
   submitAuthorizedAgentDelegation,
   type AgentDelegationEntryDependencies,
@@ -78,7 +79,7 @@ describe("Agent delegation entry", () => {
       remainingBudget: {
         maxTurns: 7,
         maxModelCalls: 6,
-        maxToolCalls: 5,
+        maxToolCalls: 4,
         maxInputTokens: 9_000,
         maxOutputTokens: 4_500,
         maxCreditMicros: "875",
@@ -93,6 +94,22 @@ describe("Agent delegation entry", () => {
       submissionReceiptId: "receipt-1",
       driver: { state: "attached" },
     })
+  })
+
+  it("projects deterministic parent headroom and a standard image budget to the model", () => {
+    const definition = agentDelegateDefinitionForRun(
+      agentRun({ runId: "run-root" })
+    )
+
+    expect(definition.description).toContain(
+      '"maxTurns":7,"maxModelCalls":6,"maxToolCalls":4'
+    )
+    expect(definition.description).toContain(
+      '"maxTurns":2,"maxModelCalls":2,"maxToolCalls":1'
+    )
+    expect(definition.description).toContain(
+      "Never copy the whole parent envelope into each task."
+    )
   })
 
   it("rejects model-supplied scope and authority fields", () => {
