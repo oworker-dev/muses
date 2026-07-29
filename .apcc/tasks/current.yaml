@@ -1002,8 +1002,8 @@ items:
     statusChangedAt: 2026-07-29T03:06:17.400Z
   - id: enforce-agent-budget-billing-idempotency
     name: 关闭 Agent 预算与幂等费用边界
-    summary: 覆盖重复投递、模型/工具/Token/积分预算停止、子运行计费归属及失败或取消后的单次结算。
-    status: in_progress
+    summary: 模型调用以 AgentRun、turn、ContextSnapshot version 建立稳定收据；供应商前保守预算与积分预留，完成结果先校验结算再 checkpoint，完成回放、调用前租约回收、调用后歧义复核、明确拒绝单次释放和超预留保留结果均通过单测、隔离 PostgreSQL 与真实生图证据。
+    status: done
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1011,12 +1011,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.172Z
-    updatedAt: 2026-07-29T03:06:17.602Z
-    statusChangedAt: 2026-07-29T03:06:17.602Z
+    updatedAt: 2026-07-29T04:33:52.183Z
+    statusChangedAt: 2026-07-29T04:33:52.183Z
   - id: implement-agent-approval-cancellation
     name: 交付 Agent 审批与子运行联动取消
     summary: 让高影响工具在服务端审批后执行，并让 Agent 取消传播到仍活动的子 WorkflowRun，保留竞态和迟到结果事实。
-    status: pending
+    status: in_progress
     planRef: agent-reliability-gate
     parentTaskId: verify-agent-safety-recovery
     countedForProgress: true
@@ -1024,8 +1024,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T01:30:59.403Z
-    updatedAt: 2026-07-29T01:30:59.403Z
-    statusChangedAt: 2026-07-29T01:30:59.403Z
+    updatedAt: 2026-07-29T04:33:52.380Z
+    statusChangedAt: 2026-07-29T04:33:52.380Z
   - id: verify-agent-isolation-tracing
     name: 验证 Agent 隔离与端到端追踪
     summary: 验证 Workspace、会话、沙盒、Skill/MCP 与工具权限隔离，并用成熟追踪上下文关联 AgentRun、工具、WorkflowRun、模型、用量和费用。

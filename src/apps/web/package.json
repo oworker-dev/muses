@@ -13,6 +13,7 @@
     "lint": "eslint",
     "test:unit": "vitest run",
     "verify:agent-context": "tsx scripts/verify-agent-context-compaction.ts",
+    "verify:agent-billing": "tsx scripts/verify-agent-model-billing.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },

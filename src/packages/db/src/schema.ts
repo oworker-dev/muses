@@ -270,6 +270,8 @@ export const creditLedgerEntry = pgTable(
     }).notNull(),
     reservationId: text("reservation_id"),
     workflowRunId: text("workflow_run_id"),
+    agentRunId: text("agent_run_id"),
+    agentModelCallId: text("agent_model_call_id"),
     idempotencyKey: text("idempotency_key").notNull(),
     actorUserId: text("actor_user_id"),
     reason: text("reason").notNull(),
@@ -292,7 +294,8 @@ export const creditReservation = pgTable(
     id: text("id").primaryKey(),
     accountId: text("account_id").notNull(),
     workspaceId: text("workspace_id").notNull(),
-    submissionId: text("submission_id").notNull(),
+    submissionId: text("submission_id"),
+    agentModelCallId: text("agent_model_call_id"),
     workflowRunId: text("workflow_run_id"),
     idempotencyKey: text("idempotency_key").notNull(),
     status: text("status").notNull().default("active"),
@@ -313,6 +316,9 @@ export const creditReservation = pgTable(
       table.idempotencyKey,
     ),
     uniqueIndex("credit_reservation_workflow_run_idx").on(table.workflowRunId),
+    uniqueIndex("credit_reservation_agent_model_call_idx").on(
+      table.agentModelCallId,
+    ),
   ],
 );
 
@@ -426,6 +432,58 @@ export const musesAgentEvent = pgTable(
   (table) => [
     primaryKey({ columns: [table.runId, table.sequence] }),
     uniqueIndex("muses_agent_event_id_idx").on(table.eventId),
+  ],
+);
+
+export const musesAgentModelCall = pgTable(
+  "muses_agent_model_call",
+  {
+    id: text("id").primaryKey(),
+    runId: text("run_id").notNull(),
+    workspaceId: text("workspace_id").notNull(),
+    turn: integer("turn").notNull(),
+    contextVersion: integer("context_version").notNull(),
+    modelRef: text("model_ref").notNull(),
+    requestFingerprint: text("request_fingerprint").notNull(),
+    status: text("status").notNull().default("claimed"),
+    attemptId: text("attempt_id").notNull(),
+    leaseExpiresAt: timestamp("lease_expires_at", {
+      withTimezone: true,
+    }).notNull(),
+    estimatedInputTokens: integer("estimated_input_tokens").notNull(),
+    estimatedOutputTokens: integer("estimated_output_tokens").notNull(),
+    estimatedCreditMicros: bigint("estimated_credit_micros", {
+      mode: "bigint",
+    }).notNull(),
+    actualInputTokens: integer("actual_input_tokens"),
+    actualOutputTokens: integer("actual_output_tokens"),
+    actualCreditMicros: bigint("actual_credit_micros", { mode: "bigint" }),
+    result: jsonb("result"),
+    providerRequestId: text("provider_request_id"),
+    failureCode: text("failure_code"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    startedAt: timestamp("started_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("muses_agent_model_call_turn_idx").on(
+      table.runId,
+      table.turn,
+      table.contextVersion,
+    ),
+    index("muses_agent_model_call_run_created_idx").on(
+      table.runId,
+      table.createdAt,
+    ),
+    index("muses_agent_model_call_status_lease_idx").on(
+      table.status,
+      table.leaseExpiresAt,
+    ),
   ],
 );
 

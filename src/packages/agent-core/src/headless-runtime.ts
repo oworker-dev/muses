@@ -23,15 +23,16 @@ import {
   DEFAULT_AGENT_CONTEXT_RETAIN_CHARACTERS,
   DEFAULT_AGENT_CONTEXT_RETAIN_MESSAGES,
 } from "./context-compaction";
-import type {
-  AgentClockPort,
-  AgentContextCompactorPort,
-  AgentIdPort,
-  AgentModelPort,
-  AgentPolicyPort,
-  AgentStateStorePort,
-  AgentToolDefinition,
-  AgentToolRegistryPort,
+import {
+  AgentModelError,
+  type AgentClockPort,
+  type AgentContextCompactorPort,
+  type AgentIdPort,
+  type AgentModelPort,
+  type AgentPolicyPort,
+  type AgentStateStorePort,
+  type AgentToolDefinition,
+  type AgentToolRegistryPort,
 } from "./ports";
 
 import {
@@ -443,19 +444,59 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
       }
 
       const tools = await this.availableTools(run);
+      const modelInput = {
+        callId: modelCallId(run),
+        run,
+        messages: modelContextMessages(run),
+        tools,
+      };
+      let estimate;
+      try {
+        estimate = await this.dependencies.model.estimate(modelInput);
+        validateModelUsage(estimate);
+      } catch {
+        await this.fail(run, {
+          code: "model-estimate-failed",
+          message: AGENT_MODEL_FAILURE_MESSAGE,
+          retryable: false,
+        });
+        return;
+      }
+      const estimateFailure = checkBudgetAfterModel(
+        run.budget.limit,
+        addModelUsage(run.budget.usage, estimate),
+      );
+      if (estimateFailure) {
+        await this.fail(run, estimateFailure);
+        return;
+      }
       let modelResult;
       try {
         modelResult = await this.dependencies.model.complete({
+          ...modelInput,
+          estimate,
+        });
+      } catch (error) {
+        if (
+          error instanceof AgentModelError &&
+          error.runtimeAction === "retry-driver"
+        ) {
+          throw error;
+        }
+        await this.fail(
           run,
-          messages: modelContextMessages(run),
-          tools,
-        });
-      } catch {
-        await this.fail(run, {
-          code: "model-failed",
-          message: AGENT_MODEL_FAILURE_MESSAGE,
-          retryable: true,
-        });
+          error instanceof AgentModelError
+            ? {
+                code: error.code,
+                message: error.publicMessage,
+                retryable: error.retryable,
+              }
+            : {
+                code: "model-failed",
+                message: AGENT_MODEL_FAILURE_MESSAGE,
+                retryable: true,
+              },
+        );
         return;
       }
 
@@ -1141,6 +1182,26 @@ function addModelUsage(
       BigInt(usage.creditMicros) + BigInt(model.creditMicros)
     ).toString(),
   };
+}
+
+function modelCallId(run: AgentRunSnapshot) {
+  return `${run.runId}:model:${run.turn + 1}:context:${run.context.version}`;
+}
+
+function validateModelUsage(usage: {
+  inputTokens: number;
+  outputTokens: number;
+  creditMicros: string;
+}) {
+  if (
+    !Number.isSafeInteger(usage.inputTokens) ||
+    usage.inputTokens < 0 ||
+    !Number.isSafeInteger(usage.outputTokens) ||
+    usage.outputTokens < 0 ||
+    !/^\d+$/.test(usage.creditMicros)
+  ) {
+    throw new Error("Agent model usage estimate is invalid.");
+  }
 }
 
 function checkBudgetBeforeModel(run: AgentRunSnapshot, now: Date) {

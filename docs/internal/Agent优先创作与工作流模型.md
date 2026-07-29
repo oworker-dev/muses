@@ -196,16 +196,28 @@ durable driver 在模型或工具之前自绑定 SDK run。该机制不虚构模
 exactly-once：供应商响应后、Agent checkpoint 前的崩溃歧义仍必须在 A9
 预算、费用与固定 eval 中显式验证。
 
-2026-07-29 的前两个 A9 切片已通过。恢复切片证明过期未绑定 claim 和过期已绑定终态 SDK
+2026-07-29 的前三个 A9 切片已通过。恢复切片证明过期未绑定 claim 和过期已绑定终态 SDK
 run 均可在 Studio 轮询中重新认领，旧 attempt 无法执行，恢复夹具在模型、
 子工作流、图片和积分预留上均为零副作用。证据位于
 `delivery/evidence/agent-core-alpha/a9-reliability/`。上下文切片使用消息数与
 字符数双高水位及更低保留水位，滚动对话历史有界，当前 plan、权限、预算、
 Asset、待处理动作与已省略工具结果以结构化 facts 保存；Agent Core 而非
 可替换 compactor 负责把权威 facts 注入模型。PostgreSQL 夹具完成 14 轮后
-重建 Runtime 并完成第 15 轮，全程只压缩一次且事实无漂移。预算与幂等费用、
-联动取消、审批、隔离、追踪和固定 eval 仍未通过，不能把两个切片描述成完整
-A9 Gate。
+重建 Runtime 并完成第 15 轮，全程只压缩一次且事实无漂移。
+
+预算与幂等费用切片没有假设模型供应商支持幂等键，而是以
+`AgentRun + turn + ContextSnapshot version` 建立稳定模型调用收据。供应商调用前
+持久化保守 Token/积分估算、attempt lease 与预留；完成结果先校验、结算并落收据，
+再允许 Agent checkpoint。已完成收据直接回放；过期未调用收据可换 attempt；已进入
+供应商但结果未知的收据只转 `ambiguous/review_required`，永不自动重发；明确非超时
+4xx 拒绝只释放一次；超预留保留结果与实际用量但不静默完成。隔离 PostgreSQL
+夹具证明非零费率 reserve/settle/release 唯一、余额不足零收据。真实 Agent 生图
+证明 2 次文本模型调用对应 2 条完成收据，临时图像子 Workflow 以父 AgentRun 为
+caller、不伪装成发布版本，最终只生成 1 个 Asset 并结算 1 个图像预留。
+
+联动取消、审批、隔离、追踪和固定 eval 仍未通过，不能把三个切片描述成完整
+A9 Gate。文本模型生产费率当前仍需进入版本化模型目录；本次真实环境费率为零，
+非零文本费用的一次性账本语义由隔离夹具证明。
 
 ## 14. 当前非目标
 

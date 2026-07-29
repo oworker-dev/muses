@@ -203,6 +203,10 @@ function startInput(target: {
 class DeterministicModel implements AgentModelPort {
   readonly seenMessages: Array<readonly AgentMessage[]> = []
 
+  estimate() {
+    return { inputTokens: 1, outputTokens: 1, creditMicros: "0" }
+  }
+
   async complete(input: Parameters<AgentModelPort["complete"]>[0]) {
     this.seenMessages.push(structuredClone(input.messages))
     return {

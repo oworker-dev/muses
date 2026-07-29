@@ -7,6 +7,7 @@ import {
   HeadlessAgentHarness,
   HeadlessAgentRuntime,
   InMemoryAgentStateStore,
+  AgentModelError,
   type AgentClockPort,
   type AgentIdPort,
   type AgentMessage,
@@ -189,6 +190,29 @@ describe("HeadlessAgentRuntime", () => {
     expect(fixture.tools.executions).toHaveLength(0);
   });
 
+  it("blocks an estimated model overage before the provider side effect", async () => {
+    const model = new ScriptedModel([stop("Must not execute")], {
+      inputTokens: 101,
+      outputTokens: 1,
+      creditMicros: "1",
+    });
+    const fixture = createRuntimeWithModel(model);
+    const ref = await fixture.runtime.start(
+      startInput({ budget: { ...defaultBudget(), maxInputTokens: 100 } }),
+    );
+
+    await fixture.runtime.resume(ref.runId);
+
+    expect(model.completeCalls).toBe(0);
+    expect(await fixture.runtime.inspect(ref.runId)).toMatchObject({
+      status: "failed",
+      failure: { code: "input-token-budget-exceeded", retryable: false },
+      budget: {
+        usage: { modelCalls: 0, inputTokens: 0, creditMicros: "0" },
+      },
+    });
+  });
+
   it("does not persist raw model provider errors", async () => {
     const fixture = createRuntime([]);
 
@@ -207,6 +231,35 @@ describe("HeadlessAgentRuntime", () => {
     expect(JSON.stringify({ result, failed })).not.toContain(
       "Scripted model result is missing.",
     );
+  });
+
+  it("leaves the run recoverable when the model adapter requests a driver retry", async () => {
+    const fixture = createRuntimeWithModel({
+      estimate: () => ({ inputTokens: 1, outputTokens: 1, creditMicros: "1" }),
+      complete: async () => {
+        throw new AgentModelError(
+          "model-call-in-progress",
+          "The durable model receipt is still active.",
+          true,
+          "retry-driver",
+        );
+      },
+    });
+    const ref = await fixture.runtime.start(startInput());
+
+    await expect(fixture.runtime.resume(ref.runId)).rejects.toMatchObject({
+      code: "model-call-in-progress",
+      runtimeAction: "retry-driver",
+    });
+
+    expect(await fixture.runtime.inspect(ref.runId)).toMatchObject({
+      status: "running",
+      turn: 0,
+      budget: { usage: { modelCalls: 0, creditMicros: "0" } },
+    });
+    const events = await fixture.store.readEvents(ref.runId);
+    expect(events.some(({ type }) => type === "run.failed")).toBe(false);
+    expect(events.some(({ type }) => type === "model.completed")).toBe(false);
   });
 
   it("reopens a completed run for follow-up while preserving context", async () => {
@@ -606,11 +659,24 @@ describe("HeadlessAgentRuntime", () => {
 
 class ScriptedModel implements AgentModelPort {
   private index = 0;
+  completeCalls = 0;
   readonly seenMessages: Array<readonly AgentMessage[]> = [];
 
-  constructor(private readonly results: readonly AgentModelResult[]) {}
+  constructor(
+    private readonly results: readonly AgentModelResult[],
+    private readonly estimateUsage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      creditMicros: "0",
+    },
+  ) {}
+
+  estimate() {
+    return structuredClone(this.estimateUsage);
+  }
 
   async complete(input: Parameters<AgentModelPort["complete"]>[0]) {
+    this.completeCalls += 1;
     this.seenMessages.push(structuredClone(input.messages));
     const result = this.results[this.index];
     this.index += 1;
@@ -687,12 +753,19 @@ function createRuntime(
   results: readonly AgentModelResult[],
   policy: AgentPolicyPort = new AllowPolicy(),
 ) {
+  return createRuntimeWithModel(new ScriptedModel(results), policy);
+}
+
+function createRuntimeWithModel(
+  model: AgentModelPort,
+  policy: AgentPolicyPort = new AllowPolicy(),
+) {
   const ids = new FixtureIds();
   const store = new InMemoryAgentStateStore(ids);
   const tools = new FixtureTools();
   const clock = new FixtureClock();
   const runtime = new HeadlessAgentRuntime({
-    model: new ScriptedModel(results),
+    model,
     tools,
     policy,
     store,

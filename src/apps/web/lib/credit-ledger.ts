@@ -149,6 +149,7 @@ export async function claimWorkflowSubmission(input: {
     }
 
     const submissionId = prefixedId("mrun")
+    const publishedDefinition = input.definition.version >= 1
     await client.query(
       `
         insert into muses_workflow_run (
@@ -174,8 +175,8 @@ export async function claimWorkflowSubmission(input: {
         input.userId,
         input.definition.source.documentId,
         input.definition.source.documentRevision,
-        input.definition.definitionId,
-        input.definition.version,
+        publishedDefinition ? input.definition.definitionId : null,
+        publishedDefinition ? input.definition.version : null,
         input.deploymentId || null,
         (input.caller || { kind: "user", userId: input.userId }).kind,
         workflowCallerId(

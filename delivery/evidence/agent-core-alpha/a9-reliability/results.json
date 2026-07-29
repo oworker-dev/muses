@@ -10,12 +10,12 @@
   },
   "verification": {
     "domainTests": { "passed": 39, "total": 39 },
-    "agentCoreTests": { "passed": 17, "total": 17 },
+    "agentCoreTests": { "passed": 19, "total": 19 },
     "agentHarnessTests": { "passed": 3, "total": 3 },
-    "webUnitTests": { "passed": 9, "total": 9 },
+    "webUnitTests": { "passed": 18, "total": 18 },
     "driverRecoveryStateTests": { "passed": 4, "total": 4 },
     "workflowValidation": {
-      "files": 196,
+      "files": 198,
       "workflowPatterns": 2,
       "serdeIssues": 0
     },
@@ -47,15 +47,60 @@
         "creditMicros": "0"
       }
     },
-    "migration": {
-      "name": "0010_agent_driver_lease.sql",
-      "applied": true,
-      "leaseColumns": 3,
-      "leaseConstraint": true
-    }
+    "budgetBilling": {
+      "status": "passed",
+      "adapterUnitCases": 9,
+      "postgresProbe": {
+        "passed": true,
+        "schemaIsolated": true,
+        "completedReplay": true,
+        "activeDuplicate": "in-progress",
+        "expiredClaimReclaimed": true,
+        "expiredCallingState": "ambiguous",
+        "ambiguousAutomaticRetry": false,
+        "definitiveReleaseEntries": 1,
+        "overReservationState": "review-required",
+        "overReservationResultRetained": true,
+        "insufficientCreditReceipts": 0,
+        "postedMicros": "99400",
+        "reservedMicros": "1100"
+      },
+      "realImageProbe": {
+        "passed": true,
+        "durationSeconds": 48.8,
+        "agentStatus": "completed",
+        "modelCalls": 2,
+        "modelReceipts": 2,
+        "completedModelReceipts": 2,
+        "ambiguousModelReceipts": 0,
+        "toolCalls": 1,
+        "agentChildRuns": 1,
+        "adHocChildRuns": 1,
+        "completedChildRuns": 1,
+        "generatedAssets": 1,
+        "settledImageReservations": 1,
+        "textModelLedgerEntries": 0,
+        "textModelRateMode": "zero-rate-environment"
+      }
+    },
+    "migrations": [
+      {
+        "name": "0010_agent_driver_lease.sql",
+        "applied": true,
+        "leaseColumns": 3,
+        "leaseConstraint": true
+      },
+      {
+        "name": "0011_agent_model_call_receipts.sql",
+        "applied": true,
+        "receiptColumns": 23,
+        "ownerConstraint": true
+      }
+    ]
   },
   "residualRisks": [
-    "Provider model calls are not yet proven exactly once across a crash after provider response.",
+    "Post-provider outcomes that cannot be proven become review_required and need an operator reconciliation surface.",
+    "Live text-model rates are zero; versioned text-model prices still need catalog authority.",
     "Approval/cancellation propagation, isolation/tracing and fixed evals remain open A9 tasks.",
     "Provider-specific tokenization and semantic-summary quality still require model-profile evals.",
     "Workflow/Postgres activity emits a known pg@9 query-concurrency deprecation warning."

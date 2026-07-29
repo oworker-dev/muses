@@ -16,7 +16,7 @@ path alone is insufficient.
 | --- | --- | --- | --- | --- |
 | Driver recovery | Muses `AgentRun` driver attempt/lease plus Workflow SDK run status | Crash before SDK start; crash after SDK start before DB attachment; stale attached run; concurrent reclaim. At most one attempt may own side effects, and an old durable run must fail closed after ownership changes. | State-machine tests, PostgreSQL migration/constraint check, Workflow SDK restart probe, no duplicate model/tool/credit/canvas facts | Passed |
 | Context compaction | Versioned `AgentContextSnapshot` summary plus retained messages/facts | Force compaction across follow-up and restart. Plan, permissions, tool outputs, provenance, budget usage and unresolved approvals must not drift. | Fixed long-context eval comparing pre/post-compaction facts and resulting commands | Passed |
-| Budget and billing | Agent budget snapshot, model/tool usage, credit reservation and immutable ledger | Duplicate delivery, provider failure before/after an ambiguous response, retry, cancellation and child workflow completion races. Every charge/reservation settles once and limits stop new work before the side effect. | Ledger assertions correlated to AgentRun/tool/WorkflowRun plus zero/one-side-effect probes | Pending |
+| Budget and billing | Agent budget snapshot, model-call receipt, model/tool usage, credit reservation and immutable ledger | Duplicate delivery, provider failure before/after an ambiguous response, retry and child workflow completion. Every known charge/reservation settles once, ambiguous calls retain review funds, and limits stop new work before the side effect. | Unit state machine, isolated PostgreSQL ledger probe and real Agent image chain correlated to AgentRun/model/WorkflowRun/Asset | Passed |
 | Approval and cancellation | Agent Core approval state, Muses cancellation command and child-run links | External tool waits for server-authorized approval; deny, cancel while model runs, cancel while child workflow runs, and late success. Cancellation prevents new effects but preserves facts that actually completed. | Approval UI/API probe, Workflow World cancellation record, child-run terminal projection and race tests | Pending |
 | Isolation and tracing | Workspace authorization, Run-scoped logical sandbox, policy snapshots and correlation identifiers | Cross-Workspace Run/Asset/tool access, stale Skill/MCP snapshot, sandbox escape attempt and trace discontinuity. No caller receives another Workspace's data or credentials. | Negative authorization suite and one trace joining AgentRun, model, tool, WorkflowRun, Asset, usage and credit | Pending |
 | Fixed evals | Versioned eval fixtures and sanitized evidence bundle | Success, recovery, refusal, budget, approval, cancellation, isolation and no-side-effect cases run against fixed inputs. Failures must be reproducible without private customer content. | Machine-readable results, commands, versions and residual-risk record under `delivery/evidence/agent-core-alpha/a9-reliability/` | Pending |
@@ -41,12 +41,9 @@ WorkflowRun id or start idempotency key. Consequently:
   Workspace authorization, allowing refresh and Web-process restart to recover
   without trusting client state.
 
-The driver lease does not make model-provider calls exactly once. A process can
-still fail after a provider response but before the Workflow step and Agent
-checkpoint are committed. Tool and billing effects must use stable Muses
-idempotency identities; the remaining model-call ambiguity stays an explicit
-A9 budget/eval risk until a provider-specific idempotency or request receipt is
-proven.
+The driver lease alone does not make model-provider calls exactly once. Model
+calls are now fenced by the separate receipt contract below; Workflow retries
+must never infer permission to repeat a provider call from driver ownership.
 
 ## Context compaction contract
 
@@ -70,6 +67,44 @@ fixture performs 14 deterministic turns, compacts once from 26 source messages,
 constructs a new Runtime over the same Store and completes turn 15 with 21
 retained messages and unchanged plan, permissions, tool count and credit usage.
 The fixture calls no external model or tool and is deleted after verification.
+
+## Budget and model-call receipt contract
+
+Every turn derives a stable model-call identity from AgentRun id, next turn and
+ContextSnapshot version. Before provider execution, the Web adapter persists a
+request fingerprint, conservative input/output estimate, attempt lease and
+credit reservation. Agent Core rejects estimated run-budget overflow before
+this adapter can call the provider; the adapter independently rejects an
+insufficient Workspace balance before creating a provider-side effect.
+
+The installed provider API has no proven idempotency key for model generation,
+while Workflow steps can execute again after an invocation crash. Muses therefore
+does not send a fictional idempotency header. It applies these receipt outcomes:
+
+- a completed receipt replays its validated structured result and settles only
+  once;
+- an expired `claimed` receipt may receive a new attempt because provider work
+  has not begun;
+- an expired `calling` receipt becomes `ambiguous`, retains its reservation as
+  `review_required`, and is never called automatically again;
+- a definite non-timeout 4xx rejection becomes `failed` and releases its
+  reservation exactly once;
+- network, timeout, 5xx and unknown failures become `ambiguous`;
+- actual cost above the reservation retains the received result and actual
+  usage but becomes `ambiguous/review_required` instead of silently charging or
+  completing.
+
+`AgentModelError.runtimeAction` separates a safe Workflow driver retry from a
+terminal Agent failure. A receipt still active before provider execution parks
+the driver until its lease can be reconciled; a result-unknown receipt fails the
+AgentRun closed for review. UTF-8 byte size plus structural overhead provides a
+provider-neutral conservative input estimate, and the AI SDK output cap is the
+remaining run output budget.
+
+Agent-created image workflows are ad-hoc child runs: they carry `caller_kind =
+agent` and the parent AgentRun id, but no published definition id/version. This
+keeps billing and tracing lineage without representing an ephemeral definition
+as a callable published contract.
 
 ## Gate rule
 

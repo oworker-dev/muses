@@ -165,9 +165,12 @@ the same facts and audits Offering enable/disable changes. The current flat
 one-credit image prices remain Alpha validation prices, but they are now
 versioned records rather than environment or component constants.
 
-Durable publication storage, provider-level idempotency, crash
-recovery inside the SDK-start/receipt-commit interval, mature traces and the
-product-owner's unguided first-image acceptance remain open.
+Durable publication storage and Agent model-call receipts now fail closed
+across duplicate Workflow delivery without pretending the model provider
+supports idempotency keys. Completed calls replay; pre-provider claims can be
+reclaimed; post-provider unknown outcomes require review. Mature traces,
+operator reconciliation, versioned text-model prices and the product-owner's
+unguided first-image acceptance remain open.
 
 ## Handoff
 

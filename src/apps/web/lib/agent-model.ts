@@ -1,5 +1,6 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import {
+  APICallError,
   generateText,
   jsonSchema,
   tool,
@@ -7,20 +8,98 @@ import {
   type ToolSet,
 } from "ai"
 
-import type {
-  AgentMessage,
-  AgentModelPort,
-  AgentToolDefinition,
+import {
+  AgentModelError,
+  type AgentModelResult,
+  type AgentMessage,
+  type AgentModelPort,
+  type AgentToolDefinition,
 } from "@muses/agent-core"
+
+import {
+  fingerprintAgentModelCall,
+  PostgresAgentModelCallStore,
+  type AgentModelCallStore,
+} from "./agent-model-call-store"
 
 const DEFAULT_AGENT_MODEL = "gpt-5.6-sol"
 const MODEL_TIMEOUT_MS = 2 * 60 * 1000
 
 export class AiSdkAgentModel implements AgentModelPort {
+  constructor(
+    private readonly calls: AgentModelCallStore =
+      new PostgresAgentModelCallStore(),
+    private readonly generate: typeof generateText = generateText
+  ) {}
+
+  estimate(input: Parameters<AgentModelPort["estimate"]>[0]) {
+    const inputTokens = estimateInputTokens(input.messages, input.tools)
+    const outputTokens = remainingOutputTokens(input.run)
+    return {
+      inputTokens,
+      outputTokens,
+      creditMicros: modelCreditMicros(inputTokens, outputTokens),
+    }
+  }
+
   async complete(input: Parameters<AgentModelPort["complete"]>[0]) {
+    const requestFingerprint = fingerprintAgentModelCall({
+      schemaVersion: "agent-model-request-v1",
+      modelRef: input.run.profile.modelRef,
+      messages: input.messages,
+      tools: input.tools,
+      estimate: input.estimate,
+    })
+    const claim = await this.calls.claim({
+      callId: input.callId,
+      run: input.run,
+      requestFingerprint,
+      estimate: input.estimate,
+    })
+    switch (claim.state) {
+      case "replayed":
+        return claim.result
+      case "in-progress":
+        throw retryDriverError(
+          "model-call-in-progress",
+          "The Agent model call is still owned by another attempt."
+        )
+      case "ambiguous":
+        throw reviewRequiredError()
+      case "failed":
+        throw new AgentModelError(
+          claim.failureCode || "model-provider-rejected",
+          "The Agent model provider rejected this turn.",
+          false
+        )
+      case "idempotency-conflict":
+        throw new AgentModelError(
+          "model-call-idempotency-conflict",
+          "The Agent model call no longer matches its persisted receipt.",
+          false
+        )
+      case "insufficient-credits":
+        throw new AgentModelError(
+          "insufficient-credits",
+          "The Workspace does not have enough credits for this Agent turn.",
+          false
+        )
+    }
+
     const apiKey = process.env.OPENAI_API_KEY
-    if (!apiKey)
-      throw new Error("The OpenAI Agent model provider is not configured.")
+    if (!apiKey) {
+      await this.calls.failDefinitive({
+        callId: input.callId,
+        attemptId: claim.attemptId,
+        failureCode: "model-provider-not-configured",
+      })
+      throw new AgentModelError(
+        "model-provider-not-configured",
+        "The Agent model provider is not configured.",
+        false
+      )
+    }
+
     const provider = createOpenAI({
       apiKey,
       ...(process.env.OPENAI_BASE_URL
@@ -33,45 +112,195 @@ export class AiSdkAgentModel implements AgentModelPort {
       input.messages,
       toolAliases.canonicalToAlias
     )
-    const result = await generateText({
-      model: provider.languageModel(modelId),
-      system,
-      messages,
-      tools: toAiSdkTools(input.tools, toolAliases.canonicalToAlias),
-      maxRetries: 0,
-      abortSignal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
-    })
-    const toolCalls = result.toolCalls.map((call) => {
-      if (!isRecord(call.input)) {
-        throw new Error(`Agent tool "${call.toolName}" returned invalid input.`)
-      }
-      const canonicalName = toolAliases.aliasToCanonical.get(call.toolName)
-      if (!canonicalName) {
-        throw new Error(
-          `Agent model requested unknown tool "${call.toolName}".`
+    try {
+      await this.calls.begin(input.callId, claim.attemptId)
+    } catch {
+      throw retryDriverError(
+        "model-call-start-deferred",
+        "The Agent model call is waiting for durable receipt ownership."
+      )
+    }
+
+    let providerResult: Awaited<ReturnType<typeof generateText>>
+    try {
+      providerResult = await this.generate({
+        model: provider.languageModel(modelId),
+        system,
+        messages,
+        tools: toAiSdkTools(input.tools, toolAliases.canonicalToAlias),
+        maxOutputTokens: input.estimate.outputTokens,
+        maxRetries: 0,
+        abortSignal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
+      })
+    } catch (error) {
+      const providerRequestId = providerRequestIdFromError(error)
+      if (isDefinitiveProviderRejection(error)) {
+        try {
+          await this.calls.failDefinitive({
+            callId: input.callId,
+            attemptId: claim.attemptId,
+            failureCode: providerFailureCode(error),
+            providerRequestId,
+          })
+        } catch {
+          throw retryDriverError(
+            "model-receipt-commit-unknown",
+            "The Agent model rejection is waiting for durable receipt recovery."
+          )
+        }
+        throw new AgentModelError(
+          "model-provider-rejected",
+          "The Agent model provider rejected this turn.",
+          false
         )
       }
-      return {
-        id: call.toolCallId,
-        name: canonicalName,
-        input: call.input,
+      try {
+        await this.calls.markAmbiguous({
+          callId: input.callId,
+          attemptId: claim.attemptId,
+          failureCode: "provider-outcome-unknown",
+          providerRequestId,
+        })
+      } catch {
+        throw retryDriverError(
+          "model-receipt-commit-unknown",
+          "The Agent model outcome is waiting for durable receipt recovery."
+        )
       }
-    })
-    const inputTokens = result.usage.inputTokens || 0
-    const outputTokens = result.usage.outputTokens || 0
-    return {
-      content: result.text,
-      finishReason:
-        toolCalls.length > 0 ? ("tool-calls" as const) : ("stop" as const),
-      toolCalls,
-      usage: {
-        inputTokens,
-        outputTokens,
-        creditMicros: modelCreditMicros(inputTokens, outputTokens),
-      },
-      plan: imageExecutionPlan(input.run, toolCalls),
+      throw reviewRequiredError()
     }
+
+    const providerRequestId = providerResult.response.id
+    let modelResult: AgentModelResult
+    try {
+      const toolCalls = providerResult.toolCalls.map((call) => {
+        if (!isRecord(call.input)) {
+          throw new Error(
+            `Agent tool "${call.toolName}" returned invalid input.`
+          )
+        }
+        const canonicalName = toolAliases.aliasToCanonical.get(call.toolName)
+        if (!canonicalName) {
+          throw new Error(
+            `Agent model requested unknown tool "${call.toolName}".`
+          )
+        }
+        return {
+          id: call.toolCallId,
+          name: canonicalName,
+          input: call.input,
+        }
+      })
+      const inputTokens = providerResult.usage.inputTokens || 0
+      const outputTokens = providerResult.usage.outputTokens || 0
+      modelResult = {
+        content: providerResult.text,
+        finishReason: toolCalls.length > 0 ? "tool-calls" : "stop",
+        toolCalls,
+        usage: {
+          inputTokens,
+          outputTokens,
+          creditMicros: modelCreditMicros(inputTokens, outputTokens),
+        },
+        plan: imageExecutionPlan(input.run, toolCalls),
+      }
+    } catch {
+      try {
+        await this.calls.markAmbiguous({
+          callId: input.callId,
+          attemptId: claim.attemptId,
+          failureCode: "provider-result-invalid",
+          providerRequestId,
+        })
+      } catch {
+        throw retryDriverError(
+          "model-receipt-commit-unknown",
+          "The invalid Agent model result is waiting for durable receipt recovery."
+        )
+      }
+      throw reviewRequiredError()
+    }
+
+    let completion
+    try {
+      completion = await this.calls.complete({
+        callId: input.callId,
+        attemptId: claim.attemptId,
+        result: modelResult,
+        providerRequestId,
+      })
+    } catch {
+      throw retryDriverError(
+        "model-receipt-commit-unknown",
+        "The Agent model result is waiting for durable receipt recovery."
+      )
+    }
+    if (completion.state === "review-required") {
+      throw reviewRequiredError()
+    }
+    return modelResult
   }
+}
+
+function retryDriverError(code: string, message: string) {
+  return new AgentModelError(code, message, true, "retry-driver")
+}
+
+function reviewRequiredError() {
+  return new AgentModelError(
+    "model-call-review-required",
+    "This Agent model call needs billing review before it can continue.",
+    false
+  )
+}
+
+function isDefinitiveProviderRejection(error: unknown) {
+  if (!APICallError.isInstance(error)) return false
+  const status = error.statusCode
+  return (
+    typeof status === "number" &&
+    status >= 400 &&
+    status < 500 &&
+    status !== 408
+  )
+}
+
+function providerFailureCode(error: unknown) {
+  return APICallError.isInstance(error) && error.statusCode
+    ? `provider-http-${error.statusCode}`
+    : "provider-rejected"
+}
+
+function providerRequestIdFromError(error: unknown) {
+  if (!APICallError.isInstance(error)) return undefined
+  const headers = error.responseHeaders
+  return (
+    headers?.["x-request-id"] ||
+    headers?.["request-id"] ||
+    headers?.["openai-request-id"]
+  )
+}
+
+function estimateInputTokens(
+  messages: readonly AgentMessage[],
+  tools: readonly AgentToolDefinition[]
+) {
+  const serialized = JSON.stringify({ messages, tools })
+  const bytes = new TextEncoder().encode(serialized).byteLength
+  const structuralOverhead = 512 + messages.length * 128 + tools.length * 128
+  return Math.max(1, bytes + structuralOverhead)
+}
+
+function remainingOutputTokens(
+  run: Parameters<AgentModelPort["complete"]>[0]["run"]
+) {
+  return Math.max(
+    1,
+    Math.min(
+      16_384,
+      run.budget.limit.maxOutputTokens - run.budget.usage.outputTokens
+    )
+  )
 }
 
 export function configuredAgentModelRef() {

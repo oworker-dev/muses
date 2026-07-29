@@ -1,6 +1,7 @@
-import type { AgentRunSnapshot } from "@muses/agent-core"
-import { getWorkflowMetadata } from "workflow"
+import { AgentModelError, type AgentRunSnapshot } from "@muses/agent-core"
+import { getWorkflowMetadata, RetryableError } from "workflow"
 
+import { AGENT_MODEL_CALL_LEASE_MS } from "@/lib/agent-model-call-store"
 import { createMusesAgentRuntime } from "@/lib/agent-runtime"
 import {
   attachAgentDriver,
@@ -62,7 +63,21 @@ async function driveAgentRunStep(
   }
   let run = await runtime.inspect(runId)
   if (!isTerminal(run.status) && !isSuspended(run.status)) {
-    await runtime.resume(runId)
+    try {
+      await runtime.resume(runId)
+    } catch (error) {
+      if (
+        error instanceof AgentModelError &&
+        error.runtimeAction === "retry-driver"
+      ) {
+        const retryAfter =
+          error.code === "model-receipt-commit-unknown"
+            ? 2_000
+            : AGENT_MODEL_CALL_LEASE_MS + 1_000
+        throw new RetryableError(error.publicMessage, { retryAfter })
+      }
+      throw error
+    }
     run = await runtime.inspect(runId)
   }
   await finishAgentDriver(runId, attemptId, driverRunId, "completed")

@@ -466,6 +466,7 @@ async function generateImageAndPlace(
       inputs,
     }),
     definition: compilation.definition,
+    caller: { kind: "agent", agentRunId: context.runId },
   })
 
   let workflowRunId: string

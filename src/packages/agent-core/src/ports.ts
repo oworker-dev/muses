@@ -4,6 +4,7 @@ import type {
   AgentEventDraft,
   AgentMessage,
   AgentModelResult,
+  AgentModelUsage,
   AgentRunSnapshot,
   AgentToolCall,
   AgentToolCallResult,
@@ -29,12 +30,32 @@ export type AgentToolExecutionContext = {
 };
 
 export type AgentModelPort = {
-  complete(input: {
+  estimate(input: {
+    readonly callId: string;
     readonly run: AgentRunSnapshot;
     readonly messages: readonly AgentMessage[];
     readonly tools: readonly AgentToolDefinition[];
+  }): AgentModelUsage | Promise<AgentModelUsage>;
+  complete(input: {
+    readonly callId: string;
+    readonly run: AgentRunSnapshot;
+    readonly messages: readonly AgentMessage[];
+    readonly tools: readonly AgentToolDefinition[];
+    readonly estimate: AgentModelUsage;
   }): Promise<AgentModelResult>;
 };
+
+export class AgentModelError extends Error {
+  constructor(
+    readonly code: string,
+    readonly publicMessage: string,
+    readonly retryable: boolean,
+    readonly runtimeAction: "fail-run" | "retry-driver" = "fail-run",
+  ) {
+    super(publicMessage);
+    this.name = "AgentModelError";
+  }
+}
 
 export type AgentToolRegistryPort = {
   list(run: AgentRunSnapshot): Promise<readonly AgentToolDefinition[]>;
