@@ -1054,7 +1054,7 @@ items:
     statusChangedAt: 2026-07-29T08:22:04.811Z
   - id: build-agent-runtime-scheduler
     name: 交付持久 Runtime Scheduler
-    summary: 框架无关 Scheduler、PostgreSQL Store/Event、CAS、claim/lease、并发逻辑预算，以及 SHA-256 指纹、精确 Profile Registry、AJV 结果/证据校验和 Project 级 Artifact 授权已完成；继续交付独立 Child Agent Runtime、Workflow SDK 持久驱动、Trace/Billing 血缘与恢复 eval。
+    summary: 框架无关 Scheduler、PostgreSQL Store/Event/CAS/预算、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime，以及具备 claim/lease/attach/reclaim/取消组合的 Workflow SDK 持久驱动已完成并通过隔离 PostgreSQL 门禁；继续交付委托 Trace/Billing 血缘、固定恢复 eval 与受授权的生产委托入口。
     status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
@@ -1063,5 +1063,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T15:20:01.963Z
-    updatedAt: 2026-07-29T17:36:09.770Z
+    updatedAt: 2026-07-29T17:58:20.144Z
     statusChangedAt: 2026-07-29T15:20:01.963Z

@@ -477,6 +477,15 @@ export const musesAgentDelegationRun = pgTable(
     status: text("status").notNull(),
     revision: integer("revision").notNull().default(0),
     record: jsonb("record").notNull(),
+    driverStatus: text("driver_status").notNull().default("unclaimed"),
+    driverRunId: text("driver_run_id"),
+    driverAttemptId: text("driver_attempt_id"),
+    driverLeaseExpiresAt: timestamp("driver_lease_expires_at", {
+      withTimezone: true,
+    }),
+    driverLastHeartbeatAt: timestamp("driver_last_heartbeat_at", {
+      withTimezone: true,
+    }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
@@ -500,6 +509,13 @@ export const musesAgentDelegationRun = pgTable(
       table.workspaceId,
       table.rootRunId,
       table.createdAt,
+    ),
+    uniqueIndex("muses_agent_delegation_driver_run_idx").on(
+      table.driverRunId,
+    ),
+    index("muses_agent_delegation_driver_lease_idx").on(
+      table.driverStatus,
+      table.driverLeaseExpiresAt,
     ),
   ],
 );

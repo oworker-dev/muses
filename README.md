@@ -43,13 +43,17 @@ follow-up now revises that plan, generates one charged image, places it beside
 the previous Asset and survives refresh. Callable workflow publication now
 resolves immutable server-owned versions through one UI, Agent, and HTTP API
 invocation boundary. The A9 single-Agent reliability Gate has passed and the
-first A10 slice now freezes root/direct-parent Run lineage, explicit authorized
-context, delegation DAG, grants, result and budget contracts. The second A10
-slice adds the framework-neutral Scheduler state machine plus PostgreSQL
-Store, event, claim/lease and concurrent logical-budget reservation. Exact
-Profile/result/Artifact adapters, the child Agent runtime, the Workflow SDK
-driver, production multi-Agent execution and PPT scenario work have not
-started. See
+first A10 slice freezes root/direct-parent Run lineage, explicit authorized
+context, delegation DAG, grants, result and budget contracts. Later A10 slices
+now add the framework-neutral Scheduler, PostgreSQL Store/event/budget
+reservations, exact Profile/result/Artifact adapters, an independent child
+AgentRun runtime, and a Workflow SDK driver with fenced claim, attach, lease,
+reclaim and cancellation composition. Isolated PostgreSQL evidence proves
+child lineage, logical-sandbox separation, structured-result aggregation and
+driver recovery without loading Workflow SDK API listeners into pure adapter
+verification. Delegation trace/billing lineage, fixed recovery evals and an
+authorized product entry point remain before production multi-Agent execution;
+a provider-backed physical sandbox and PPT scenario work have not started. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.

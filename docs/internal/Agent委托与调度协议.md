@@ -11,7 +11,7 @@ description: Muses Agent Orchestration 的父子 Run、显式上下文、服务�
 
 协议服务 AI 设计平台，不把 Muses 扩展成通用 Coze/Dify 式 AI 应用开发平台。多 Agent 只用于将真实创作任务拆成可控、可追踪、可聚合的专业工作，例如需求梳理、视觉方向、素材研究、图像生成、版式设计和 QA。简单任务仍应由一个 AgentRun 或一个 Capability 完成。
 
-当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease 与逻辑预算预留 Gate。尚未实现的生产 Profile Registry、结果与 Artifact 授权、Child Runtime、Workflow SDK 驱动、生产多 Agent 执行和物理计算沙盒不得被描述为已经可用。
+当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease、逻辑预算预留、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime，以及 Workflow SDK 持久驱动。尚未实现的委派 Trace/Billing 血缘、固定恢复 eval、受授权的产品委派入口、生产 Skill/MCP 解析、生产多 Agent 执行和物理计算沙盒不得被描述为已经可用。
 
 ## 2. 不固定组织层级
 
@@ -160,7 +160,9 @@ Trace 至少关联 root/direct-parent/child AgentRun、DelegationPlan revision�
 
 安装版 `workflow@4.6.2` 继续作为耐久执行 adapter：workflow function 负责确定性编排，Node/供应商操作位于可重试 step，等待使用 Hook/Wait，执行事实由 Workflow World 保存。
 
-Workflow SDK 支持直接 `await` 子 workflow（把步骤展平进父 run）和在 step 中调用 `start()` 创建独立后台 run。Muses 子 Agent 需要独立 AgentRun、事件、预算、沙盒和取消身份，因此不能用展平调用冒充 SubAgentRun；Scheduler adapter 应在 step 中启动独立 child driver，并把 SDK run id 写入 Muses child receipt。
+Workflow SDK 支持直接 `await` 子 workflow（把步骤展平进父 run）和在 step 中调用 `start()` 创建独立后台 run。Muses 子 Agent 需要独立 AgentRun、事件、预算、沙盒和取消身份，因此不能用展平调用冒充 SubAgentRun。当前 adapter 以独立 SDK run 驱动一个 DelegationRun，并把 SDK run id 与 Muses driver attempt/lease 绑定；Child Runtime 再为每个任务创建独立 AgentRun。Scheduler 仍是任务 DAG 和聚合状态权威，Workflow SDK 只负责耐久唤醒、step 与 sleep。
+
+当前 driver 的恢复顺序是：先在 PostgreSQL claim；`start()` 后由 SDK workflow 自绑定并由调用方补偿 attach；租约过期时先查询 SDK run，仍活动则续租，已终止才通过 CAS reclaim。工作流函数只执行 `resume Scheduler -> sleep(2s) -> resume`，数据库、Agent Runtime 和 SDK API 操作均位于 `"use step"` 或 workflow 外部。取消由 Muses 先持久化 Scheduler/Agent 终态，再显式取消仍活动的 SDK driver，不能反向让 Workflow World 成为产品状态权威。
 
 SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但当前路径没有可依赖的调用方 run id/idempotency key；Muses submission receipt 仍是去重权威。后台 child 的取消传播、预算、权限和结果验证也由 Muses 显式实现。Workflow SDK 的 VM sandbox 更不是 Agent 物理计算沙盒。
 
@@ -178,7 +180,7 @@ SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但�
 
 后续顺序固定为：
 
-1. 实现持久 Runtime Scheduler、receipt、budget reservation、claim/lease 与取消传播；
+1. 完成持久 Runtime Scheduler 的 Trace/Billing 血缘、固定恢复 eval 与受授权委派入口；
 2. 交付平台级 MusesAgent Profile，让它提出受验证的计划而不获得调度权威；
 3. 交付第一个版本化领域 Agent Profile；
 4. 用确定性 fixture 和真实最小创作任务验证受控多 Agent 执行；

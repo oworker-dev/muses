@@ -134,6 +134,7 @@ export type AgentDelegationChildRuntimePort = {
     readonly context: AgentDelegationContextPackage;
     readonly grant: AgentDelegationGrant;
     readonly budget: AgentDelegationTask["budget"];
+    readonly result: AgentDelegationTask["result"];
     readonly idempotencyKey: string;
   }): Promise<AgentDelegationChildSnapshot>;
   inspect(childRunId: string): Promise<AgentDelegationChildSnapshot>;
@@ -639,6 +640,7 @@ export class DefaultAgentDelegationScheduler
       context: task.context,
       grant: task.grant,
       budget: task.budget,
+      result: task.result,
       idempotencyKey: taskRun.childSubmission.idempotencyKey,
     });
     return this.applyChildSnapshot(record, taskRun, child);

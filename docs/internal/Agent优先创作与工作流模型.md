@@ -227,9 +227,11 @@ AgentRun id 同时作为 trace id。只读 API 在 Workspace 授权后关联 Age
 
 A10 第一切片已经冻结框架无关的委派边界，完整协议见[Agent 委托与调度协议](Agent委托与调度协议.md)，Gate 见 `delivery/agent-orchestration-a10-contract.md`。每个委派计划现在区分整棵树的 root Run 和提交当前计划的直接 parent Run；子 AgentRun 固定 parent/root Run、计划 id/revision 与 task id，并使用独立 `agent-run/<childRunId>` 逻辑沙盒。相同 child Run id 只能重放同一不可变血缘。
 
-子 Agent 不继承父对话或沙盒。ContextPackage 绑定直接父 Run 与精确 ContextSnapshot version，事实分类与 Artifact 引用必须属于服务端 AuthoritySnapshot 的可委派子集；权限、工具、Skill、MCP Connection 和计算能力同样只能收窄。纯验证器已覆盖合法 DAG、稳定拓扑序、scope、依赖、深度、并发、越权、Context、结构化结果和聚合预算，当前 Agent Core 共 62 项测试通过。
+子 Agent 不继承父对话或沙盒。ContextPackage 绑定直接父 Run 与精确 ContextSnapshot version，事实分类与 Artifact 引用必须属于服务端 AuthoritySnapshot 的可委派子集；权限、工具、Skill、MCP Connection 和计算能力同样只能收窄。纯验证器已覆盖合法 DAG、稳定拓扑序、scope、依赖、深度、并发、越权、Context、结构化结果和聚合预算，当前 Agent Core 共 72 项测试通过。
 
-该切片尚未实现持久 Scheduler、多 Agent 并行、Profile Registry 存储、实际取消传播或物理计算沙盒。下一步必须先实现 Muses 自有 submission/child receipt、预算预留、task claim/lease、精确 Profile 解析、Workflow SDK adapter、失败模式、结果/证据聚合和恢复 eval；平台级 MusesAgent 只能提出计划，不能成为这些状态的权威。完成这一步后才交付首个领域 Agent 和真实受控多 Agent 验收，仍不提前进入 PPT。
+后续 A10 切片现已实现 Muses 自有 submission/child receipt、并发逻辑预算预留、task claim/lease、精确 Profile 解析、结果/证据/Project 级 Artifact 校验、独立 Child AgentRun，以及带 attach/reclaim/取消组合的 Workflow SDK 持久驱动。隔离 PostgreSQL 门禁已证明子 Run 血缘、独立逻辑沙盒、结构化结果聚合和 driver 恢复；Workflow SDK 只负责耐久唤醒，Scheduler 继续拥有 DAG 和聚合状态。
+
+当前仍需补齐委派 Trace/Billing 血缘、固定 Scheduler 恢复 eval 和受授权的委派入口，才能宣称生产多 Agent 执行可用。平台级 MusesAgent 只能提出计划，不能成为 Scheduler、权限或预算权威；生产 Skill/MCP 解析与物理计算沙盒也仍是明确缺口。完成这些 Gate 后才交付首个领域 Agent 和真实受控多 Agent 验收，仍不提前进入 PPT。
 
 ## 14. 当前非目标
 

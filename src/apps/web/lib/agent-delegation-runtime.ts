@@ -21,7 +21,6 @@ import {
   PostgresAgentDelegationStore,
 } from "./agent-delegation-store"
 import { getPgPool } from "./database"
-import { musesAgentProfile } from "./agent-runtime"
 import { PostgresGeneratedAssetAuthorization } from "./generated-asset-authorization"
 
 export { PostgresGeneratedAssetAuthorization } from "./generated-asset-authorization"
@@ -220,10 +219,10 @@ export class AjvAgentDelegationResultValidator
   }
 }
 
-export function createMusesAgentDelegationScheduler(input: {
+export function createAgentDelegationScheduler(input: {
   readonly children: AgentDelegationChildRuntimePort
   readonly pool?: Pool
-  readonly profiles?: readonly VersionedAgentProfileRegistration[]
+  readonly profiles: readonly VersionedAgentProfileRegistration[]
   readonly evidence?: AgentDelegationEvidenceAuthorizationPort
 }) {
   const pool = input.pool || getPgPool()
@@ -231,9 +230,7 @@ export function createMusesAgentDelegationScheduler(input: {
     store: new PostgresAgentDelegationStore({ pool }),
     budget: new PostgresAgentDelegationBudget(pool),
     children: input.children,
-    profiles: new VersionedAgentProfileRegistry(
-      input.profiles || [{ profile: musesAgentProfile() }]
-    ),
+    profiles: new VersionedAgentProfileRegistry(input.profiles),
     results: new AjvAgentDelegationResultValidator(
       new PostgresGeneratedAssetAuthorization(pool),
       input.evidence

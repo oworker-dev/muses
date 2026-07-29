@@ -9,6 +9,8 @@ import {
   AGENT_CORE_SCHEMA_VERSION,
   AGENT_DELEGATION_SCHEMA_VERSION,
   AgentDelegationRuntimeError,
+  DefaultAgentPolicy,
+  HeadlessAgentRuntime,
   type AgentBudgetLimit,
   type AgentBudgetUsage,
   type AgentDelegationAuthoritySnapshot,
@@ -16,13 +18,26 @@ import {
   type AgentDelegationRecord,
   type AgentDelegationRunSnapshot,
   type AgentIdPort,
+  type AgentModelPort,
+  type AgentProfileSnapshot,
   type AgentRunSnapshot,
+  type AgentToolRegistryPort,
 } from "@muses/agent-core"
 
+import {
+  MusesAgentDelegationChildRuntime,
+  PostgresAgentDelegationChildCostOutcome,
+} from "../lib/agent-delegation-child-runtime"
 import {
   PostgresAgentDelegationBudget,
   PostgresAgentDelegationStore,
 } from "../lib/agent-delegation-store"
+import { PostgresAgentDelegationDriverStore } from "../lib/agent-delegation-driver-store"
+import {
+  Sha256AgentDelegationFingerprint,
+  createAgentDelegationScheduler,
+} from "../lib/agent-delegation-runtime"
+import { PostgresAgentStateStore } from "../lib/agent-state-store"
 import { getDatabaseUrl } from "../lib/database"
 
 const fixtureId = randomUUID().replaceAll("-", "")
@@ -57,6 +72,8 @@ async function main() {
     const budget = new PostgresAgentDelegationBudget(fixture)
     const state = await verifyStateStore(store)
     const reservations = await verifyBudgetReservations(store, budget)
+    const driver = await verifyDriverOwnership(store)
+    const childRuntime = await verifyChildRuntime()
 
     console.log(
       JSON.stringify({
@@ -64,6 +81,8 @@ async function main() {
         schemaIsolated: true,
         state,
         reservations,
+        driver,
+        childRuntime,
       })
     )
   } finally {
@@ -72,6 +91,251 @@ async function main() {
       .query(`drop schema if exists "${schemaName}" cascade`)
       .catch(() => undefined)
     await admin.end()
+  }
+}
+
+async function verifyChildRuntime() {
+  const runtime = new HeadlessAgentRuntime({
+    model: new DelegatedFixtureModel(),
+    tools: new NoDelegatedTools(),
+    policy: new DefaultAgentPolicy(),
+    store: new PostgresAgentStateStore({ pool: fixture, ids: new FixedIds() }),
+  })
+  const children = new MusesAgentDelegationChildRuntime({
+    runtime,
+    drivers: {
+      ensure: async (runId) => runtime.resume(runId),
+    },
+    cancellations: {
+      cancel: async ({ runId }) => {
+        await runtime.cancel(runId)
+        return "completed"
+      },
+    },
+    costs: new PostgresAgentDelegationChildCostOutcome(fixture),
+    fingerprints: new Sha256AgentDelegationFingerprint(),
+  })
+  const profile = delegatedProfile()
+  const scheduler = createAgentDelegationScheduler({
+    pool: fixture,
+    children,
+    profiles: [{ profile }],
+  })
+  const taskBudget: AgentBudgetLimit = {
+    maxTurns: 2,
+    maxModelCalls: 2,
+    maxToolCalls: 2,
+    maxInputTokens: 1_000,
+    maxOutputTokens: 500,
+    maxCreditMicros: "100",
+    maxDurationMs: 30_000,
+  }
+  const submitted = await scheduler.submit({
+    plan: {
+      schemaVersion: AGENT_DELEGATION_SCHEMA_VERSION,
+      planId: `plan-child-runtime-${fixtureId}`,
+      revision: 0,
+      workspaceId,
+      projectId,
+      sessionId,
+      rootRunId,
+      delegatedByRunId: rootRunId,
+      maxConcurrency: 1,
+      failureMode: "isolate",
+      tasks: [
+        {
+          taskId: "summarize",
+          objective: "Return the verified fixture result.",
+          profile: {
+            profileId: profile.profileId,
+            version: profile.version,
+          },
+          dependsOn: [],
+          context: {
+            sourceRunId: rootRunId,
+            sourceContextVersion: 1,
+            facts: [
+              {
+                key: "fixture",
+                value: "authorized",
+                classification: "public",
+              },
+            ],
+            artifactRefs: [],
+          },
+          grant: {
+            permissions: [],
+            toolNames: [],
+            skillRefs: [],
+            mcpConnectionRefs: [],
+            computeCapabilities: [],
+          },
+          budget: taskBudget,
+          result: {
+            outputSchema: {
+              type: "object",
+              properties: { verified: { const: true } },
+              required: ["verified"],
+              additionalProperties: false,
+            },
+            maxBytes: 1_024,
+            requiredEvidenceKinds: [],
+          },
+        },
+      ],
+      createdAt: "2026-07-29T00:00:00.000Z",
+    },
+    authority: {
+      ...delegationAuthority(),
+      remainingBudget: {
+        maxTurns: 10,
+        maxModelCalls: 10,
+        maxToolCalls: 10,
+        maxInputTokens: 10_000,
+        maxOutputTokens: 5_000,
+        maxCreditMicros: "1000",
+        maxDurationMs: 300_000,
+      },
+    },
+    idempotencyKey: `child-runtime-${fixtureId}`,
+  })
+  const completed = await scheduler.resume(submitted.run.delegationRunId)
+  const task = completed.tasks[0]
+  if (
+    completed.status !== "completed" ||
+    task?.status !== "completed" ||
+    !task.childRunId ||
+    !task.childSandboxId ||
+    (task.result?.data as { verified?: boolean } | undefined)?.verified !== true
+  ) {
+    throw new Error(
+      `Delegated child runtime did not aggregate: ${JSON.stringify(completed)}`
+    )
+  }
+  const child = (
+    await fixture.query<{
+      snapshot: AgentRunSnapshot
+      workspaceId: string
+      projectId: string
+    }>(
+      `select snapshot, workspace_id as "workspaceId", project_id as "projectId"
+       from muses_agent_run where id = $1`,
+      [task.childRunId]
+    )
+  ).rows[0]
+  if (
+    !child ||
+    child.workspaceId !== workspaceId ||
+    child.projectId !== projectId ||
+    child.snapshot.parent?.runId !== rootRunId ||
+    child.snapshot.parent.rootRunId !== rootRunId ||
+    child.snapshot.extensions?.logicalSandbox.sandboxId !== task.childSandboxId ||
+    child.snapshot.extensions.logicalSandbox.scope.runId !== task.childRunId
+  ) {
+    throw new Error("Delegated child AgentRun lost scope or sandbox lineage.")
+  }
+  return {
+    childRun: "persisted",
+    parentLineage: "pinned",
+    logicalSandbox: "isolated",
+    structuredResult: "validated",
+    aggregateStatus: completed.status,
+  }
+}
+
+async function verifyDriverOwnership(store: PostgresAgentDelegationStore) {
+  const record = delegationRecord("driver", "driver-submit")
+  await store.create(record, [])
+  const drivers = new PostgresAgentDelegationDriverStore(fixture)
+  const claims = await Promise.all([
+    drivers.claim(record.snapshot.delegationRunId),
+    drivers.claim(record.snapshot.delegationRunId),
+  ])
+  const claimed = claims.find(({ state }) => state === "claimed")
+  if (!claimed || claimed.state !== "claimed") {
+    throw new Error("Concurrent delegation driver claims had no owner.")
+  }
+  if (
+    claims.filter(({ state }) => state === "claimed").length !== 1 ||
+    !claims.some(({ state }) => state === "in-progress")
+  ) {
+    throw new Error("Concurrent delegation driver claims were not fenced.")
+  }
+  const firstDriverRunId = `workflow_driver_1_${fixtureId}`
+  if (
+    !(await drivers.attach(
+      record.snapshot.delegationRunId,
+      claimed.attemptId,
+      firstDriverRunId
+    ))
+  ) {
+    throw new Error("Delegation driver attachment was not persisted.")
+  }
+  if (
+    !(await drivers.renew(
+      record.snapshot.delegationRunId,
+      claimed.attemptId,
+      firstDriverRunId
+    ))
+  ) {
+    throw new Error("Delegation driver lease was not renewed.")
+  }
+  await fixture.query(
+    `update muses_agent_delegation_run
+     set driver_lease_expires_at = now() - interval '1 second'
+     where id = $1`,
+    [record.snapshot.delegationRunId]
+  )
+  const stale = await drivers.claim(record.snapshot.delegationRunId)
+  if (
+    stale.state !== "stale-attached" ||
+    stale.driverRunId !== firstDriverRunId
+  ) {
+    throw new Error("An expired delegation driver was not discoverable.")
+  }
+  const replacement = await drivers.reclaim(
+    record.snapshot.delegationRunId,
+    stale.attemptId,
+    stale.driverRunId
+  )
+  if (replacement.state !== "claimed") {
+    throw new Error("A terminal delegation driver could not be reclaimed.")
+  }
+  if (
+    await drivers.attach(
+      record.snapshot.delegationRunId,
+      stale.attemptId,
+      firstDriverRunId
+    )
+  ) {
+    throw new Error("An orphan delegation driver attachment escaped fencing.")
+  }
+  const replacementDriverRunId = `workflow_driver_2_${fixtureId}`
+  if (
+    !(await drivers.attach(
+      record.snapshot.delegationRunId,
+      replacement.attemptId,
+      replacementDriverRunId
+    )) ||
+    !(await drivers.finish(
+      record.snapshot.delegationRunId,
+      replacement.attemptId,
+      replacementDriverRunId,
+      "completed"
+    ))
+  ) {
+    throw new Error("Replacement delegation driver did not complete.")
+  }
+  const final = await drivers.inspect(record.snapshot.delegationRunId)
+  if (final?.status !== "completed" || final.runId !== replacementDriverRunId) {
+    throw new Error(`Delegation driver state drifted: ${JSON.stringify(final)}`)
+  }
+  return {
+    concurrentClaim: "fenced",
+    leaseRenewal: "persisted",
+    expiredAttachment: "reclaimed",
+    orphanAttachment: "fenced",
+    finalStatus: final.status,
   }
 }
 
@@ -503,7 +767,10 @@ function rootRun(): AgentRunSnapshot {
     },
     budget: { limit: budgetLimit(10), usage: budgetUsage() },
     permissions: [],
-    metadata: { fixture: "a10-delegation" },
+    metadata: {
+      fixture: "a10-delegation",
+      initiatedByUserId: userId,
+    },
     pendingMessages: [],
     pendingToolCalls: [],
     createdAt: now,
@@ -541,6 +808,47 @@ class FixedIds implements AgentIdPort {
   create(prefix: Parameters<AgentIdPort["create"]>[0]) {
     this.sequence += 1
     return `${prefix}-${fixtureId}-${this.sequence}`
+  }
+}
+
+function delegatedProfile(): AgentProfileSnapshot {
+  return {
+    profileId: "fixture-specialist",
+    version: "1.0.0",
+    modelRef: "fixture/model",
+    instructions: "Return one structured delegated fixture result.",
+    toolNames: [],
+    skillRefs: [],
+    mcpConnectionRefs: [],
+  }
+}
+
+class DelegatedFixtureModel implements AgentModelPort {
+  estimate() {
+    return { inputTokens: 1, outputTokens: 1, creditMicros: "1" }
+  }
+
+  async complete() {
+    return {
+      content: JSON.stringify({
+        data: { verified: true },
+        artifactRefs: [],
+        evidence: [],
+      }),
+      finishReason: "stop" as const,
+      toolCalls: [],
+      usage: { inputTokens: 1, outputTokens: 1, creditMicros: "1" },
+    }
+  }
+}
+
+class NoDelegatedTools implements AgentToolRegistryPort {
+  async list() {
+    return []
+  }
+
+  async execute(): Promise<never> {
+    throw new Error("The delegated fixture exposes no tools.")
   }
 }
 
