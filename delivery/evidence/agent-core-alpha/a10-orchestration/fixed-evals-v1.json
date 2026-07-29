@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "muses-agent-eval-result-v1",
+  "suiteId": "agent-orchestration-a10-recovery",
+  "suiteVersion": "1.0.0",
+  "fixtureDigest": "sha256:39c9aaef419e26ee85f49890a29b310b192536691f54118371e15f81ac868644",
+  "runtime": "muses-delegation-scheduler",
+  "childRuntimeFixture": "fixture/delegated-child-v1",
+  "status": "passed",
+  "passed": 6,
+  "failed": 0,
+  "total": 6,
+  "liveProviderCalls": 0,
+  "liveNetworkCalls": 0,
+  "cases": [
+    {
+      "id": "parallel-dag-aggregates",
+      "category": "success",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "completedTasks",
+        "childStarts",
+        "uniqueChildRuns",
+        "envelopeSettles",
+        "taskSettles",
+        "terminalEvent"
+      ],
+      "observed": {
+        "status": "completed",
+        "completedTasks": 3,
+        "childStarts": 3,
+        "uniqueChildRuns": 3,
+        "envelopeSettles": 1,
+        "taskSettles": 3,
+        "terminalEvent": "delegation.completed"
+      }
+    },
+    {
+      "id": "restart-reclaims-expired-lease",
+      "category": "recovery",
+      "status": "passed",
+      "assertions": [
+        "firstFailure",
+        "statusBeforeRestart",
+        "status",
+        "claimEvents",
+        "recoveredClaims",
+        "childStarts"
+      ],
+      "observed": {
+        "firstFailure": "profile-registry-unavailable",
+        "statusBeforeRestart": "running",
+        "status": "completed",
+        "claimEvents": 2,
+        "recoveredClaims": 1,
+        "childStarts": 1
+      }
+    },
+    {
+      "id": "receipt-survives-budget-outage",
+      "category": "recovery",
+      "status": "passed",
+      "assertions": [
+        "firstFailure",
+        "preparedChildIdentity",
+        "status",
+        "childSubmissionEvents",
+        "childStarts",
+        "childIdentityStable"
+      ],
+      "observed": {
+        "firstFailure": "task-reservation-unavailable",
+        "preparedChildIdentity": true,
+        "status": "completed",
+        "childSubmissionEvents": 1,
+        "childStarts": 1,
+        "childIdentityStable": true
+      }
+    },
+    {
+      "id": "isolate-preserves-independent-branch",
+      "category": "failure-isolation",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "failedTasks",
+        "completedTasks",
+        "blockedTasks",
+        "blockedChildStarts"
+      ],
+      "observed": {
+        "status": "completed-with-failures",
+        "failedTasks": 1,
+        "completedTasks": 1,
+        "blockedTasks": 1,
+        "blockedChildStarts": 0
+      }
+    },
+    {
+      "id": "fail-fast-cancels-running-sibling",
+      "category": "cancellation",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "failureCode",
+        "cancelledTasks",
+        "childCancellations",
+        "taskCancelEvents"
+      ],
+      "observed": {
+        "status": "failed",
+        "failureCode": "required-failed",
+        "cancelledTasks": 1,
+        "childCancellations": 1,
+        "taskCancelEvents": 1
+      }
+    },
+    {
+      "id": "ambiguous-cost-requires-review",
+      "category": "billing",
+      "status": "passed",
+      "assertions": [
+        "status",
+        "taskBudgetStatus",
+        "envelopeBudgetStatus",
+        "taskReviews",
+        "envelopeReviews",
+        "duplicateFinalizations"
+      ],
+      "observed": {
+        "status": "completed",
+        "taskBudgetStatus": "review-required",
+        "envelopeBudgetStatus": "review-required",
+        "taskReviews": 1,
+        "envelopeReviews": 1,
+        "duplicateFinalizations": 0
+      }
+    }
+  ]
+}

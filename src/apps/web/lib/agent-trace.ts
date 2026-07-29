@@ -3,12 +3,14 @@ import { getWorld } from "workflow/runtime"
 
 import type { AgentEvent, AgentRunSnapshot } from "@muses/agent-core"
 
+import { readAgentDelegationLineage } from "@/lib/agent-delegation-trace"
 import { getPgPool } from "@/lib/database"
 
 export const AGENT_TRACE_SCHEMA_VERSION = "agent-trace-v1" as const
 
 type AgentEventFactRow = {
   eventId: string
+  runId: string
   sequence: number
   type: AgentEvent["type"]
   createdAt: Date | string
@@ -24,6 +26,7 @@ type AgentEventFactRow = {
 
 type ModelCallFactRow = {
   callId: string
+  runId: string
   turn: number
   contextVersion: number
   modelRef: string
@@ -42,6 +45,7 @@ type ModelCallFactRow = {
 
 type CommandFactRow = {
   commandId: string
+  agentRunId: string
   targetType: string
   targetId: string
   status: string
@@ -53,6 +57,7 @@ type CommandFactRow = {
 
 type ChildWorkflowFactRow = {
   submissionId: string
+  agentRunId: string
   sdkRunId: string | null
   status: string
   workflowDefinitionId: string | null
@@ -113,15 +118,20 @@ export async function readAgentTrace(input: {
     throw new Error("Agent trace scope does not match its authorized Run.")
   }
   const pool = getPgPool()
-  const [
-    eventsResult,
-    modelCallsResult,
-    commandsResult,
-    childWorkflowsResult,
-  ] = await Promise.all([
-    pool.query<AgentEventFactRow>(
-      `
-        select event_id as "eventId", sequence, type, created_at as "createdAt",
+  const delegationLineage = await readAgentDelegationLineage({
+    workspaceId: input.workspaceId,
+    run: input.run,
+    pool,
+  })
+  const agentRunIds = delegationLineage.agentRunIds.length
+    ? delegationLineage.agentRunIds
+    : [input.run.runId]
+  const [eventsResult, modelCallsResult, commandsResult, childWorkflowsResult] =
+    await Promise.all([
+      pool.query<AgentEventFactRow>(
+        `
+        select event_id as "eventId", event.run_id as "runId", sequence, type,
+               created_at as "createdAt",
                data ->> 'callId' as "callId",
                data ->> 'toolCallId' as "toolCallId",
                data ->> 'toolName' as "toolName",
@@ -131,18 +141,19 @@ export async function readAgentTrace(input: {
                data #>> '{usage,outputTokens}' as "outputTokens",
                data #>> '{usage,creditMicros}' as "creditMicros"
         from muses_agent_event event
-        where event.run_id = $2
+        where event.run_id = any($2::text[])
           and exists (
             select 1 from muses_agent_run run
             where run.id = event.run_id and run.workspace_id = $1
           )
-        order by sequence
+        order by event.run_id, sequence
       `,
-      [input.workspaceId, input.run.runId]
-    ),
-    pool.query<ModelCallFactRow>(
-      `
-        select id as "callId", turn, context_version as "contextVersion",
+        [input.workspaceId, agentRunIds]
+      ),
+      pool.query<ModelCallFactRow>(
+        `
+        select id as "callId", run_id as "runId", turn,
+               context_version as "contextVersion",
                model_ref as "modelRef", status,
                estimated_input_tokens as "estimatedInputTokens",
                estimated_output_tokens as "estimatedOutputTokens",
@@ -153,39 +164,43 @@ export async function readAgentTrace(input: {
                failure_code as "failureCode", created_at as "createdAt",
                started_at as "startedAt", completed_at as "completedAt"
         from muses_agent_model_call
-        where workspace_id = $1 and run_id = $2
+        where workspace_id = $1 and run_id = any($2::text[])
         order by created_at, id
       `,
-      [input.workspaceId, input.run.runId]
-    ),
-    pool.query<CommandFactRow>(
-      `
-        select command_id as "commandId", target_type as "targetType",
+        [input.workspaceId, agentRunIds]
+      ),
+      pool.query<CommandFactRow>(
+        `
+        select command_id as "commandId", actor_id as "agentRunId",
+               target_type as "targetType",
                target_id as "targetId", status,
                expected_revision as "expectedRevision",
                resulting_revision as "resultingRevision",
                created_at as "createdAt", completed_at as "completedAt"
         from muses_operation_command_receipt
-        where workspace_id = $1 and actor_kind = 'agent' and actor_id = $2
+        where workspace_id = $1 and actor_kind = 'agent'
+          and actor_id = any($2::text[])
         order by created_at, command_id
       `,
-      [input.workspaceId, input.run.runId]
-    ),
-    pool.query<ChildWorkflowFactRow>(
-      `
-        select id as "submissionId", sdk_run_id as "sdkRunId", status,
+        [input.workspaceId, agentRunIds]
+      ),
+      pool.query<ChildWorkflowFactRow>(
+        `
+        select id as "submissionId", caller_id as "agentRunId",
+               sdk_run_id as "sdkRunId", status,
                workflow_definition_id as "workflowDefinitionId",
                workflow_definition_version as "workflowDefinitionVersion",
                workflow_deployment_id as "workflowDeploymentId",
                reservation_id as "reservationId", created_at as "createdAt",
                started_at as "startedAt", completed_at as "completedAt"
         from muses_workflow_run
-        where workspace_id = $1 and caller_kind = 'agent' and caller_id = $2
+        where workspace_id = $1 and caller_kind = 'agent'
+          and caller_id = any($2::text[])
         order by created_at, id
       `,
-      [input.workspaceId, input.run.runId]
-    ),
-  ])
+        [input.workspaceId, agentRunIds]
+      ),
+    ])
 
   const modelCallIds = modelCallsResult.rows.map(({ callId }) => callId)
   const submissionIds = childWorkflowsResult.rows.map(
@@ -240,26 +255,27 @@ export async function readAgentTrace(input: {
         from credit_ledger_entry
         where workspace_id = $1
           and (
-            agent_run_id = $2
+            agent_run_id = any($2::text[])
             or agent_model_call_id = any($3::text[])
             or workflow_run_id = any($4::text[])
           )
         order by created_at, id
       `,
-      [input.workspaceId, input.run.runId, modelCallIds, sdkRunIds]
+      [input.workspaceId, agentRunIds, modelCallIds, sdkRunIds]
     ),
   ])
 
-  const workflowRefs = [
+  const workflowRefs = uniqueWorkflowRefs([
     ...(input.driverRunId
       ? [{ kind: "agent-driver" as const, runId: input.driverRunId }]
       : []),
+    ...delegationLineage.workflowDriverRefs,
     ...childWorkflowsResult.rows.flatMap((workflow) =>
       workflow.sdkRunId
         ? [{ kind: "child-workflow" as const, runId: workflow.sdkRunId }]
         : []
     ),
-  ]
+  ])
   const workflowWorld = []
   for (const { kind, runId } of workflowRefs) {
     workflowWorld.push(await readWorkflowWorldTrace(kind, runId))
@@ -290,8 +306,17 @@ export async function readAgentTrace(input: {
       completedAt: input.run.completedAt,
     },
     isolation: projectIsolation(input.run),
+    delegationLineage: {
+      rootRunId: delegationLineage.rootRunId,
+      requestedRunId: delegationLineage.requestedRunId,
+      agentRuns: delegationLineage.agentRuns,
+      delegations: delegationLineage.delegations,
+      events: delegationLineage.events,
+      budgetReservations: delegationLineage.budgetReservations,
+    },
     agentEvents: eventsResult.rows.map((event) => ({
       eventId: event.eventId,
+      runId: event.runId,
       sequence: event.sequence,
       type: event.type,
       createdAt: iso(event.createdAt),
@@ -379,7 +404,7 @@ function projectIsolation(run: AgentRunSnapshot) {
 }
 
 async function readWorkflowWorldTrace(
-  kind: "agent-driver" | "child-workflow",
+  kind: "agent-driver" | "delegation-driver" | "child-workflow",
   runId: string
 ) {
   try {
@@ -405,7 +430,8 @@ async function readWorkflowWorldTrace(
       run: {
         runId: run.runId,
         status: run.status,
-        workflowName: parseWorkflowName(run.workflowName)?.shortName || run.workflowName,
+        workflowName:
+          parseWorkflowName(run.workflowName)?.shortName || run.workflowName,
         deploymentId: run.deploymentId,
         createdAt: iso(run.createdAt),
         startedAt: optionalIso(run.startedAt),
@@ -433,6 +459,17 @@ async function readWorkflowWorldTrace(
   }
 }
 
+function uniqueWorkflowRefs(
+  refs: readonly {
+    kind: "agent-driver" | "delegation-driver" | "child-workflow"
+    runId: string
+  }[]
+) {
+  const byRunId = new Map<string, (typeof refs)[number]>()
+  for (const ref of refs) byRunId.set(ref.runId, ref)
+  return [...byRunId.values()]
+}
+
 async function readAllPages<T>(
   read: (cursor?: string) => Promise<{ data: T[]; cursor?: string | null }>
 ) {
@@ -447,7 +484,9 @@ async function readAllPages<T>(
 }
 
 function iso(value: Date | string) {
-  return value instanceof Date ? value.toISOString() : new Date(value).toISOString()
+  return value instanceof Date
+    ? value.toISOString()
+    : new Date(value).toISOString()
 }
 
 function optionalIso(value: Date | string | null | undefined) {

@@ -25,8 +25,8 @@ scheduler boundary is recorded in
 `delivery/agent-orchestration-a10-contract.md`; its canonical long-term design
 is `docs/internal/Agent委托与调度协议.md`. The framework-neutral Scheduler,
 PostgreSQL Store, concurrent logical-budget reservation, independent Child
-Agent Runtime, Workflow SDK durable driver and remaining production-entry Gate
-are recorded in
+Agent Runtime, Workflow SDK durable driver, whole-tree trace/billing lineage,
+fixed recovery eval and authorized production entry are recorded in
 `delivery/agent-orchestration-a10-scheduler.md`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.

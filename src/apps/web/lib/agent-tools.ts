@@ -22,6 +22,10 @@ import type {
 } from "@muses/agent-core"
 
 import {
+  agentDelegateDefinition,
+  agentDelegationToolInputSchema,
+} from "@/lib/agent-delegation-entry"
+import {
   attachWorkflowSdkRun,
   claimWorkflowSubmission,
   failWorkflowStart,
@@ -218,6 +222,7 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
       workflowListDefinition,
       workflowInspectDefinition,
       workflowInvokeDefinition,
+      agentDelegateDefinition,
     ]
   }
 
@@ -282,6 +287,15 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
             workflowInvokeSchema.parse(call.input)
           )
         )
+      case "agent.delegate": {
+        const request = agentDelegationToolInputSchema.parse(call.input)
+        const { submitProductionAgentDelegation } =
+          await import("@/lib/agent-delegation-entry-production")
+        return toolSuccess(
+          call,
+          await submitProductionAgentDelegation({ context, request })
+        )
+      }
       default:
         return {
           toolCallId: call.id,

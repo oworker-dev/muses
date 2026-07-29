@@ -417,8 +417,8 @@ items:
     statusChangedAt: 2026-07-29T15:20:01.867Z
   - id: build-muses-agent
     name: 交付平台级 MusesAgent
-    summary: 让 MusesAgent 负责跨领域意图梳理、澄清、计划和委托，但由 Runtime 可靠执行和记录调度状态。
-    status: pending
+    summary: 平台 MusesAgent 已接入审批门禁后的 agent.delegate，仅能提出有界 DAG/Context/grant/budget/result contract，服务端派生 scope 与剩余权威；下一步用真实 provider 创作任务验证意图、计划、委托与子审批体验。
+    status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -426,12 +426,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.050Z
-    updatedAt: 2026-07-27T19:22:22.019Z
-    statusChangedAt: 2026-07-24T19:57:49.050Z
+    updatedAt: 2026-07-29T18:23:59.805Z
+    statusChangedAt: 2026-07-29T18:23:59.805Z
   - id: build-domain-agent-profile
     name: 交付首个领域 Agent 配置
-    summary: 以可版本化领域知识、工具、策略和验收规则配置专业 Agent，不复制通用 Agent Runtime。
-    status: pending
+    summary: 首个版本化 muses-image-specialist@0.1.0-alpha 已注册，只开放 image.generate 与最小 canvas.write/media-processing 权威；等待真实受控多 Agent 生图验收后关闭任务。
+    status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -439,12 +439,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.215Z
-    updatedAt: 2026-07-27T19:22:22.217Z
-    statusChangedAt: 2026-07-24T19:57:49.215Z
+    updatedAt: 2026-07-29T18:24:00.014Z
+    statusChangedAt: 2026-07-29T18:24:00.014Z
   - id: build-multi-agent-execution
     name: 交付受控多 Agent 执行
-    summary: 让执行型 SubAgents 在明确依赖和预算下并行工作，支持结果汇总、失败隔离、取消和成本归因。
-    status: pending
+    summary: Scheduler、Child Runtime、恢复/隔离/取消/费用聚合和授权入口已就绪；下一 Gate 是认证用户发起一次真实 image specialist 委托，完成根/子审批、刷新恢复、Asset 聚合与整树 trace/cost 验收。
+    status: in_progress
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: false
@@ -452,8 +452,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:57:49.386Z
-    updatedAt: 2026-07-27T19:22:22.420Z
-    statusChangedAt: 2026-07-24T19:57:49.386Z
+    updatedAt: 2026-07-29T18:24:00.221Z
+    statusChangedAt: 2026-07-29T18:24:00.221Z
   - id: collect-first-scenario-evidence
     name: 准备首个真实场景验收样本
     summary: 首图价值 Gate 通过后准备一个可脱敏真实 PPT 任务，记录 Brief、材料、旧流程、耗时、成本、返工和验收标准；先运行现有平台，不先列功能清单。
@@ -1054,8 +1054,8 @@ items:
     statusChangedAt: 2026-07-29T08:22:04.811Z
   - id: build-agent-runtime-scheduler
     name: 交付持久 Runtime Scheduler
-    summary: 框架无关 Scheduler、PostgreSQL Store/Event/CAS/预算、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime，以及具备 claim/lease/attach/reclaim/取消组合的 Workflow SDK 持久驱动已完成并通过隔离 PostgreSQL 门禁；继续交付委托 Trace/Billing 血缘、固定恢复 eval 与受授权的生产委托入口。
-    status: in_progress
+    summary: A10 Scheduler 工程 Gate 已完成：框架无关 DAG/CAS/lease/预算/结果状态机、PostgreSQL 持久化、独立 Child AgentRun、Workflow SDK durable driver、整树 Trace/Billing 血缘、6/6 固定恢复 eval 与受授权 agent.delegate 入口均通过。
+    status: done
     planRef: agent-orchestration-alpha
     parentTaskId: null
     countedForProgress: true
@@ -1063,5 +1063,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T15:20:01.963Z
-    updatedAt: 2026-07-29T17:58:20.144Z
-    statusChangedAt: 2026-07-29T15:20:01.963Z
+    updatedAt: 2026-07-29T18:23:59.597Z
+    statusChangedAt: 2026-07-29T18:23:59.597Z

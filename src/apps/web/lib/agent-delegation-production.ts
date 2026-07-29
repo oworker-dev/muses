@@ -7,7 +7,7 @@ import {
   type AgentDelegationEvidenceAuthorizationPort,
   type VersionedAgentProfileRegistration,
 } from "./agent-delegation-runtime"
-import { musesAgentProfile } from "./agent-runtime"
+import { musesAgentProfile, musesImageSpecialistProfile } from "./agent-runtime"
 
 export function createMusesAgentDelegationScheduler(input: {
   readonly children: AgentDelegationChildRuntimePort
@@ -17,6 +17,9 @@ export function createMusesAgentDelegationScheduler(input: {
 }) {
   return createAgentDelegationScheduler({
     ...input,
-    profiles: input.profiles || [{ profile: musesAgentProfile() }],
+    profiles: input.profiles || [
+      { profile: musesAgentProfile() },
+      { profile: musesImageSpecialistProfile() },
+    ],
   })
 }

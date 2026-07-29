@@ -3,11 +3,11 @@
 ## Outcome
 
 The current A10 slices implement the framework-neutral Scheduler state machine,
-its PostgreSQL durability boundary, the production Profile, fingerprint,
+its PostgreSQL durability boundary, production Profiles, fingerprint,
 result-validation and Artifact-authorization adapters, an independent Child
-Agent Runtime, and the Workflow SDK durable driver. They do not yet expose an
-authorized model-driven delegation entry point or production multi-Agent
-execution.
+Agent Runtime, the Workflow SDK durable driver, whole-tree trace/billing
+lineage, fixed recovery evals and an authorized model-driven delegation entry
+point. Real provider-driven multi-Agent creative acceptance remains separate.
 
 Implemented in `@muses/agent-core`:
 
@@ -41,8 +41,10 @@ Implemented in the production composition boundary:
 - deterministic SHA-256 fingerprints over strict canonical JSON, including
   stable object-key order and explicit rejection of cyclic or non-JSON input;
 - exact Profile id/version resolution with optional Workspace and Project
-  scopes, duplicate fencing, and only the current MusesAgent Profile registered
-  by default;
+  scopes and duplicate fencing;
+- the platform `muses-agent@0.1.0-alpha` Profile and least-authority
+  `muses-image-specialist@0.1.0-alpha` Profile, whose only tool is real image
+  generation;
 - AJV JSON Schema validation, result byte limits, required evidence checks and
   replaceable evidence authorization;
 - fail-closed generated-Asset authorization at exact Workspace and Project
@@ -54,6 +56,28 @@ Implemented in the production composition boundary:
   application writes to carry Project scope;
 - explicit Child Runtime injection: the composition root cannot substitute a
   placeholder for independent child Agent execution.
+
+Implemented at the authorized product entry:
+
+- approval-gated `agent.delegate` as an `external` Agent tool;
+- model input limited to task DAG, explicit context, exact Profile, narrowed
+  grants, budget and result contracts;
+- Workspace, Project, Session, root/direct-parent Run, depth, Context version,
+  policy and remaining budget derived from the current persisted AgentRun;
+- pure validation before Scheduler submission, stable tool-call idempotency and
+  durable-driver recovery after acceptance;
+- no code, CLI, browser or untrusted-file grant while a physical compute
+  sandbox is absent.
+
+Implemented in trace and eval evidence:
+
+- one root-scoped trace projection for root/child AgentRuns, DelegationRuns,
+  tasks, Profiles, logical sandboxes, events, model/tool/workflow/Asset facts,
+  logical budget reservations and the existing real credit ledger;
+- no Prompt, context fact values, result bodies, credentials, idempotency keys
+  or hidden reasoning in the public projection;
+- fixed A10 suite `agent-orchestration-a10-recovery@1.0.0`, with six passing
+  deterministic cases and zero provider/network calls.
 
 Implemented in the Child Agent Runtime adapter:
 
@@ -101,19 +125,15 @@ The isolated PostgreSQL verification applies every product migration through
 legacy Asset backfill/project isolation, driver ownership/recovery and the full
 Scheduler + Child Runtime aggregation path, and removes the Schemas afterward.
 It exits naturally after verification. The focused Agent Core suite has 72
-passing tests and the Web suite has 35 passing tests in this slice; Workflow
-validation scans 216 files with no serde errors.
+passing tests and the Web suite has 39 passing tests in this slice; Workflow
+validation scans 220 files with no serde errors.
 
-## Remaining Gate
+## Remaining Product Gate
 
-The persistent Scheduler task remains in progress until all of the following
-exist and pass recovery evidence:
-
-- delegation lineage in trace and billing projections;
-- fixed Scheduler recovery evals;
-- an authorized delegation entry point/tool that can submit a validated plan
-  and ensure its durable driver without granting the model Scheduler authority.
-
-This slice proves durable scheduling and Child Agent composition mechanics. It
-does not prove a provider-backed physical sandbox, production Skill/MCP
-resolution, production multi-Agent execution, a domain Agent, or PPT readiness.
+The persistent Scheduler engineering Gate is complete. The next gate is one
+authenticated real creative delegation using the production model, the image
+specialist and actual image provider. It must prove the user can understand and
+approve child work, resume after refresh, receive the validated Asset result,
+and inspect whole-tree cost/trace facts. This slice does not prove a
+provider-backed physical sandbox, production Skill/MCP resolution, arbitrary
+domain Agents, or PPT readiness.

@@ -19,10 +19,10 @@ The implemented `@muses/agent-core` contract now provides:
   persistence;
 - sanitized parent lineage in the authenticated Agent trace projection.
 
-This slice does not claim a persistent Runtime Scheduler, concurrent child
-execution, a Profile Registry, a production MusesAgent, a domain Agent, a
-provider-backed compute sandbox or cancellation propagation across an actual
-multi-Agent tree. Those remain subsequent A10 tasks.
+Those contract-only limitations were closed by the later Scheduler Gate in
+`delivery/agent-orchestration-a10-scheduler.md`. The platform still does not
+claim a provider-backed compute sandbox, production Skill/MCP resolution or a
+real provider-driven multi-Agent creative acceptance run.
 
 ## Acceptance matrix
 
@@ -35,7 +35,7 @@ multi-Agent tree. Those remain subsequent A10 tasks.
 | Context | exact parent Run/Context version, bounded explicit facts, allowed classifications and authorized Artifact refs only | Context invalid/not-granted tests | Passed |
 | Result | JSON object Schema, result byte ceiling and non-empty unique evidence kinds | Result-contract test | Passed |
 | Budget | valid child limits and conservative aggregate envelope fit parent remaining authority; malformed server values fail as data | Budget invalid/exceeded/BigInt regression tests | Passed |
-| Runtime scheduler | durable plan submission, budget reservation, task claim/lease, child receipts, result aggregation and linked cancellation | Core state machine and PostgreSQL durability are recorded in `delivery/agent-orchestration-a10-scheduler.md`; production adapters remain | In progress |
+| Runtime scheduler | durable plan submission, budget reservation, task claim/lease, child receipts, result aggregation and linked cancellation | Core state machine, production adapters, PostgreSQL durability, trace and fixed eval are recorded in `delivery/agent-orchestration-a10-scheduler.md` | Passed |
 
 ## Framework boundary evidence
 
@@ -69,9 +69,8 @@ the final verification output for the commit and should not be frozen here.
 
 ## Next gate
 
-Implement the Muses-owned persistent Scheduler before enabling model-driven
-multi-Agent execution: exact Profile resolution, transactional aggregate and
-per-child budget reservations, submission/child receipts, task rows with
-claim/lease, Workflow SDK adapter, failure modes, linked cancellation, result
-and evidence validation, trace/billing lineage, and fixed recovery evals. The
-platform-level MusesAgent may propose plans only through this boundary.
+Run one authenticated, approval-gated, provider-driven creative delegation
+through the production MusesAgent and the versioned image-specialist Profile.
+The acceptance must prove child approval/resume usability, actual Artifact
+aggregation, whole-tree trace/cost projection and refresh recovery before the
+platform enters PPT work.

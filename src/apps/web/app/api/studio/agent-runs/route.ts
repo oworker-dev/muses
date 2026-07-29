@@ -109,6 +109,7 @@ export async function POST(request: Request) {
       "image.generate",
       "workflow.read",
       "workflow.invoke",
+      "agent.delegate",
     ],
     metadata: {
       initiatedByUserId: access.user.id,

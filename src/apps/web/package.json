@@ -16,6 +16,7 @@
     "verify:agent-billing": "tsx scripts/verify-agent-model-billing.ts",
     "verify:agent-cancellation": "tsx scripts/verify-agent-approval-cancellation.ts",
     "verify:agent-delegation-store": "tsx scripts/verify-agent-delegation-store.ts",
+    "verify:agent-delegation-evals": "tsx scripts/verify-agent-delegation-evals.ts --expect ../../../delivery/evidence/agent-core-alpha/a10-orchestration/fixed-evals-v1.json",
     "verify:agent-isolation-tracing": "tsx scripts/verify-agent-isolation-tracing.ts",
     "verify:agent-fixed-evals": "tsx scripts/verify-agent-fixed-evals.ts --expect ../../../delivery/evidence/agent-core-alpha/a9-reliability/fixed-evals-v1.json",
     "verify:generated-asset-scope": "tsx scripts/verify-generated-asset-project-scope.ts",

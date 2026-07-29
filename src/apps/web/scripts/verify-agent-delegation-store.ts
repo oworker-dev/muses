@@ -28,6 +28,7 @@ import {
   MusesAgentDelegationChildRuntime,
   PostgresAgentDelegationChildCostOutcome,
 } from "../lib/agent-delegation-child-runtime"
+import { readAgentDelegationLineage } from "../lib/agent-delegation-trace"
 import {
   PostgresAgentDelegationBudget,
   PostgresAgentDelegationStore,
@@ -229,10 +230,45 @@ async function verifyChildRuntime() {
     child.projectId !== projectId ||
     child.snapshot.parent?.runId !== rootRunId ||
     child.snapshot.parent.rootRunId !== rootRunId ||
-    child.snapshot.extensions?.logicalSandbox.sandboxId !== task.childSandboxId ||
+    child.snapshot.extensions?.logicalSandbox.sandboxId !==
+      task.childSandboxId ||
     child.snapshot.extensions.logicalSandbox.scope.runId !== task.childRunId
   ) {
     throw new Error("Delegated child AgentRun lost scope or sandbox lineage.")
+  }
+  const lineage = await readAgentDelegationLineage({
+    workspaceId,
+    run: rootRun(),
+    pool: fixture,
+  })
+  const tracedDelegation = lineage.delegations.find(
+    ({ delegationRunId }) => delegationRunId === completed.delegationRunId
+  )
+  const tracedChild = lineage.agentRuns.find(
+    ({ runId }) => runId === task.childRunId
+  )
+  const tracedBudgets = lineage.budgetReservations.filter(
+    ({ delegationRunId }) => delegationRunId === completed.delegationRunId
+  )
+  if (
+    lineage.rootRunId !== rootRunId ||
+    !tracedDelegation ||
+    tracedDelegation.tasks[0]?.childRunId !== task.childRunId ||
+    tracedDelegation.tasks[0]?.result?.artifactRefs.length !== 0 ||
+    tracedChild?.parent?.runId !== rootRunId ||
+    tracedChild.sandboxId !== task.childSandboxId ||
+    tracedBudgets.length !== 2 ||
+    tracedBudgets.some(({ status }) => status !== "settled") ||
+    !lineage.events.some(
+      (event) =>
+        event.delegationRunId === completed.delegationRunId &&
+        event.type === "task.completed" &&
+        event.childRunId === task.childRunId
+    )
+  ) {
+    throw new Error(
+      `Delegation trace lost Run, task, budget or event lineage: ${JSON.stringify(lineage)}`
+    )
   }
   return {
     childRun: "persisted",
@@ -240,6 +276,8 @@ async function verifyChildRuntime() {
     logicalSandbox: "isolated",
     structuredResult: "validated",
     aggregateStatus: completed.status,
+    traceLineage: "root-to-child",
+    budgetLineage: "settled",
   }
 }
 

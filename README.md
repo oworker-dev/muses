@@ -51,9 +51,12 @@ AgentRun runtime, and a Workflow SDK driver with fenced claim, attach, lease,
 reclaim and cancellation composition. Isolated PostgreSQL evidence proves
 child lineage, logical-sandbox separation, structured-result aggregation and
 driver recovery without loading Workflow SDK API listeners into pure adapter
-verification. Delegation trace/billing lineage, fixed recovery evals and an
-authorized product entry point remain before production multi-Agent execution;
-a provider-backed physical sandbox and PPT scenario work have not started. See
+verification. The A10 Scheduler Gate now also includes whole-tree
+trace/billing lineage, a six-case fixed recovery eval, an approval-gated
+`agent.delegate` entry point, and the first least-authority image-specialist
+Profile. A real provider-driven multi-Agent creative run, child-approval
+product projection, production Skill/MCP resolution, a provider-backed
+physical sandbox and PPT scenario work remain explicit next gates. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.

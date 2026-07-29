@@ -186,4 +186,4 @@ SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但�
 4. 用确定性 fixture 和真实最小创作任务验证受控多 Agent 执行；
 5. 通过恢复、隔离、费用、取消和聚合 eval 后，才进入真实 PPT 场景。
 
-当前不能因为协议类型和测试通过就宣称步骤 1—4 已经完成。
+当前步骤 1 已完成：持久 Scheduler、Trace/Billing 血缘、6/6 固定恢复 eval 与受授权 `agent.delegate` 入口均通过；步骤 2 的 MusesAgent 已获得受控委托工具，步骤 3 已注册首个 `muses-image-specialist@0.1.0-alpha` 最小 Profile。步骤 2—3 仍需在步骤 4 的真实 provider 创作验收中共同证明，不能因配置和确定性测试通过就宣称生产多 Agent 用户体验完成。

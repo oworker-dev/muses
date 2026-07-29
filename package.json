@@ -24,6 +24,7 @@
     "anss:agent-probe": "node scripts/anss-agent-probe.mjs",
     "check:platform-core": "pnpm --filter @muses/domain run check && pnpm --filter @muses/agent-core run check && pnpm --filter @muses/agent-harness-adapters run check && pnpm --filter ./src/apps/web run test:unit",
     "eval:agent-a9": "pnpm --filter ./src/apps/web run verify:agent-fixed-evals",
+    "eval:agent-a10": "pnpm --filter ./src/apps/web run verify:agent-delegation-evals",
     "db:migrate": "pnpm --filter ./src/apps/api run db:migrate && pnpm --filter ./src/apps/web run db:migrate",
     "typecheck": "pnpm --filter ./src/apps/web run typecheck && pnpm --filter ./src/apps/api run check && pnpm --filter ./src/apps/cli run check && pnpm --filter ./src/apps/mcp run check && pnpm --filter ./src/apps/worker run check",
     "check": "pnpm run health && pnpm run anss:check && pnpm run check:platform-core && pnpm run typecheck",

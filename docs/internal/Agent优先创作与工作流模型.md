@@ -231,7 +231,9 @@ A10 第一切片已经冻结框架无关的委派边界，完整协议见[Agent 
 
 后续 A10 切片现已实现 Muses 自有 submission/child receipt、并发逻辑预算预留、task claim/lease、精确 Profile 解析、结果/证据/Project 级 Artifact 校验、独立 Child AgentRun，以及带 attach/reclaim/取消组合的 Workflow SDK 持久驱动。隔离 PostgreSQL 门禁已证明子 Run 血缘、独立逻辑沙盒、结构化结果聚合和 driver 恢复；Workflow SDK 只负责耐久唤醒，Scheduler 继续拥有 DAG 和聚合状态。
 
-当前仍需补齐委派 Trace/Billing 血缘、固定 Scheduler 恢复 eval 和受授权的委派入口，才能宣称生产多 Agent 执行可用。平台级 MusesAgent 只能提出计划，不能成为 Scheduler、权限或预算权威；生产 Skill/MCP 解析与物理计算沙盒也仍是明确缺口。完成这些 Gate 后才交付首个领域 Agent 和真实受控多 Agent 验收，仍不提前进入 PPT。
+A10 Scheduler Gate 现进一步完成整棵 Agent 树的 Trace/Billing 血缘、6/6 固定恢复 eval，以及受现有 external-tool 审批控制的 `agent.delegate` 入口。模型只提交任务 DAG、显式 Context、精确 Profile、收窄 grant、预算和结果契约；Workspace/Project/Session、root/direct-parent、深度、Context version、策略和剩余预算全部由持久 AgentRun 派生。首个领域配置 `muses-image-specialist@0.1.0-alpha` 只拥有 `image.generate` 工具及其最小权限/媒体计算声明。
+
+下一 Gate 是使用真实文本与图像供应商完成一次经认证、可审批、可刷新恢复的多 Agent 创作验收，并让用户能处理子 Run 审批和看到聚合成果、费用与追踪。平台级 MusesAgent 只能提出计划，不能成为 Scheduler、权限或预算权威；生产 Skill/MCP 解析与物理计算沙盒也仍是明确缺口。该真实验收通过前仍不进入 PPT。
 
 ## 14. 当前非目标
 
