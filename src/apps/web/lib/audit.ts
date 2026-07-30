@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import { createHash, randomUUID } from "node:crypto"
 
 import { getPgPool } from "@/lib/database"
 
@@ -13,6 +13,7 @@ export async function recordAuditLog(input: {
   targetType: string
   targetId?: string | null
   metadata?: Record<string, unknown>
+  idempotencyKey?: string
 }) {
   await getPgPool().query(
     `
@@ -26,9 +27,17 @@ export async function recordAuditLog(input: {
         metadata
       )
       values ($1, $2, $3, $4, $5, $6, $7::jsonb)
+      on conflict (id) do nothing
     `,
     [
-      randomUUID(),
+      input.idempotencyKey
+        ? `audit_${createHash("sha256")
+            .update(
+              `${input.action}:${input.targetType}:${input.targetId || ""}:${input.idempotencyKey}`
+            )
+            .digest("hex")
+            .slice(0, 32)}`
+        : randomUUID(),
       input.actor?.userId || null,
       input.actor?.email || null,
       input.action,

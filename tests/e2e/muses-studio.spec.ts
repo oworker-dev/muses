@@ -232,6 +232,7 @@ test("MusesAgent delegates parallel image work and restores specialist results",
         "Each task must use only toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
         "Give each task a clear distinct visual objective, no input artifacts, a bounded budget, and a result JSON Schema requiring one string assetId with artifact evidence.",
         "Do not call image.generate directly. After the delegation is accepted, report that the specialist work has started and stop.",
+        "When trusted delegation results arrive later, give one final response that includes both exact authorized asset IDs and do not call another tool.",
       ].join(" "),
     );
   await panel.getByRole("button", { name: "Send" }).click();
@@ -278,6 +279,31 @@ test("MusesAgent delegates parallel image work and restores specialist results",
     )
     .toBe(2);
 
+  let beforeContinuation: { turn: number } | null = null;
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+        );
+        const body = (await response.json()) as {
+          run?: { status: string; turn: number };
+          delegation?: { active: boolean; approvals: unknown[] };
+        };
+        if (
+          body.run?.status !== "completed" ||
+          !body.delegation?.active ||
+          body.delegation.approvals.length !== 2
+        ) {
+          return null;
+        }
+        beforeContinuation = { turn: body.run.turn };
+        return beforeContinuation;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .not.toBeNull();
+
   for (let approved = 0; approved < 2; approved += 1) {
     const childApproval = page
       .getByTestId("studio-agent-delegated-approval")
@@ -303,6 +329,7 @@ test("MusesAgent delegates parallel image work and restores specialist results",
 
   let completed: {
     active: boolean;
+    delegationRunId?: string;
     runStatus?: string;
     taskStatuses: string[];
     childRunIds: Array<string | undefined>;
@@ -319,6 +346,7 @@ test("MusesAgent delegates parallel image work and restores specialist results",
           delegation: {
             active: boolean;
             runs: Array<{
+              delegationRunId: string;
               status: string;
               tasks: Array<{
                 status: string;
@@ -331,6 +359,7 @@ test("MusesAgent delegates parallel image work and restores specialist results",
         const tasks = body.delegation.runs.flatMap(({ tasks }) => tasks);
         completed = {
           active: body.delegation.active,
+          delegationRunId: body.delegation.runs[0]?.delegationRunId,
           runStatus: body.delegation.runs[0]?.status,
           taskStatuses: tasks.map(({ status }) => status),
           childRunIds: tasks.map(({ childRunId }) => childRunId),
@@ -354,6 +383,81 @@ test("MusesAgent delegates parallel image work and restores specialist results",
       ],
     });
   expect(new Set(completed!.artifactRefs).size).toBe(2);
+  expect(completed!.delegationRunId).toMatch(/^delegation_/);
+
+  let continued: {
+    status?: string;
+    turn?: number;
+    continuationMessages: number;
+    finalAssistant: string;
+  } | null = null;
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+        );
+        const body = (await response.json()) as {
+          run?: {
+            status: string;
+            turn: number;
+            context: {
+              messages: Array<{
+                role: string;
+                content: string;
+                metadata?: { kind?: string; delegationRunId?: string };
+              }>;
+            };
+          };
+        };
+        const messages = body.run?.context.messages || [];
+        const continuationIndex = messages.findIndex(
+          ({ metadata }) =>
+            metadata?.kind === "agent-delegation-result" &&
+            metadata.delegationRunId === completed!.delegationRunId,
+        );
+        const continuationMessages = messages.filter(
+          ({ metadata }) =>
+            metadata?.kind === "agent-delegation-result" &&
+            metadata.delegationRunId === completed!.delegationRunId,
+        ).length;
+        const finalAssistant = messages
+          .slice(continuationIndex + 1)
+          .findLast(
+            ({ role, content }) => role === "assistant" && content.trim(),
+          )?.content;
+        continued = {
+          status: body.run?.status,
+          turn: body.run?.turn,
+          continuationMessages,
+          finalAssistant: finalAssistant || "",
+        };
+        return continued;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .toMatchObject({
+      status: "completed",
+      turn: beforeContinuation!.turn + 1,
+      continuationMessages: 1,
+      finalAssistant: expect.any(String),
+    });
+  expect(continued!.finalAssistant.length).toBeGreaterThan(0);
+  for (const assetId of completed!.artifactRefs) {
+    expect(continued!.finalAssistant).toContain(assetId);
+  }
+
+  const continuationFacts = await readAgentDelegationContinuationFacts(
+    rootRunId,
+    completed!.delegationRunId!,
+  );
+  expect(continuationFacts).toMatchObject({
+    receiptCount: 1,
+    receiptStatus: "completed",
+    messageCommitted: true,
+    rootModelCalls: continued!.turn,
+    imageReservations: 2,
+  });
 
   const gatewayResponse = await page.request.get(
     `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
@@ -390,6 +494,162 @@ test("MusesAgent delegates parallel image work and restores specialist results",
   await expect(page.getByTestId("studio-agent-delegation")).toContainText(
     "2 results",
   );
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  expect(
+    await readAgentDelegationContinuationFacts(
+      rootRunId,
+      completed!.delegationRunId!,
+    ),
+  ).toEqual(continuationFacts);
+});
+
+test("completed MusesAgent cancels pending specialist work without continuation", async ({
+  page,
+}) => {
+  test.setTimeout(6 * 60_000);
+  await page.goto("/studio");
+  const panel = page.getByTestId("studio-agent-panel");
+  await expect(panel).toBeVisible();
+  await panel
+    .getByPlaceholder("What would you like to create?")
+    .fill(
+      [
+        "Prepare two independent product poster explorations in parallel.",
+        "You must call agent.delegate exactly once with two tasks that have no dependencies and maxConcurrency 2.",
+        "Use muses-image-specialist version 0.1.0-alpha for both tasks.",
+        "Each task must use only toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
+        "Give each task no input artifacts, a bounded budget, and a result JSON Schema requiring one string assetId with artifact evidence.",
+        "Do not call image.generate directly. After delegation is accepted, report that specialist work has started and stop.",
+      ].join(" "),
+    );
+  await panel.getByRole("button", { name: "Send" }).click();
+
+  const rootApproval = page.getByTestId("studio-agent-approval");
+  await expect(rootApproval).toBeVisible({ timeout: 3 * 60_000 });
+  await expect(rootApproval).toContainText("agent.delegate");
+  await rootApproval.getByRole("button", { name: "Approve" }).click();
+
+  let rootRunId: string | null = null;
+  await expect
+    .poll(
+      async () => {
+        rootRunId = await page.evaluate((currentWorkspaceId) => {
+          const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
+          const key = Object.keys(window.localStorage).find((candidate) =>
+            candidate.startsWith(prefix),
+          );
+          return key ? window.localStorage.getItem(key) : null;
+        }, workspaceId);
+        return rootRunId;
+      },
+      { timeout: 30_000 },
+    )
+    .toMatch(/^arun_/);
+
+  let active: {
+    delegationRunId: string;
+    rootTurn: number;
+    childRunIds: string[];
+  } | null = null;
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
+        );
+        const body = (await response.json()) as {
+          run?: { status: string; turn: number };
+          delegation?: {
+            active: boolean;
+            approvals: unknown[];
+            runs: Array<{
+              delegationRunId: string;
+              status: string;
+              tasks: Array<{ childRunId?: string; status: string }>;
+            }>;
+          };
+        };
+        const delegation = body.delegation?.runs[0];
+        const childRunIds =
+          delegation?.tasks.flatMap(({ childRunId }) =>
+            childRunId ? [childRunId] : [],
+          ) || [];
+        if (
+          body.run?.status !== "completed" ||
+          !body.delegation?.active ||
+          body.delegation.approvals.length !== 2 ||
+          delegation?.status !== "running" ||
+          childRunIds.length !== 2
+        ) {
+          return null;
+        }
+        active = {
+          delegationRunId: delegation.delegationRunId,
+          rootTurn: body.run.turn,
+          childRunIds,
+        };
+        return active;
+      },
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .not.toBeNull();
+
+  const modelCallsBefore = await countAgentModelCalls(rootRunId!);
+  const cancelButton = page.getByTestId("studio-agent-delegation-cancel");
+  await expect(cancelButton).toBeVisible();
+  await cancelButton.click();
+
+  await expect
+    .poll(
+      async () =>
+        readAgentDelegationCancellationFacts(
+          rootRunId!,
+          active!.delegationRunId,
+        ),
+      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
+    )
+    .toMatchObject({
+      rootStatus: "completed",
+      rootTurn: active!.rootTurn,
+      delegationStatus: "cancelled",
+      driverStatus: "cancelled",
+      continuationStatus: "skipped",
+      continuationFailureCode: "delegation-cancelled",
+      cancelledChildren: 2,
+      activeChildren: 0,
+      generatedAssets: 0,
+      envelopeStatus: "settled",
+      rootModelCalls: modelCallsBefore,
+    });
+
+  const replay = await page.request.patch("/api/studio/agent-runs", {
+    data: {
+      action: "cancel-delegation",
+      workspaceId,
+      runId: rootRunId,
+      delegationRunId: active!.delegationRunId,
+      idempotencyKey: `${rootRunId}:${active!.delegationRunId}:studio-cancel:v1`,
+      reason: "Cancelled specialist work from Muses Studio.",
+    },
+  });
+  expect(replay.ok()).toBeTruthy();
+  expect(await replay.json()).toMatchObject({
+    accepted: true,
+    delegationCancellation: {
+      delegationRunId: active!.delegationRunId,
+      status: "cancelled",
+      idempotentReplay: true,
+    },
+  });
+
+  await page.reload();
+  await expect(page.getByTestId("studio-agent-delegation")).toContainText(
+    "Cancelled",
+  );
+  await expect(page.getByTestId("studio-agent-delegation-cancel")).toHaveCount(
+    0,
+  );
+  expect(await countAgentModelCalls(rootRunId!)).toBe(modelCallsBefore);
 });
 
 test("expired Agent driver claims recover without model or credit side effects", async ({
@@ -2898,6 +3158,191 @@ async function readAgentCancellationFacts(agentRunId: string) {
       childStatus: row?.childStatus,
       receipts: Number(row?.receipts || 0),
       cancellationEvents: Number(row?.cancellationEvents || 0),
+    };
+  } finally {
+    await client.end();
+  }
+}
+
+async function countAgentModelCalls(agentRunId: string) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const result = await client.query<{ count: string }>(
+      "select count(*)::text as count from muses_agent_model_call where run_id = $1",
+      [agentRunId],
+    );
+    return Number(result.rows[0]?.count || 0);
+  } finally {
+    await client.end();
+  }
+}
+
+async function readAgentDelegationContinuationFacts(
+  rootRunId: string,
+  delegationRunId: string,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const row = (
+      await client.query<{
+        receiptCount: string;
+        receiptStatus: string | null;
+        messageCommitted: boolean;
+        rootModelCalls: string;
+        imageReservations: string;
+        imageLedgerEntries: string;
+      }>(
+        `
+          select
+            count(continuation.delegation_run_id)::text as "receiptCount",
+            max(continuation.status) as "receiptStatus",
+            coalesce(bool_or(continuation.message_committed_at is not null), false)
+              as "messageCommitted",
+            (select count(*)::text from muses_agent_model_call model_call
+              where model_call.run_id = $1) as "rootModelCalls",
+            (select count(*)::text
+              from credit_reservation reservation
+              join muses_workflow_run workflow
+                on workflow.id = reservation.submission_id
+              where workflow.caller_kind = 'agent'
+                and workflow.caller_id in (
+                  select task ->> 'childRunId'
+                  from muses_agent_delegation_run delegation,
+                    jsonb_array_elements(
+                      delegation.record #> '{snapshot,tasks}'
+                    ) task
+                  where delegation.id = $2
+                    and task ? 'childRunId'
+                )) as "imageReservations",
+            (select count(*)::text
+              from credit_ledger_entry ledger
+              where ledger.reservation_id in (
+                select reservation.id
+                from credit_reservation reservation
+                join muses_workflow_run workflow
+                  on workflow.id = reservation.submission_id
+                where workflow.caller_kind = 'agent'
+                  and workflow.caller_id in (
+                    select task ->> 'childRunId'
+                    from muses_agent_delegation_run delegation,
+                      jsonb_array_elements(
+                        delegation.record #> '{snapshot,tasks}'
+                      ) task
+                    where delegation.id = $2
+                      and task ? 'childRunId'
+                  )
+              )) as "imageLedgerEntries"
+          from muses_agent_delegation_continuation continuation
+          where continuation.delegation_run_id = $2
+        `,
+        [rootRunId, delegationRunId],
+      )
+    ).rows[0];
+    return {
+      receiptCount: Number(row?.receiptCount || 0),
+      receiptStatus: row?.receiptStatus || null,
+      messageCommitted: Boolean(row?.messageCommitted),
+      rootModelCalls: Number(row?.rootModelCalls || 0),
+      imageReservations: Number(row?.imageReservations || 0),
+      imageLedgerEntries: Number(row?.imageLedgerEntries || 0),
+    };
+  } finally {
+    await client.end();
+  }
+}
+
+async function readAgentDelegationCancellationFacts(
+  rootRunId: string,
+  delegationRunId: string,
+) {
+  const client = new Client({ connectionString: getDatabaseUrl() });
+  await client.connect();
+  try {
+    const row = (
+      await client.query<{
+        rootStatus: string;
+        rootTurn: string;
+        delegationStatus: string;
+        driverStatus: string;
+        continuationStatus: string | null;
+        continuationFailureCode: string | null;
+        cancelledChildren: string;
+        activeChildren: string;
+        generatedAssets: string;
+        envelopeStatus: string | null;
+        rootModelCalls: string;
+      }>(
+        `
+          select
+            root.status as "rootStatus",
+            (root.snapshot ->> 'turn') as "rootTurn",
+            delegation.status as "delegationStatus",
+            delegation.driver_status as "driverStatus",
+            continuation.status as "continuationStatus",
+            continuation.failure_code as "continuationFailureCode",
+            (select count(*)::text
+              from muses_agent_run child
+              where child.id in (
+                select task ->> 'childRunId'
+                from jsonb_array_elements(
+                  delegation.record #> '{snapshot,tasks}'
+                ) task
+                where task ? 'childRunId'
+              ) and child.status = 'cancelled') as "cancelledChildren",
+            (select count(*)::text
+              from muses_agent_run child
+              where child.id in (
+                select task ->> 'childRunId'
+                from jsonb_array_elements(
+                  delegation.record #> '{snapshot,tasks}'
+                ) task
+                where task ? 'childRunId'
+              ) and child.status in (
+                'queued', 'running', 'waiting-approval', 'cancelling'
+              )) as "activeChildren",
+            (select count(*)::text
+              from muses_generated_asset asset
+              where asset.workflow_run_id in (
+                select workflow.sdk_run_id
+                from muses_workflow_run workflow
+                where workflow.caller_kind = 'agent'
+                  and workflow.caller_id in (
+                    select task ->> 'childRunId'
+                    from jsonb_array_elements(
+                      delegation.record #> '{snapshot,tasks}'
+                    ) task
+                    where task ? 'childRunId'
+                  )
+              )) as "generatedAssets",
+            (select reservation.status
+              from muses_agent_delegation_budget_reservation reservation
+              where reservation.delegation_run_id = delegation.id
+                and reservation.scope = 'envelope') as "envelopeStatus",
+            (select count(*)::text from muses_agent_model_call model_call
+              where model_call.run_id = root.id) as "rootModelCalls"
+          from muses_agent_delegation_run delegation
+          join muses_agent_run root on root.id = $1
+          left join muses_agent_delegation_continuation continuation
+            on continuation.delegation_run_id = delegation.id
+          where delegation.id = $2
+        `,
+        [rootRunId, delegationRunId],
+      )
+    ).rows[0];
+    return {
+      rootStatus: row?.rootStatus,
+      rootTurn: Number(row?.rootTurn || 0),
+      delegationStatus: row?.delegationStatus,
+      driverStatus: row?.driverStatus,
+      continuationStatus: row?.continuationStatus || null,
+      continuationFailureCode: row?.continuationFailureCode || null,
+      cancelledChildren: Number(row?.cancelledChildren || 0),
+      activeChildren: Number(row?.activeChildren || 0),
+      generatedAssets: Number(row?.generatedAssets || 0),
+      envelopeStatus: row?.envelopeStatus || null,
+      rootModelCalls: Number(row?.rootModelCalls || 0),
     };
   } finally {
     await client.end();

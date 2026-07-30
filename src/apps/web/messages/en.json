@@ -257,13 +257,16 @@
         "taskCount": "{count, plural, one {# task} other {# tasks}}",
         "artifactCount": "{count, plural, one {# result} other {# results}}",
         "approvalTitle": "Specialist action needs approval",
+        "cancel": "Cancel specialist work",
         "status": {
           "pending": "Queued",
           "ready": "Ready",
           "claimed": "Starting",
           "running": "Working",
+          "cancelling": "Cancelling",
           "waitingApproval": "Waiting for approval",
           "completed": "Completed",
+          "completedWithFailures": "Completed with issues",
           "failed": "Failed",
           "cancelled": "Cancelled",
           "blocked": "Blocked"

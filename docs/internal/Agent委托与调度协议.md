@@ -11,7 +11,7 @@ description: Muses Agent Orchestration 的父子 Run、显式上下文、服务�
 
 协议服务 AI 设计平台，不把 Muses 扩展成通用 Coze/Dify 式 AI 应用开发平台。多 Agent 只用于将真实创作任务拆成可控、可追踪、可聚合的专业工作，例如需求梳理、视觉方向、素材研究、图像生成、版式设计和 QA。简单任务仍应由一个 AgentRun 或一个 Capability 完成。
 
-当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease、逻辑预算预留、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime，以及 Workflow SDK 持久驱动。尚未实现的委派 Trace/Billing 血缘、固定恢复 eval、受授权的产品委派入口、生产 Skill/MCP 解析、生产多 Agent 执行和物理计算沙盒不得被描述为已经可用。
+当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease、逻辑预算预留、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime、Workflow SDK 持久驱动、整树 Trace/Billing 血缘、受审批的 `agent.delegate` 产品入口和真实双 Specialist 生图。A11 进一步实现受信聚合结果回注、一次性父 Run 续跑和独立 DelegationRun 取消。生产 Skill/MCP 解析、物理计算沙盒和任意领域 Agent 仍不得被描述为已经可用。
 
 ## 2. 不固定组织层级
 
@@ -148,11 +148,17 @@ Workflow 或 Worker 重放步骤时，稳定 submission/child receipt 必须防�
 
 取消根 Run、直接父 Run 或 DelegationRun 时，Scheduler 先持久化 Muses 取消收据和 fence，再停止新 claim/child submission，最后显式请求取消全部活动 descendant AgentRun 与 WorkflowRun。不能假设后台子工作流会自动随父 Workflow SDK run 取消。晚到结果不能复活终态，但已真实完成的用量和 Asset 仍需结算和保留。
 
+父 AgentRun 完成不代表它创建的 DelegationRun 已终止。Studio 可以在精确 Workspace/Project/Session/root scope 下独立取消仍活动的 DelegationRun；同一幂等键与原因重放已有结果，改变请求身份则冲突。Scheduler 终态先于 SDK driver 取消持久化，用户取消创建 `skipped` 续跑收据，不能再触发父模型。
+
+Scheduler 接受委托时已经冻结独立的 authority snapshot；直接父 AgentRun 后续进入 `completed` 或 `failed` 不得让已接受的 Child 工作悬挂，也不撤销该 authority。只有父 Run 或 DelegationRun 的显式 `cancelled` 才构成撤销边界。该规则不放宽 Workspace、Project、Session、root/direct-parent lineage、grant、Profile、预算与结果校验；父模型供应商失败不能成为丢弃已付费/已排队 Child 结果的隐式取消机制。
+
 ## 10. 结果、证据与可观测性
 
 子结果必须是符合任务 JSON 对象 Schema 的结构化数据，并受 UTF-8/序列化字节上限约束。Artifact/evidence ref 不能只看字符串格式：聚合前还需由对应 Registry 验证 Workspace、来源、存在性和类型。缺少 required evidence 的任务不能标记完成。
 
 父 Agent 只接收经过验证的结构化结果、摘要和引用，不接收子 Agent 隐藏历史或推理正文。聚合器必须保留每个 task/attempt/child Run 的成功、失败、取消、用量和证据，而不是只返回一段不可追踪的总结。
+
+A11 的父结果投影只包含 DelegationRun id/终态、task id/状态/精确 Profile、已授权 Artifact ref 和失败码。服务端以稳定 message id 写入受信 `system` 消息，并明确将内容视为数据而非指令。每个 DelegationRun 只有一条 PostgreSQL 续跑收据；projection fingerprint、claim lease 和 `message_committed_at` 里程碑共同支持中断恢复。相同消息可幂等重放，不同 payload 复用同一 id 必须以 `message-id-conflict` 失败关闭。
 
 Trace 至少关联 root/direct-parent/child AgentRun、DelegationPlan revision、task/attempt、submission receipts、Profile/Skill/MCP snapshot、sandbox、模型调用、工具、WorkflowRun、Asset、预算预留和账本。面向普通用户的投影展示进度、成果、失败和费用；敏感 Prompt、凭证、完整工具输入输出和受限上下文不进入公开 trace。
 
@@ -162,7 +168,7 @@ Trace 至少关联 root/direct-parent/child AgentRun、DelegationPlan revision�
 
 Workflow SDK 支持直接 `await` 子 workflow（把步骤展平进父 run）和在 step 中调用 `start()` 创建独立后台 run。Muses 子 Agent 需要独立 AgentRun、事件、预算、沙盒和取消身份，因此不能用展平调用冒充 SubAgentRun。当前 adapter 以独立 SDK run 驱动一个 DelegationRun，并把 SDK run id 与 Muses driver attempt/lease 绑定；Child Runtime 再为每个任务创建独立 AgentRun。Scheduler 仍是任务 DAG 和聚合状态权威，Workflow SDK 只负责耐久唤醒、step 与 sleep。
 
-当前 driver 的恢复顺序是：先在 PostgreSQL claim；`start()` 后由 SDK workflow 自绑定并由调用方补偿 attach；租约过期时先查询 SDK run，仍活动则续租，已终止才通过 CAS reclaim。工作流函数只执行 `resume Scheduler -> sleep(2s) -> resume`，数据库、Agent Runtime 和 SDK API 操作均位于 `"use step"` 或 workflow 外部。取消由 Muses 先持久化 Scheduler/Agent 终态，再显式取消仍活动的 SDK driver，不能反向让 Workflow World 成为产品状态权威。
+当前 driver 的恢复顺序是：先在 PostgreSQL claim；`start()` 后由 SDK workflow 自绑定并由调用方补偿 attach；租约过期时先查询 SDK run，仍活动则续租，已终止才通过 CAS reclaim。工作流函数只执行 `resume Scheduler -> continuation Step -> finish` 或 `sleep(2s) -> resume`，数据库、Agent Runtime 和 SDK API 操作均位于 `"use step"` 或 workflow 外部。取消由 Muses 先持久化 Scheduler/Agent 终态，再显式取消仍活动的 SDK driver，并把 SDK `cancelled` 回写为 Muses driver `cancelled`；SDK Run 丢失记为 driver `failed`，不能反向让 Workflow World 成为产品状态权威。
 
 SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但当前路径没有可依赖的调用方 run id/idempotency key；Muses submission receipt 仍是去重权威。后台 child 的取消传播、预算、权限和结果验证也由 Muses 显式实现。Workflow SDK 的 VM sandbox 更不是 Agent 物理计算沙盒。
 
@@ -184,8 +190,11 @@ SDK 自动 step retry 不等于产品幂等。`start()` 返回 SDK run id，但�
 2. 交付平台级 MusesAgent Profile，让它提出受验证的计划而不获得调度权威；
 3. 交付第一个版本化领域 Agent Profile；
 4. 用确定性 fixture 和真实最小创作任务验证受控多 Agent 执行；
-5. 通过恢复、隔离、费用、取消和聚合 eval 后，才进入真实 PPT 场景。
+5. 通过结果续跑、恢复、隔离、费用、独立取消和聚合 Gate；
+6. 补齐生产 Skill/MCP 与物理计算沙盒 Gate 后，才评估进入真实 PPT 场景。
 
 当前步骤 1—4 已完成：持久 Scheduler、Trace/Billing 血缘、6/6 固定恢复 eval 与受授权 `agent.delegate` 入口均通过；平台 MusesAgent 和首个 `muses-image-specialist@0.1.0-alpha` 最小 Profile 已在 2026-07-30 的真实文本/图像供应商 Gate 中完成两项并行生图、独立子审批、两个 Asset 聚合、三条 AgentRun/一条 DelegationRun Trace 和刷新恢复。模型预算规划同时改为读取确定性的父预算快照、逐字段聚合规则和单图推荐预算，服务端仍执行权威校验并预留委托调用自身的工具额度。
 
-步骤 5 的既有恢复、隔离、取消、费用和聚合确定性 eval 已通过，但真实 Gate 不等于整个 Agent 终局完成。当前父 Agent 可在委托被接受后先结束，Studio 独立观察 Scheduler；经过验证的聚合结果尚未耐久回注父 Context 触发一次新的有界综合推理，父 Run 已完成后也尚无面向用户的独立 DelegationRun 取消入口。该 parent-result bridge、委托取消入口、物理计算沙盒、生产 Skill/MCP 解析与用户可读的整树费用详情必须继续作为独立 Gate，不能因首个真实并行结果通过就宣称任意领域 Agent 或 PPT 已就绪。
+步骤 5 的实现与确定性门禁现已完成：终态聚合结果通过有界受信投影耐久写入直接父 Context，父 Run 只新增一次受原预算约束的综合回合；续跑收据可从消息已提交、driver 未启动的中断点恢复。父 Run 完成后，用户也可独立取消活动 DelegationRun，取消传播至 Child AgentRun、Scheduler 预算和 Workflow SDK driver，刷新继续恢复终态且不触发父模型。
+
+A11 仍需以真实浏览器证据关闭最终 Gate，且不等于整个 Agent 终局完成。物理计算沙盒、生产 Skill/MCP 解析、用户可读的整树费用详情和更广领域 Profile 仍是明确后续项；不能因首个真实并行结果或 A11 代码门禁通过就宣称任意领域 Agent、PPT 或整个平台已达到生产就绪。

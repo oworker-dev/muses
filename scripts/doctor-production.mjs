@@ -67,6 +67,31 @@ if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
   report("STRIPE_WEBHOOK_SECRET is missing. Live webhook verification should be enabled.", strict);
 }
 
+if (!process.env.OPENAI_API_KEY) {
+  report(
+    "OPENAI_API_KEY is missing. MusesAgent model calls will fail closed.",
+    strict
+  );
+}
+
+if (process.env.OPENAI_BASE_URL && !process.env.OPENAI_API_KEY) {
+  report("OPENAI_BASE_URL is set without OPENAI_API_KEY.", strict);
+}
+
+if (process.env.OPENAI_IMAGE_BASE_URL && !process.env.OPENAI_IMAGE_API_KEY) {
+  report(
+    "OPENAI_IMAGE_BASE_URL requires OPENAI_IMAGE_API_KEY so shared credentials are not forwarded across providers.",
+    strict
+  );
+}
+
+if (!process.env.OPENAI_IMAGE_API_KEY && process.env.OPENAI_API_KEY) {
+  report(
+    "Image generation is using the shared OpenAI-compatible provider. Configure OPENAI_IMAGE_API_KEY and optionally OPENAI_IMAGE_BASE_URL when the Agent and image providers differ.",
+    false
+  );
+}
+
 if (errors.length > 0) {
   printResult("fail", errors, warnings);
   process.exit(1);

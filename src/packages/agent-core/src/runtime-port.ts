@@ -50,6 +50,7 @@ export class AgentRuntimeError extends Error {
     readonly code:
       | "run-not-found"
       | "run-state-invalid"
+      | "message-id-conflict"
       | "revision-conflict"
       | "plan-revision-conflict"
       | "approval-not-found"

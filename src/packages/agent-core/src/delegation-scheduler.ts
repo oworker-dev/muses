@@ -478,7 +478,8 @@ export class DefaultAgentDelegationScheduler
       record,
       {
         ...record.snapshot,
-        status: "running",
+        status:
+          record.snapshot.status === "cancelling" ? "cancelling" : "running",
         budgetReservation: {
           ...reservation,
           status: "reserved",

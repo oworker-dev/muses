@@ -232,6 +232,31 @@ describe("DefaultAgentDelegationScheduler", () => {
     ).rejects.toMatchObject({ code: "delegation-idempotency-conflict" });
   });
 
+  it("preserves cancellation while recovering a pending envelope reservation", async () => {
+    const fixture = schedulerFixture({ envelopeReservationFailures: 1 });
+    await expect(
+      fixture.scheduler.submit({
+        plan: delegationPlan(),
+        authority: delegationAuthority(),
+        idempotencyKey: "submit-before-cancel",
+      }),
+    ).rejects.toThrow("envelope reservation unavailable");
+    expect((await fixture.scheduler.inspect("delegation-1")).status).toBe(
+      "queued",
+    );
+
+    const cancelled = await fixture.scheduler.cancel({
+      delegationRunId: "delegation-1",
+      idempotencyKey: "cancel-before-envelope",
+      reason: "User cancelled before the reservation recovered.",
+    });
+
+    expect(cancelled.status).toBe("cancelled");
+    expect(cancelled.tasks[0]?.status).toBe("cancelled");
+    expect(cancelled.budgetReservation.status).toBe("released");
+    expect(fixture.children.starts).toHaveLength(0);
+  });
+
   it("rejects a resolved Profile that exceeds the task grant", async () => {
     const fixture = schedulerFixture({
       profile: profile({ toolNames: ["image.generate", "admin.delete"] }),
@@ -317,6 +342,7 @@ describe("DefaultAgentDelegationScheduler", () => {
 });
 
 function schedulerFixture(options: {
+  envelopeReservationFailures?: number;
   profileFailures?: number;
   taskReservationFailures?: number;
   childOutcomes?: Record<string, AgentDelegationChildSnapshot>;
@@ -325,7 +351,10 @@ function schedulerFixture(options: {
   const ids = new FixedIds();
   const clock = new FixedClock();
   const store = new InMemoryAgentDelegationStore(ids);
-  const budget = new FixtureBudget(options.taskReservationFailures || 0);
+  const budget = new FixtureBudget(
+    options.envelopeReservationFailures || 0,
+    options.taskReservationFailures || 0,
+  );
   const children = new FixtureChildren(options.childOutcomes || {});
   let profileFailures = options.profileFailures || 0;
   const profiles: AgentDelegationProfileRegistryPort = {
@@ -375,9 +404,16 @@ class FixtureBudget implements AgentDelegationBudgetPort {
   readonly operations: string[] = [];
   private readonly completed = new Set<string>();
 
-  constructor(private taskReservationFailures: number) {}
+  constructor(
+    private envelopeReservationFailures: number,
+    private taskReservationFailures: number,
+  ) {}
 
   async reserveEnvelope(input: Parameters<AgentDelegationBudgetPort["reserveEnvelope"]>[0]) {
+    if (this.envelopeReservationFailures > 0) {
+      this.envelopeReservationFailures -= 1;
+      throw new Error("envelope reservation unavailable");
+    }
     this.once(`envelope:reserve:${input.reservationId}`);
   }
 

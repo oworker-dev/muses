@@ -40,6 +40,11 @@ type AgentRunResponse = {
     summary: { reviewRequired?: boolean }
   }
   delegation?: AgentDelegationActivityProjection
+  delegationCancellation?: {
+    delegationRunId: string
+    status: string
+    idempotentReplay: boolean
+  }
 }
 
 type ImageToolOutput = {
@@ -253,6 +258,38 @@ export function StudioAgentPanel({
     [readRun, run, submitting, t, workspaceId]
   )
 
+  const cancelDelegation = useCallback(
+    async (delegationRunId: string) => {
+      if (!run || submitting) return
+      setSubmitting(true)
+      setError(null)
+      try {
+        const response = await fetch("/api/studio/agent-runs", {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "cancel-delegation",
+            workspaceId,
+            runId: run.runId,
+            delegationRunId,
+            idempotencyKey: `${run.runId}:${delegationRunId}:studio-cancel:v1`,
+            reason: "Cancelled specialist work from Muses Studio.",
+          }),
+        })
+        const result = (await response.json()) as AgentRunResponse
+        if (!response.ok || !result.run) {
+          throw new Error(result.message || t("requestFailed"))
+        }
+        await readRun(run.runId)
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : t("requestFailed"))
+      } finally {
+        setSubmitting(false)
+      }
+    },
+    [readRun, run, submitting, t, workspaceId]
+  )
+
   const latestAssistant = useMemo(
     () =>
       [...(run?.context.messages || [])]
@@ -413,35 +450,62 @@ export function StudioAgentPanel({
                     : ""}
                 </span>
               </div>
-              <ol className="mt-2 grid gap-2">
-                {delegation.runs.flatMap((item) =>
-                  item.tasks.map((task) => (
-                    <li
-                      key={`${item.delegationRunId}:${task.taskId}`}
-                      className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5"
-                    >
-                      {task.status === "completed" ? (
-                        <CheckIcon className="mt-0.5 size-3 shrink-0 text-emerald-600" />
-                      ) : isDelegationTaskActive(task.status) ? (
-                        <LoaderCircleIcon className="mt-0.5 size-3 shrink-0 animate-spin" />
-                      ) : (
-                        <span className="mt-0.5 size-3 shrink-0 rounded-full border border-border" />
-                      )}
-                      <div className="min-w-0">
-                        <p className="line-clamp-2 text-[9px] leading-4 text-foreground">
-                          {task.objective}
-                        </p>
-                        <p className="text-[8px] leading-3 text-muted-foreground">
-                          {task.profile.profileId} ·{" "}
-                          {delegationStatusLabel(task.status, t)}
-                          {task.artifactRefs.length
-                            ? ` · ${t("delegation.artifactCount", { count: task.artifactRefs.length })}`
-                            : ""}
-                        </p>
-                      </div>
-                    </li>
-                  ))
-                )}
+              <ol className="mt-2 grid">
+                {delegation.runs.map((item) => (
+                  <li
+                    key={item.delegationRunId}
+                    className="border-t border-border py-2 first:border-t-0 first:pt-0 last:pb-0"
+                  >
+                    <div className="flex min-h-6 items-center justify-between gap-3">
+                      <span className="text-[8px] font-medium text-muted-foreground">
+                        {delegationStatusLabel(item.status, t)}
+                      </span>
+                      {isDelegationRunCancellable(item.status) ? (
+                        <button
+                          type="button"
+                          disabled={submitting}
+                          onClick={() =>
+                            void cancelDelegation(item.delegationRunId)
+                          }
+                          className="grid size-6 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
+                          aria-label={t("delegation.cancel")}
+                          title={t("delegation.cancel")}
+                          data-testid="studio-agent-delegation-cancel"
+                        >
+                          <CircleStopIcon className="size-3" />
+                        </button>
+                      ) : null}
+                    </div>
+                    <ol className="grid gap-2">
+                      {item.tasks.map((task) => (
+                        <li
+                          key={`${item.delegationRunId}:${task.taskId}`}
+                          className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5"
+                        >
+                          {task.status === "completed" ? (
+                            <CheckIcon className="mt-0.5 size-3 shrink-0 text-emerald-600" />
+                          ) : isDelegationTaskActive(task.status) ? (
+                            <LoaderCircleIcon className="mt-0.5 size-3 shrink-0 animate-spin" />
+                          ) : (
+                            <span className="mt-0.5 size-3 shrink-0 rounded-full border border-border" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="line-clamp-2 text-[9px] leading-4 text-foreground">
+                              {task.objective}
+                            </p>
+                            <p className="text-[8px] leading-3 text-muted-foreground">
+                              {task.profile.profileId} ·{" "}
+                              {delegationStatusLabel(task.status, t)}
+                              {task.artifactRefs.length
+                                ? ` · ${t("delegation.artifactCount", { count: task.artifactRefs.length })}`
+                                : ""}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  </li>
+                ))}
               </ol>
             </section>
           ) : null}
@@ -715,6 +779,10 @@ function isDelegationTaskActive(status: string) {
   )
 }
 
+function isDelegationRunCancellable(status: string) {
+  return status === "queued" || status === "running"
+}
+
 function delegationStatusLabel(
   status: string,
   t: ReturnType<typeof useTranslations<"Studio.agent">>
@@ -723,10 +791,14 @@ function delegationStatusLabel(
   if (status === "ready") return t("delegation.status.ready")
   if (status === "claimed") return t("delegation.status.claimed")
   if (status === "running") return t("delegation.status.running")
+  if (status === "cancelling") return t("delegation.status.cancelling")
   if (status === "waiting-approval") {
     return t("delegation.status.waitingApproval")
   }
   if (status === "completed") return t("delegation.status.completed")
+  if (status === "completed-with-failures") {
+    return t("delegation.status.completedWithFailures")
+  }
   if (status === "failed") return t("delegation.status.failed")
   if (status === "cancelled") return t("delegation.status.cancelled")
   if (status === "blocked") return t("delegation.status.blocked")

@@ -2,7 +2,9 @@ import type { Pool } from "pg"
 import { getRun, start } from "workflow/api"
 
 import { createMusesAgentDelegationChildRuntime } from "./agent-delegation-child-runtime-production"
+import { continueAgentDelegationParent } from "./agent-delegation-continuation"
 import {
+  cancelAgentDelegationSdkDriver,
   type AgentDelegationDriverCoordinator,
   ensureAgentDelegationDriverWithCoordinator,
 } from "./agent-delegation-driver-recovery"
@@ -11,9 +13,11 @@ import { createMusesAgentDelegationScheduler } from "./agent-delegation-producti
 import { getPgPool } from "./database"
 import { agentDelegationDriver } from "../workflows/agent-delegation-driver"
 
-export function createAgentDelegationDriverCoordinator(input: {
-  readonly store?: PostgresAgentDelegationDriverStore
-} = {}): AgentDelegationDriverCoordinator {
+export function createAgentDelegationDriverCoordinator(
+  input: {
+    readonly store?: PostgresAgentDelegationDriverStore
+  } = {}
+): AgentDelegationDriverCoordinator {
   const store = input.store || new PostgresAgentDelegationDriverStore()
   return {
     claim: (runId) => store.claim(runId),
@@ -32,8 +36,7 @@ export function createAgentDelegationDriverCoordinator(input: {
 
 export async function ensureAgentDelegationDriver(
   delegationRunId: string,
-  coordinator: AgentDelegationDriverCoordinator =
-    createAgentDelegationDriverCoordinator()
+  coordinator: AgentDelegationDriverCoordinator = createAgentDelegationDriverCoordinator()
 ) {
   return ensureAgentDelegationDriverWithCoordinator(
     delegationRunId,
@@ -71,17 +74,19 @@ export async function cancelAgentDelegationExecution(input: {
     children: createMusesAgentDelegationChildRuntime({ pool }),
   })
   const run = await scheduler.cancel(input)
-  const driver = await new PostgresAgentDelegationDriverStore(pool).inspect(
-    input.delegationRunId
-  )
-  if (driver?.runId) {
-    const sdkRun = getRun(driver.runId)
-    if (await sdkRun.exists.catch(() => false)) {
-      const status = await sdkRun.status
-      if (status === "pending" || status === "running") {
-        await sdkRun.cancel()
-      }
+  if (run.status !== "cancelled") {
+    return {
+      run,
+      driver: await new PostgresAgentDelegationDriverStore(pool).inspect(
+        input.delegationRunId
+      ),
     }
   }
+  await continueAgentDelegationParent(input.delegationRunId, { pool })
+  const drivers = new PostgresAgentDelegationDriverStore(pool)
+  const driver = await cancelAgentDelegationSdkDriver(input.delegationRunId, {
+    drivers,
+    readRun: getRun,
+  })
   return { run, driver }
 }

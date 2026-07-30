@@ -1,7 +1,8 @@
 import type { AgentDelegationRunSnapshot } from "@muses/agent-core"
-import { getWorkflowMetadata, sleep } from "workflow"
+import { getWorkflowMetadata, RetryableError, sleep } from "workflow"
 
 import { createMusesAgentDelegationChildRuntime } from "@/lib/agent-delegation-child-runtime-production"
+import { continueAgentDelegationParent } from "@/lib/agent-delegation-continuation"
 import { PostgresAgentDelegationDriverStore } from "@/lib/agent-delegation-driver-store"
 import { createMusesAgentDelegationScheduler } from "@/lib/agent-delegation-production"
 
@@ -33,6 +34,7 @@ export async function agentDelegationDriver(
     )
     if (!driven.owned) return driven.run
     if (isTerminal(driven.run.status)) {
+      await continueAgentDelegationParentStep(delegationRunId)
       await finishAgentDelegationDriverStep(
         delegationRunId,
         attemptId,
@@ -42,6 +44,19 @@ export async function agentDelegationDriver(
     }
     await sleep("2s")
   }
+}
+
+async function continueAgentDelegationParentStep(delegationRunId: string) {
+  "use step"
+
+  const continuation = await continueAgentDelegationParent(delegationRunId)
+  if (continuation.state === "in-progress") {
+    throw new RetryableError(
+      "Another worker owns the Agent delegation continuation receipt.",
+      { retryAfter: 2_000 }
+    )
+  }
+  return continuation
 }
 
 async function attachAgentDelegationDriverStep(

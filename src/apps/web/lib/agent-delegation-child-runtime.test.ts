@@ -115,6 +115,28 @@ describe("MusesAgentDelegationChildRuntime", () => {
     })
   })
 
+  it("retains an accepted delegation when its parent later fails", async () => {
+    const fixture = await childFixture({ parentStatus: "failed" })
+
+    const child = await fixture.children.start(childStart())
+
+    expect(child).toMatchObject({
+      childRunId: "arun-child",
+      status: "queued",
+    })
+  })
+
+  it("revokes delegated authority when its parent is cancelled", async () => {
+    const fixture = await childFixture({ parentStatus: "cancelled" })
+
+    await expect(fixture.children.start(childStart())).rejects.toMatchObject({
+      code: "run-state-invalid",
+    })
+    await expect(fixture.runtime.inspect("arun-child")).rejects.toMatchObject({
+      code: "run-not-found",
+    })
+  })
+
   it("cancels through the authorized child tree boundary", async () => {
     const fixture = await childFixture()
     await fixture.children.start(childStart())
@@ -136,9 +158,17 @@ describe("MusesAgentDelegationChildRuntime", () => {
   })
 })
 
-async function childFixture(options: { drive?: boolean } = {}) {
+async function childFixture(
+  options: {
+    drive?: boolean
+    parentStatus?: "queued" | "failed" | "cancelled"
+  } = {}
+) {
   const runtime = new HeadlessAgentRuntime({
-    model: new FixtureModel(),
+    model:
+      options.parentStatus === "failed"
+        ? new FailedParentModel()
+        : new FixtureModel(),
     tools: new NoTools(),
     policy: new DefaultAgentPolicy(),
     store: new InMemoryAgentStateStore(new RandomAgentIdPort()),
@@ -161,6 +191,8 @@ async function childFixture(options: { drive?: boolean } = {}) {
       privateParentFact: "must-not-inherit",
     },
   })
+  if (options.parentStatus === "failed") await runtime.resume("arun-root")
+  if (options.parentStatus === "cancelled") await runtime.cancel("arun-root")
   const drivers: AgentDelegationChildDriverPort = {
     ensure: vi.fn(async (runId: string) => {
       if (options.drive) await runtime.resume(runId)
@@ -283,6 +315,16 @@ class FixtureModel implements AgentModelPort {
       toolCalls: [],
       usage: { inputTokens: 7, outputTokens: 3, creditMicros: "10" },
     }
+  }
+}
+
+class FailedParentModel implements AgentModelPort {
+  estimate() {
+    return { inputTokens: 7, outputTokens: 3, creditMicros: "10" }
+  }
+
+  async complete(): Promise<never> {
+    throw new Error("Fixture parent model failed after delegation acceptance.")
   }
 }
 

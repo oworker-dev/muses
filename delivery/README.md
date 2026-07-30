@@ -28,6 +28,14 @@ PostgreSQL Store, concurrent logical-budget reservation, independent Child
 Agent Runtime, Workflow SDK durable driver, whole-tree trace/billing lineage,
 fixed recovery eval and authorized production entry are recorded in
 `delivery/agent-orchestration-a10-scheduler.md`.
+The A11 trusted parent-result projection, PostgreSQL continuation receipt,
+bounded parent follow-up, completed-parent DelegationRun cancellation and SDK
+driver reconciliation Gate is recorded in
+`delivery/agent-orchestration-a11-continuation.md`; its consumer-facing
+contract is `interfaces/agent-runtime.md`. Current deterministic and browser
+cancellation evidence, together with the open image-Provider prerequisite for
+the real Artifact continuation case, is under
+`delivery/evidence/agent-core-alpha/a11-continuation/`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.
 The corrected durable execution boundary, supported-node interpreter, and its

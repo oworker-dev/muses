@@ -1,8 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
 import {
+  cancelAgentDelegationSdkDriver,
   ensureAgentDelegationDriverWithCoordinator,
   type AgentDelegationDriverCoordinator,
+  type AgentDelegationPersistedDriverStatus,
+  type AgentDelegationWorkflowDriverStatus,
 } from "./agent-delegation-driver-recovery"
 
 const leaseExpiresAt = "2099-01-01T00:00:00.000Z"
@@ -121,9 +124,9 @@ describe("Agent delegation driver recovery", () => {
     ])
 
     expect(starts).toBe(1)
-    expect(results.some(({ state: resultState }) => resultState === "attached")).toBe(
-      true
-    )
+    expect(
+      results.some(({ state: resultState }) => resultState === "attached")
+    ).toBe(true)
     expect(state).toEqual({
       kind: "running",
       attemptId: "attempt-2",
@@ -144,6 +147,99 @@ describe("Agent delegation driver recovery", () => {
 
     expect(result).toEqual({ state: "terminal", status: "completed" })
     expect(start).not.toHaveBeenCalled()
+  })
+
+  it("cancels an active SDK Run and persists the cancelled driver state", async () => {
+    let sdkStatus: AgentDelegationWorkflowDriverStatus = "running"
+    let persistedStatus: AgentDelegationPersistedDriverStatus = "running"
+    const cancel = vi.fn(async () => {
+      sdkStatus = "cancelled"
+    })
+    const finish = vi.fn(
+      async (
+        _delegationRunId: string,
+        _attemptId: string,
+        _driverRunId: string,
+        status: "completed" | "failed" | "cancelled"
+      ) => {
+        persistedStatus = status
+        return true
+      }
+    )
+
+    const result = await cancelAgentDelegationSdkDriver("delegation-1", {
+      drivers: {
+        inspect: async () => ({
+          status: persistedStatus,
+          runId: "workflow-1",
+          attemptId: "attempt-1",
+          leaseExpiresAt: leaseExpiresAt,
+        }),
+        finish,
+      },
+      readRun: () => ({
+        exists: Promise.resolve(true),
+        get status() {
+          return Promise.resolve(sdkStatus)
+        },
+        cancel,
+      }),
+    })
+
+    expect(cancel).toHaveBeenCalledOnce()
+    expect(finish).toHaveBeenCalledWith(
+      "delegation-1",
+      "attempt-1",
+      "workflow-1",
+      "cancelled"
+    )
+    expect(result).toMatchObject({
+      status: "cancelled",
+      runId: "workflow-1",
+      attemptId: "attempt-1",
+    })
+  })
+
+  it("marks a missing SDK Run as a failed driver without cancelling", async () => {
+    let persistedStatus: AgentDelegationPersistedDriverStatus = "running"
+    const cancel = vi.fn(async () => undefined)
+    const finish = vi.fn(
+      async (
+        _delegationRunId: string,
+        _attemptId: string,
+        _driverRunId: string,
+        status: "completed" | "failed" | "cancelled"
+      ) => {
+        persistedStatus = status
+        return true
+      }
+    )
+
+    const result = await cancelAgentDelegationSdkDriver("delegation-1", {
+      drivers: {
+        inspect: async () => ({
+          status: persistedStatus,
+          runId: "workflow-missing",
+          attemptId: "attempt-1",
+          leaseExpiresAt: leaseExpiresAt,
+        }),
+        finish,
+      },
+      readRun: () => ({
+        exists: Promise.resolve(false),
+        status: Promise.resolve("running"),
+        cancel,
+      }),
+    })
+
+    expect(cancel).not.toHaveBeenCalled()
+    expect(finish).toHaveBeenCalledWith(
+      "delegation-1",
+      "attempt-1",
+      "workflow-missing",
+      "failed"
+    )
+    expect(result?.status).toBe("failed")
   })
 })
 

@@ -28,10 +28,7 @@ export type AgentDelegationChildCancellationPort = {
     readonly idempotencyKey: string
     readonly reason: string
   }): Promise<
-    | "completed"
-    | "in-progress"
-    | "idempotency-conflict"
-    | "run-state-conflict"
+    "completed" | "in-progress" | "idempotency-conflict" | "run-state-conflict"
   >
 }
 
@@ -39,9 +36,7 @@ export type AgentDelegationChildCostOutcomePort = {
   inspect(runId: string): Promise<"known" | "unknown">
 }
 
-export class PostgresAgentDelegationChildCostOutcome
-  implements AgentDelegationChildCostOutcomePort
-{
+export class PostgresAgentDelegationChildCostOutcome implements AgentDelegationChildCostOutcomePort {
   constructor(private readonly pool: Pool = getPgPool()) {}
 
   async inspect(runId: string) {
@@ -67,9 +62,7 @@ export class PostgresAgentDelegationChildCostOutcome
   }
 }
 
-export class MusesAgentDelegationChildRuntime
-  implements AgentDelegationChildRuntimePort
-{
+export class MusesAgentDelegationChildRuntime implements AgentDelegationChildRuntimePort {
   constructor(
     private readonly dependencies: {
       readonly runtime: AgentRuntimePort
@@ -80,15 +73,18 @@ export class MusesAgentDelegationChildRuntime
     }
   ) {}
 
-  async start(
-    input: Parameters<AgentDelegationChildRuntimePort["start"]>[0]
-  ) {
+  async start(input: Parameters<AgentDelegationChildRuntimePort["start"]>[0]) {
     const startFingerprint = await this.startFingerprint(input)
-    const existing = await inspectOptional(this.dependencies.runtime, input.childRunId)
+    const existing = await inspectOptional(
+      this.dependencies.runtime,
+      input.childRunId
+    )
     if (existing) {
       assertChildStartIdentity(existing, input, startFingerprint)
       await this.ensureDriver(existing)
-      return this.project(await this.dependencies.runtime.inspect(input.childRunId))
+      return this.project(
+        await this.dependencies.runtime.inspect(input.childRunId)
+      )
     }
 
     const parent = await this.dependencies.runtime.inspect(input.parent.runId)
@@ -109,7 +105,9 @@ export class MusesAgentDelegationChildRuntime
       parent: input.parent,
       session: {
         ...input.session,
-        ...(parent.session.canvasId ? { canvasId: parent.session.canvasId } : {}),
+        ...(parent.session.canvasId
+          ? { canvasId: parent.session.canvasId }
+          : {}),
       },
       profile: input.profile,
       input: childTaskPrompt(input),
@@ -129,7 +127,9 @@ export class MusesAgentDelegationChildRuntime
     const created = await this.dependencies.runtime.inspect(input.childRunId)
     assertChildStartIdentity(created, input, startFingerprint)
     await this.ensureDriver(created)
-    return this.project(await this.dependencies.runtime.inspect(input.childRunId))
+    return this.project(
+      await this.dependencies.runtime.inspect(input.childRunId)
+    )
   }
 
   async inspect(childRunId: string) {
@@ -143,7 +143,10 @@ export class MusesAgentDelegationChildRuntime
     readonly reason: string
     readonly idempotencyKey: string
   }) {
-    const run = await inspectOptional(this.dependencies.runtime, input.childRunId)
+    const run = await inspectOptional(
+      this.dependencies.runtime,
+      input.childRunId
+    )
     if (!run) return null
     if (!isTerminal(run.status)) {
       const requestedByUserId = stringMetadata(
@@ -170,7 +173,9 @@ export class MusesAgentDelegationChildRuntime
         )
       }
     }
-    return this.project(await this.dependencies.runtime.inspect(input.childRunId))
+    return this.project(
+      await this.dependencies.runtime.inspect(input.childRunId)
+    )
   }
 
   private async ensureDriver(run: AgentRunSnapshot) {
@@ -195,9 +200,7 @@ export class MusesAgentDelegationChildRuntime
       childRunId: run.runId,
       childSandboxId,
       status,
-      ...(status === "completed"
-        ? { result: parseDelegatedResult(run) }
-        : {}),
+      ...(status === "completed" ? { result: parseDelegatedResult(run) } : {}),
       ...(run.status === "failed" && run.failure
         ? { failure: run.failure }
         : {}),
@@ -246,7 +249,6 @@ function assertParentAuthority(
     parent.session.workspaceId !== session.workspaceId ||
     parent.session.projectId !== session.projectId ||
     parent.session.sessionId !== session.sessionId ||
-    parent.status === "failed" ||
     parent.status === "cancelled"
   ) {
     throw new AgentRuntimeError(
@@ -267,8 +269,7 @@ function assertChildStartIdentity(
     run.parent?.runId !== input.parent.runId ||
     run.parent.rootRunId !== input.parent.rootRunId ||
     run.parent.delegationPlanId !== input.parent.delegationPlanId ||
-    run.parent.delegationPlanRevision !==
-      input.parent.delegationPlanRevision ||
+    run.parent.delegationPlanRevision !== input.parent.delegationPlanRevision ||
     run.parent.delegationTaskId !== input.parent.delegationTaskId ||
     run.session.workspaceId !== input.session.workspaceId ||
     run.session.projectId !== input.session.projectId ||

@@ -210,3 +210,13 @@ items:
     pinnedReason: null
     createdAt: 2026-07-28T17:08:48.806Z
     updatedAt: 2026-07-28T17:08:48.806Z
+  - id: agent-delegation-continuation
+    name: A11：Agent 委托结果续跑与用户取消
+    summary: 将 Scheduler 聚合结果幂等回注父 Agent，并提供根 Run 终态后的独立 DelegationRun 取消入口和恢复验收。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T19:54:01.736Z
+    updatedAt: 2026-07-29T19:54:01.736Z

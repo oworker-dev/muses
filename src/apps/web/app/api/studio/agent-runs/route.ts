@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import {
   AGENT_CORE_SCHEMA_VERSION,
+  AgentDelegationRuntimeError,
   AgentRuntimeError,
   type AgentMessage,
   type AgentRunSnapshot,
@@ -14,8 +15,11 @@ import {
   toPublicAgentFailure,
 } from "@/lib/agent-client-projection"
 import { cancelAgentRunAndChildren } from "@/lib/agent-cancellation"
+import { authorizeAgentDelegationExecution } from "@/lib/agent-delegation-authorization"
 import { readAgentDelegationActivity } from "@/lib/agent-delegation-activity"
+import { cancelAgentDelegationExecution } from "@/lib/agent-delegation-driver"
 import { ensureAgentDriver } from "@/lib/agent-driver"
+import { recordAuditLog } from "@/lib/audit"
 import {
   createMusesAgentRuntime,
   defaultAgentBudget,
@@ -70,6 +74,14 @@ const patchSchema = z.discriminatedUnion("action", [
     runId: z.string().trim().min(1),
     idempotencyKey: z.string().trim().min(8).max(200),
     reason: z.string().max(2000).optional(),
+  }),
+  z.object({
+    action: z.literal("cancel-delegation"),
+    workspaceId: z.string().trim().min(1),
+    runId: z.string().trim().min(1),
+    delegationRunId: z.string().trim().min(1),
+    idempotencyKey: z.string().trim().min(8).max(200),
+    reason: z.string().trim().min(1).max(2000),
   }),
 ])
 
@@ -182,9 +194,11 @@ export async function PATCH(request: Request) {
   if (!parsed.success) return invalidRequest("The AgentRun action is invalid.")
   const access = await requireStudioApiAccess(parsed.data.workspaceId)
   if (!access.ok) return access.response
-  if (!(await authorizeAgentRun(parsed.data.workspaceId, parsed.data.runId))) {
-    return runNotFound()
-  }
+  const owned = await authorizeAgentRun(
+    parsed.data.workspaceId,
+    parsed.data.runId
+  )
+  if (!owned) return runNotFound()
   if (access.context.workspace.role === "viewer") {
     return agentActionNotAuthorized()
   }
@@ -257,6 +271,46 @@ export async function PATCH(request: Request) {
             summary: cancellation.summary,
           },
         })
+      case "cancel-delegation": {
+        const rootRunId =
+          owned.snapshot.parent?.rootRunId || owned.snapshot.runId
+        const delegation = await authorizeAgentDelegationExecution({
+          workspaceId: parsed.data.workspaceId,
+          projectId: owned.snapshot.session.projectId,
+          sessionId: owned.snapshot.session.sessionId,
+          rootRunId,
+          delegationRunId: parsed.data.delegationRunId,
+        })
+        if (!delegation) return delegationNotFound()
+        const idempotentReplay = Boolean(delegation.snapshot.cancellation)
+        const cancellation = await cancelAgentDelegationExecution({
+          delegationRunId: parsed.data.delegationRunId,
+          idempotencyKey: parsed.data.idempotencyKey,
+          reason: parsed.data.reason,
+        })
+        await recordAuditLog({
+          actor: { userId: access.user.id, email: access.user.email },
+          action: "muses.agent-delegation.cancelled",
+          targetType: "agent-delegation-run",
+          targetId: parsed.data.delegationRunId,
+          idempotencyKey: parsed.data.idempotencyKey,
+          metadata: {
+            workspaceId: parsed.data.workspaceId,
+            projectId: owned.snapshot.session.projectId,
+            rootRunId,
+            status: cancellation.run.status,
+          },
+        })
+        return Response.json({
+          accepted: true,
+          run: publicRun(await runtime.inspect(parsed.data.runId)),
+          delegationCancellation: {
+            delegationRunId: parsed.data.delegationRunId,
+            status: cancellation.run.status,
+            idempotentReplay,
+          },
+        })
+      }
     }
     const driver = await ensureAgentDriver(parsed.data.runId)
     return Response.json({
@@ -269,6 +323,12 @@ export async function PATCH(request: Request) {
       return Response.json(
         { accepted: false, error: error.code, message: error.message },
         { status: error.code === "run-not-found" ? 404 : 409 }
+      )
+    }
+    if (error instanceof AgentDelegationRuntimeError) {
+      return Response.json(
+        { accepted: false, error: error.code, message: error.message },
+        { status: error.code === "delegation-not-found" ? 404 : 409 }
       )
     }
     throw error
@@ -357,6 +417,17 @@ function runNotFound() {
       accepted: false,
       error: "agent-run-not-found",
       message: "AgentRun was not found.",
+    },
+    { status: 404 }
+  )
+}
+
+function delegationNotFound() {
+  return Response.json(
+    {
+      accepted: false,
+      error: "agent-delegation-not-found",
+      message: "DelegationRun was not found in this Agent scope.",
     },
     { status: 404 }
   )

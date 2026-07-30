@@ -14,6 +14,7 @@ import {
   type AgentBudgetLimit,
   type AgentBudgetUsage,
   type AgentDelegationAuthoritySnapshot,
+  type AgentDelegationChildRuntimePort,
   type AgentDelegationEventDraft,
   type AgentDelegationRecord,
   type AgentDelegationRunSnapshot,
@@ -24,10 +25,16 @@ import {
   type AgentToolRegistryPort,
 } from "@muses/agent-core"
 
+import { authorizeAgentDelegationExecution } from "../lib/agent-delegation-authorization"
 import {
   MusesAgentDelegationChildRuntime,
   PostgresAgentDelegationChildCostOutcome,
 } from "../lib/agent-delegation-child-runtime"
+import {
+  continueAgentDelegationParentWithDependencies,
+  createAgentDelegationContinuationIdentity,
+} from "../lib/agent-delegation-continuation"
+import { PostgresAgentDelegationContinuationStore } from "../lib/agent-delegation-continuation-store"
 import { readAgentDelegationLineage } from "../lib/agent-delegation-trace"
 import {
   PostgresAgentDelegationBudget,
@@ -75,6 +82,8 @@ async function main() {
     const reservations = await verifyBudgetReservations(store, budget)
     const driver = await verifyDriverOwnership(store)
     const childRuntime = await verifyChildRuntime()
+    const continuation = await verifyParentContinuation(store)
+    const cancellation = await verifyIndependentCancellation(store)
 
     console.log(
       JSON.stringify({
@@ -84,6 +93,8 @@ async function main() {
         reservations,
         driver,
         childRuntime,
+        continuation,
+        cancellation,
       })
     )
   } finally {
@@ -93,6 +104,340 @@ async function main() {
       .catch(() => undefined)
     await admin.end()
   }
+}
+
+async function verifyIndependentCancellation(
+  delegations: PostgresAgentDelegationStore
+) {
+  const stateStore = new PostgresAgentStateStore({ pool: fixture })
+  const root = await stateStore.read(rootRunId)
+  if (!root) throw new Error("Cancellation fixture lost its root AgentRun.")
+  const completedAt = "2026-07-29T00:00:03.000Z"
+  const completedRoot: AgentRunSnapshot = {
+    ...root,
+    status: "completed",
+    revision: root.revision + 1,
+    completedAt,
+    updatedAt: completedAt,
+  }
+  await fixture.query(
+    `update muses_agent_run
+     set status = 'completed', revision = $2, snapshot = $3,
+         completed_at = $4, updated_at = $4
+     where id = $1`,
+    [
+      rootRunId,
+      completedRoot.revision,
+      JSON.stringify(completedRoot),
+      completedAt,
+    ]
+  )
+
+  const pending = delegationRecord(
+    "independent-cancel",
+    "independent-cancel-submit"
+  )
+  await delegations.create(pending, [event(pending, "delegation.submitted")])
+  const children: AgentDelegationChildRuntimePort = {
+    start: async () => {
+      throw new Error("Cancellation fixture must not start a Child AgentRun.")
+    },
+    inspect: async () => {
+      throw new Error("Cancellation fixture has no Child AgentRun to inspect.")
+    },
+    cancel: async () => {
+      throw new Error("Cancellation fixture has no Child AgentRun to cancel.")
+    },
+  }
+  const scheduler = createAgentDelegationScheduler({
+    pool: fixture,
+    children,
+    profiles: [],
+  })
+  const authorized = await authorizeAgentDelegationExecution({
+    workspaceId,
+    projectId,
+    sessionId,
+    rootRunId,
+    delegationRunId: pending.snapshot.delegationRunId,
+    pool: fixture,
+  })
+  const hidden = await authorizeAgentDelegationExecution({
+    workspaceId,
+    projectId,
+    sessionId,
+    rootRunId: "run-wrong-root",
+    delegationRunId: pending.snapshot.delegationRunId,
+    pool: fixture,
+  })
+  if (!authorized || hidden) {
+    throw new Error(
+      "Delegation cancellation scope authorization failed closed."
+    )
+  }
+  const cancelled = await scheduler.cancel({
+    delegationRunId: pending.snapshot.delegationRunId,
+    idempotencyKey: "independent-cancel-request",
+    reason: "Cancelled by the fixture user after parent completion.",
+  })
+  const replay = await scheduler.cancel({
+    delegationRunId: pending.snapshot.delegationRunId,
+    idempotencyKey: "independent-cancel-request",
+    reason: "Cancelled by the fixture user after parent completion.",
+  })
+  await expectDelegationError(
+    () =>
+      scheduler.cancel({
+        delegationRunId: pending.snapshot.delegationRunId,
+        idempotencyKey: "independent-cancel-request",
+        reason: "A conflicting cancellation reason.",
+      }),
+    "delegation-idempotency-conflict"
+  )
+  const cancelledRecord = await delegations.read(
+    pending.snapshot.delegationRunId
+  )
+  if (!cancelledRecord || cancelledRecord.snapshot.status !== "cancelled") {
+    throw new Error(
+      `Cancelled delegation restored with another state: ${JSON.stringify(cancelledRecord?.snapshot)}`
+    )
+  }
+  const continuation = await continueAgentDelegationParentWithDependencies(
+    cancelledRecord,
+    {
+      store: new PostgresAgentDelegationContinuationStore(fixture),
+      runtime: {
+        followUp: async () => {
+          throw new Error(
+            "Cancelled delegation unexpectedly resumed its parent."
+          )
+        },
+      } as unknown as HeadlessAgentRuntime,
+      ensureDriver: async () => {
+        throw new Error(
+          "Cancelled delegation unexpectedly started a parent driver."
+        )
+      },
+    }
+  )
+  const reservations = (
+    await fixture.query<{ status: string }>(
+      `select status from muses_agent_delegation_budget_reservation
+       where delegation_run_id = $1`,
+      [pending.snapshot.delegationRunId]
+    )
+  ).rows
+  if (
+    cancelled.status !== "cancelled" ||
+    replay.status !== "cancelled" ||
+    continuation.state !== "skipped" ||
+    reservations.length !== 1 ||
+    reservations[0]?.status !== "released"
+  ) {
+    throw new Error(
+      `Independent cancellation did not settle: ${JSON.stringify({ cancelled, replay, continuation, reservations })}`
+    )
+  }
+  return {
+    completedParent: "authorized",
+    crossRoot: "hidden",
+    schedulerTerminal: cancelled.status,
+    replay: "idempotent",
+    conflict: "fenced",
+    parentContinuation: continuation.state,
+    envelopeBudget: reservations[0].status,
+  }
+}
+
+async function verifyParentContinuation(
+  delegations: PostgresAgentDelegationStore
+) {
+  const terminal = await createTerminalDelegation(
+    delegations,
+    "continuation",
+    "continuation-submit"
+  )
+  const continuations = new PostgresAgentDelegationContinuationStore(fixture)
+  const continuationIds = new NamespacedIds("continuation")
+  const runtime = new HeadlessAgentRuntime({
+    model: new DelegatedFixtureModel(),
+    tools: new NoDelegatedTools(),
+    policy: new DefaultAgentPolicy(),
+    store: new PostgresAgentStateStore({ pool: fixture, ids: continuationIds }),
+    ids: continuationIds,
+  })
+  let driverAttempts = 0
+  try {
+    await continueAgentDelegationParentWithDependencies(terminal, {
+      store: continuations,
+      runtime,
+      ensureDriver: async () => {
+        driverAttempts += 1
+        throw new Error("fixture-parent-driver-unavailable")
+      },
+    })
+    throw new Error("Continuation recovery fixture did not interrupt.")
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      error.message !== "fixture-parent-driver-unavailable"
+    ) {
+      throw error
+    }
+  }
+  const interrupted = await continuations.inspect(
+    terminal.snapshot.delegationRunId
+  )
+  if (
+    interrupted?.status !== "pending" ||
+    !interrupted.messageCommittedAt ||
+    interrupted.completedAt
+  ) {
+    throw new Error(
+      `Continuation did not preserve its committed-message milestone: ${JSON.stringify(interrupted)}`
+    )
+  }
+  const recovered = await continueAgentDelegationParentWithDependencies(
+    terminal,
+    {
+      store: continuations,
+      runtime,
+      ensureDriver: async (runId) => {
+        driverAttempts += 1
+        return {
+          state: "attached",
+          runId,
+          driverRunId: "fixture-parent-driver",
+        }
+      },
+    }
+  )
+  const replay = await continueAgentDelegationParentWithDependencies(terminal, {
+    store: continuations,
+    runtime,
+    ensureDriver: async () => {
+      throw new Error("Completed continuation started another parent driver.")
+    },
+  })
+  const parent = await new PostgresAgentStateStore({ pool: fixture }).read(
+    rootRunId
+  )
+  const events = await new PostgresAgentStateStore({
+    pool: fixture,
+  }).readEvents(rootRunId)
+  const messages = [
+    ...(parent?.context.messages || []),
+    ...(parent?.pendingMessages || []),
+  ].filter(
+    ({ metadata }) =>
+      metadata?.kind === "agent-delegation-result" &&
+      metadata.delegationRunId === terminal.snapshot.delegationRunId
+  )
+  const modelCalls = Number(
+    (
+      await fixture.query<{ count: string }>(
+        `select count(*)::text as count
+         from muses_agent_model_call where run_id = $1`,
+        [rootRunId]
+      )
+    ).rows[0]?.count || "0"
+  )
+  if (
+    recovered.state !== "completed" ||
+    replay.state !== "completed" ||
+    !replay.idempotentReplay ||
+    driverAttempts !== 2 ||
+    messages.length !== 1 ||
+    events.filter(
+      ({ type, data }) =>
+        type === "message.follow-up" && data.messageId === recovered.messageId
+    ).length !== 1 ||
+    modelCalls !== 0
+  ) {
+    throw new Error(
+      `Continuation replay duplicated a message, driver or charge: ${JSON.stringify({ recovered, replay, driverAttempts, messages: messages.length, modelCalls })}`
+    )
+  }
+
+  const leaseTerminal = await createTerminalDelegation(
+    delegations,
+    "continuation-lease",
+    "continuation-lease-submit"
+  )
+  const identity = createAgentDelegationContinuationIdentity(leaseTerminal)
+  const claims = await Promise.all([
+    continuations.claim(identity),
+    continuations.claim(identity),
+  ])
+  const owner = claims.find(({ state }) => state === "claimed")
+  if (
+    !owner ||
+    owner.state !== "claimed" ||
+    claims.filter(({ state }) => state === "claimed").length !== 1 ||
+    !claims.some(({ state }) => state === "in-progress")
+  ) {
+    throw new Error("Concurrent continuation claims were not fenced.")
+  }
+  await fixture.query(
+    `update muses_agent_delegation_continuation
+     set lease_expires_at = now() - interval '1 second'
+     where delegation_run_id = $1`,
+    [identity.delegationRunId]
+  )
+  const reclaimed = await continuations.claim(identity)
+  if (
+    reclaimed.state !== "claimed" ||
+    reclaimed.receipt.attemptId === owner.receipt.attemptId ||
+    !reclaimed.receipt.attemptId
+  ) {
+    throw new Error("An expired continuation lease was not reclaimed.")
+  }
+  await continuations.skip(
+    identity.delegationRunId,
+    reclaimed.receipt.attemptId,
+    "fixture-complete"
+  )
+
+  return {
+    trustedMessage: "committed-once",
+    interruptedDriver: "recovered",
+    completedReplay: "idempotent",
+    concurrentClaim: "fenced",
+    expiredLease: "reclaimed",
+    modelCallsBeforeDriver: modelCalls,
+  }
+}
+
+async function createTerminalDelegation(
+  store: PostgresAgentDelegationStore,
+  suffix: string,
+  idempotencyKey: string
+) {
+  const pending = delegationRecord(suffix, idempotencyKey)
+  await store.create(pending, [event(pending, "delegation.submitted")])
+  const completedAt = "2026-07-29T00:00:02.000Z"
+  return store.commit({
+    delegationRunId: pending.snapshot.delegationRunId,
+    expectedRevision: pending.snapshot.revision,
+    snapshot: {
+      ...pending.snapshot,
+      status: "completed",
+      revision: pending.snapshot.revision + 1,
+      updatedAt: completedAt,
+      completedAt,
+      budgetReservation: {
+        ...pending.snapshot.budgetReservation,
+        status: "settled",
+        updatedAt: completedAt,
+      },
+    },
+    events: [
+      {
+        ...event(pending, "delegation.completed"),
+        createdAt: completedAt,
+      },
+    ],
+  })
 }
 
 async function verifyChildRuntime() {
@@ -368,12 +713,52 @@ async function verifyDriverOwnership(store: PostgresAgentDelegationStore) {
   if (final?.status !== "completed" || final.runId !== replacementDriverRunId) {
     throw new Error(`Delegation driver state drifted: ${JSON.stringify(final)}`)
   }
+
+  const cancellationRecord = delegationRecord(
+    "driver-cancelled",
+    "driver-cancelled-submit"
+  )
+  await store.create(cancellationRecord, [])
+  const cancellationClaim = await drivers.claim(
+    cancellationRecord.snapshot.delegationRunId
+  )
+  if (cancellationClaim.state !== "claimed") {
+    throw new Error("Cancellation driver fixture could not claim its Run.")
+  }
+  const cancelledDriverRunId = `workflow_driver_cancelled_${fixtureId}`
+  if (
+    !(await drivers.attach(
+      cancellationRecord.snapshot.delegationRunId,
+      cancellationClaim.attemptId,
+      cancelledDriverRunId
+    )) ||
+    !(await drivers.finish(
+      cancellationRecord.snapshot.delegationRunId,
+      cancellationClaim.attemptId,
+      cancelledDriverRunId,
+      "cancelled"
+    ))
+  ) {
+    throw new Error("Cancelled delegation driver state was not persisted.")
+  }
+  const cancelled = await drivers.inspect(
+    cancellationRecord.snapshot.delegationRunId
+  )
+  if (
+    cancelled?.status !== "cancelled" ||
+    cancelled.runId !== cancelledDriverRunId
+  ) {
+    throw new Error(
+      `Cancelled delegation driver state drifted: ${JSON.stringify(cancelled)}`
+    )
+  }
   return {
     concurrentClaim: "fenced",
     leaseRenewal: "persisted",
     expiredAttachment: "reclaimed",
     orphanAttachment: "fenced",
     finalStatus: final.status,
+    cancelledStatus: cancelled.status,
   }
 }
 
@@ -846,6 +1231,17 @@ class FixedIds implements AgentIdPort {
   create(prefix: Parameters<AgentIdPort["create"]>[0]) {
     this.sequence += 1
     return `${prefix}-${fixtureId}-${this.sequence}`
+  }
+}
+
+class NamespacedIds implements AgentIdPort {
+  private sequence = 0
+
+  constructor(private readonly namespace: string) {}
+
+  create(prefix: Parameters<AgentIdPort["create"]>[0]) {
+    this.sequence += 1
+    return `${prefix}-${fixtureId}-${this.namespace}-${this.sequence}`
   }
 }
 

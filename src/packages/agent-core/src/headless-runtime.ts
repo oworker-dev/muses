@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import {
   AGENT_CORE_SCHEMA_VERSION,
   type AgentApprovalRequest,
@@ -244,6 +246,26 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
   async followUp(runId: string, message: AgentMessage) {
     await this.serialize(runId, async () => {
       const run = await this.requireRun(runId);
+      const messageFingerprint = fingerprintAgentMessage(message);
+      const existingMessage = [
+        ...run.context.messages,
+        ...run.pendingMessages,
+      ].find(({ id }) => id === message.id);
+      if (existingMessage) {
+        if (fingerprintAgentMessage(existingMessage) === messageFingerprint) {
+          return;
+        }
+        throw messageIdConflict(message.id);
+      }
+      const existingEvent = (await this.dependencies.store.readEvents(runId)).find(
+        (event) =>
+          event.type === "message.follow-up" &&
+          event.data.messageId === message.id,
+      );
+      if (existingEvent) {
+        if (existingEvent.data.messageFingerprint === messageFingerprint) return;
+        throw messageIdConflict(message.id);
+      }
       if (run.status === "cancelled") {
         throw new AgentRuntimeError(
           "run-state-invalid",
@@ -270,6 +292,7 @@ export class HeadlessAgentRuntime implements AgentRuntimePort {
         [
           this.event(runId, "message.follow-up", now, {
             messageId: message.id,
+            messageFingerprint,
             role: message.role,
           }),
         ],
@@ -1426,6 +1449,73 @@ function assertIdempotentStart(
 function isRevisionConflict(error: unknown) {
   return (
     error instanceof AgentRuntimeError && error.code === "revision-conflict"
+  );
+}
+
+function fingerprintAgentMessage(message: AgentMessage) {
+  const canonical = canonicalMessageValue({
+    id: message.id,
+    role: message.role,
+    content: message.content,
+    createdAt: message.createdAt,
+    toolCallId: message.toolCallId ?? null,
+    toolName: message.toolName ?? null,
+    toolCalls: message.toolCalls ?? null,
+    metadata: message.metadata ?? null,
+  });
+  return `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+}
+
+function canonicalMessageValue(value: unknown, ancestors = new Set<object>()): string {
+  if (value === null) return "null";
+  if (typeof value === "string" || typeof value === "boolean") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      throw new AgentRuntimeError(
+        "message-id-conflict",
+        "Agent messages must contain finite numeric metadata values.",
+      );
+    }
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    if (ancestors.has(value)) return invalidMessageMetadata();
+    ancestors.add(value);
+    const serialized = `[${value
+      .map((item) => canonicalMessageValue(item, ancestors))
+      .join(",")}]`;
+    ancestors.delete(value);
+    return serialized;
+  }
+  if (typeof value === "object") {
+    if (ancestors.has(value)) return invalidMessageMetadata();
+    ancestors.add(value);
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => item !== undefined)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(
+        ([key, item]) =>
+          `${JSON.stringify(key)}:${canonicalMessageValue(item, ancestors)}`,
+      );
+    ancestors.delete(value);
+    return `{${entries.join(",")}}`;
+  }
+  return invalidMessageMetadata();
+}
+
+function invalidMessageMetadata(): never {
+  throw new AgentRuntimeError(
+    "message-id-conflict",
+    "Agent messages must contain acyclic JSON-compatible metadata.",
+  );
+}
+
+function messageIdConflict(messageId: string) {
+  return new AgentRuntimeError(
+    "message-id-conflict",
+    `Agent message "${messageId}" already has a different immutable payload.`,
   );
 }
 

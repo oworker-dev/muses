@@ -149,7 +149,8 @@ Agent 可以构建包含 Agent 节点的工作流，但 Runtime 必须限制最�
 7. **A8 工作流发布闭环**：UI、Agent、API 按稳定 ID/版本调用一个专业空间中的指定定义。
 8. **A9 可靠性 Gate**：刷新/进程恢复、压缩不漂移、幂等费用、预算、审批、取消、隔离、追踪和固定 eval。
 9. **A10 Agent Orchestration**：单 Agent 可靠后增加 MusesAgent、Domain Agent Profile、SubAgent 与 Runtime Scheduler。
-10. **A11 场景 MVP**：先 PPT，再用 AI 短剧验证跨媒体复用。
+10. **A11 委托续跑 Gate**：聚合结果一次性回注直接父 Agent，并支持父 Run 结束后的独立 DelegationRun 取消。
+11. **A12 场景 MVP**：在 Agent、Skill/MCP 和物理沙盒门禁明确后，再评估 PPT，并用 AI 短剧验证跨媒体复用。
 
 场景不得提前于 A9 和最小 A10。多 Agent 不得提前于单 Agent 可靠性 Gate。
 
@@ -161,7 +162,7 @@ AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的�
 
 生成图片同时写入 Muses 自有 `muses_generated_asset` 记录，保存对象键、媒体类型、字节数、尺寸、Prompt、Provider、Model 和 Workflow/Node/Step 来源。图片读取先经过 Muses Workspace 与 WorkflowRun 授权，再按 Asset 记录访问对象存储，不再把 Workflow SDK `returnValue` 当成 Asset 权威；因此 Workflow World 清理、过期或切换不能让已确认 Asset 失去产品身份。
 
-首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它自身仍不等于完整创作模式或 Codex 级可靠性全部通过。A8 指定工作流调用和 A9 单 Agent 可靠性 Gate 现均已通过；下一步进入最小 A10 调度契约，仍不提前进入 PPT 场景。文本模型生产计价、物理计算沙盒与人工对账 UI 保留为明确后续风险。
+首图证据位于 `delivery/evidence/agent-core-alpha/a7-single-agent-loop/`；真实 follow-up 证据位于 `delivery/evidence/agent-core-alpha/a7-steering-loop/`。A7 已完成，但它自身仍不等于完整创作模式或 Codex 级可靠性全部通过。A8 指定工作流调用、A9 单 Agent 可靠性 Gate 和 A10 Scheduler Gate 现均已通过；当前执行 A11 委托结果续跑与独立取消 Gate，仍不提前进入 PPT 场景。文本模型生产计价、物理计算沙盒与人工对账 UI 保留为明确后续风险。
 
 首个真实 follow-up 探针发现空闲时间被错误计入 `maxDurationMs`。Agent Core 已改为终态 Run 重开时刷新连续执行时间窗，同时保留累计模型、工具、Token 和积分预算，并通过跨空闲期回归测试。供应商额度不足期间的重试均保持零模型用量、零图像、零积分与零画布副作用；供应商原始诊断现已在 Agent Core 提交前统一为稳定错误，并在 Web API 投影层兼容脱敏历史记录。额度恢复后，同一 Run 完成计划修订，Agent 在一次无效参考 Asset 的无副作用失败后自纠，只创建一个真实图像 Workflow、新增一个 Asset 并扣费一次；新图在旧图右侧非重叠放置，中文浏览器刷新恢复 Run、两张图片和位置。A7 因而通过，后续缺口转入 A8/A9。
 
@@ -227,7 +228,7 @@ AgentRun id 同时作为 trace id。只读 API 在 Workspace 授权后关联 Age
 
 A10 第一切片已经冻结框架无关的委派边界，完整协议见[Agent 委托与调度协议](Agent委托与调度协议.md)，Gate 见 `delivery/agent-orchestration-a10-contract.md`。每个委派计划现在区分整棵树的 root Run 和提交当前计划的直接 parent Run；子 AgentRun 固定 parent/root Run、计划 id/revision 与 task id，并使用独立 `agent-run/<childRunId>` 逻辑沙盒。相同 child Run id 只能重放同一不可变血缘。
 
-子 Agent 不继承父对话或沙盒。ContextPackage 绑定直接父 Run 与精确 ContextSnapshot version，事实分类与 Artifact 引用必须属于服务端 AuthoritySnapshot 的可委派子集；权限、工具、Skill、MCP Connection 和计算能力同样只能收窄。纯验证器已覆盖合法 DAG、稳定拓扑序、scope、依赖、深度、并发、越权、Context、结构化结果和聚合预算，当前 Agent Core 共 72 项测试通过。
+子 Agent 不继承父对话或沙盒。ContextPackage 绑定直接父 Run 与精确 ContextSnapshot version，事实分类与 Artifact 引用必须属于服务端 AuthoritySnapshot 的可委派子集；权限、工具、Skill、MCP Connection 和计算能力同样只能收窄。纯验证器已覆盖合法 DAG、稳定拓扑序、scope、依赖、深度、并发、越权、Context、结构化结果和聚合预算，当前 Agent Core 共 75 项测试通过。
 
 后续 A10 切片现已实现 Muses 自有 submission/child receipt、并发逻辑预算预留、task claim/lease、精确 Profile 解析、结果/证据/Project 级 Artifact 校验、独立 Child AgentRun，以及带 attach/reclaim/取消组合的 Workflow SDK 持久驱动。隔离 PostgreSQL 门禁已证明子 Run 血缘、独立逻辑沙盒、结构化结果聚合和 driver 恢复；Workflow SDK 只负责耐久唤醒，Scheduler 继续拥有 DAG 和聚合状态。
 
@@ -235,7 +236,9 @@ A10 Scheduler Gate 现进一步完成整棵 Agent 树的 Trace/Billing 血缘、
 
 2026-07-30 的真实供应商 Gate 已通过：一个经认证的根 MusesAgent 提交两项并行生图任务，两个独立 Image Specialist 分别经过子 Run 审批并各生成一个真实 Asset；Scheduler 聚合终态，Operation Gateway 放置两个 Asset，整树 Trace 包含三个 AgentRun 和一个 DelegationRun，Studio 刷新后恢复任务与两个成果。第一次真实尝试暴露出模型把每项四轮预算相加后超过父 Run 剩余七轮；修复没有放宽服务端校验或给测试 Prompt 硬编码预算，而是向模型投影确定性的父预算快照、逐字段聚合规则和单图推荐预算，并为当前 `agent.delegate` 调用预留父工具额度。
 
-平台级 MusesAgent 仍只能提出计划，不能成为 Scheduler、权限或预算权威。当前根 Agent 在委托接受后可以先结束，Studio 独立观察 Scheduler；经过验证的聚合结果尚未耐久回注父 Context 并触发一次有界综合推理，根 Run 已完成后的 DelegationRun 也尚无独立用户取消入口。该 parent-result bridge、委托取消入口、生产 Skill/MCP 解析、物理计算沙盒与面向用户的整树费用详情仍是明确缺口，因此本轮仍不进入 PPT。
+平台级 MusesAgent 仍只能提出计划，不能成为 Scheduler、权限或预算权威。A11 已实现一条 PostgreSQL 续跑收据对应一次受信聚合消息：只投影终态、task/Profile、已授权 Artifact ref 和失败码，不包含 Child prompt、目标、原始结果、隐藏历史或推理；相同消息幂等重放，冲突 payload 失败关闭。`completed`、`completed-with-failures` 和 `failed` 可以触发直接父 Run 的一次有界综合回合，`cancelled` 只建立 `skipped` 收据而不调用模型。
+
+父 AgentRun 完成后，Studio 仍可在精确 Workspace/Project/Session/root scope 下独立取消活动 DelegationRun。Scheduler 先写 `cancelling` 和取消收据、终止 Child Run 并处理预算，再落 `cancelled`；随后 adapter 显式取消 Workflow SDK driver 并回写 `driver_status=cancelled`。隔离门禁已证明并发 claim、过期 lease、消息提交中断、终态重放、跨 root 隐藏、取消幂等/冲突和零取消续跑。真实浏览器续跑/取消证据、生产 Skill/MCP 解析、物理计算沙盒与面向用户的整树费用详情仍是明确缺口，因此本轮仍不进入 PPT。
 
 ## 14. 当前非目标
 

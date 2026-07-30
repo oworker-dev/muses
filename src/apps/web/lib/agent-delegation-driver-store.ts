@@ -31,7 +31,13 @@ export type AgentDelegationDriverReclaim =
 
 type DriverRow = {
   status: AgentDelegationRunSnapshot["status"]
-  driverStatus: "unclaimed" | "starting" | "running" | "completed" | "failed"
+  driverStatus:
+    | "unclaimed"
+    | "starting"
+    | "running"
+    | "completed"
+    | "failed"
+    | "cancelled"
   driverRunId: string | null
   driverAttemptId: string | null
   driverLeaseExpiresAt: Date | string | null
@@ -208,7 +214,7 @@ export class PostgresAgentDelegationDriverStore {
     delegationRunId: string,
     attemptId: string,
     driverRunId: string,
-    status: "completed" | "failed"
+    status: "completed" | "failed" | "cancelled"
   ) {
     const result = await this.pool.query(
       `

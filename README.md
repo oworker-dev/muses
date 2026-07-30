@@ -29,7 +29,7 @@ OAuth secrets, production credentials, or private telemetry. See
 
 ## Current Stage
 
-The current APCC engineering phase is **Agent Core Alpha**. The professional
+The current APCC engineering phase is **A11 Agent delegation continuation**. The professional
 image path has delivered reusable image, identity/credit, model-catalog,
 durable-runtime, and observability foundations. The platform now separates
 `CreativeCanvas`, `ExecutionPlan`, and callable `WorkflowDefinition`, has a
@@ -54,9 +54,18 @@ driver recovery without loading Workflow SDK API listeners into pure adapter
 verification. The A10 Scheduler Gate now also includes whole-tree
 trace/billing lineage, a six-case fixed recovery eval, an approval-gated
 `agent.delegate` entry point, and the first least-authority image-specialist
-Profile. A real provider-driven multi-Agent creative run, child-approval
-product projection, production Skill/MCP resolution, a provider-backed
-physical sandbox and PPT scenario work remain explicit next gates. See
+Profile. A real provider-driven multi-Agent creative run with two independent
+image Specialists and child approvals has passed. A11 now adds a trusted,
+idempotent terminal-result projection into the direct parent Agent, one bounded
+parent continuation turn, and an independently cancellable DelegationRun after
+the parent Run completes. PostgreSQL recovery, authorization, budget and SDK
+driver-state gates pass, and real browser cancellation passes. The remaining
+real browser continuation Gate requires two actual image Artifacts; the
+currently configured shared model endpoint exposes no image model, so Muses
+now supports an independent image Provider route and leaves this Gate open
+until working image credentials are configured. Production Skill/MCP
+resolution, a provider-backed physical sandbox and PPT scenario work remain
+explicit later gates. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
@@ -244,6 +253,8 @@ ANSS_ROOT_URL=http://localhost:3000 pnpm run anss:agent-probe
 Stripe credentials are optional for local development. Without them, checkout and portal routes fail closed with a not-configured state. With `STRIPE_SECRET_KEY` and `STRIPE_PRICE_PRO`, `/api/billing/checkout` creates a real Checkout Session; `STRIPE_PRICE_STARTER` can map the free plan id when needed. `STRIPE_WEBHOOK_SECRET` enables live webhook signature verification; webhook events are recorded idempotently, update the persisted account subscription state, and create payment records for successful provider payments.
 
 Resend credentials are optional. Without them, account lifecycle emails run in local-test mode and are printed by the web process. With `RESEND_API_KEY` and `RESEND_FROM`, verification, password reset, and email-change confirmations send through Resend. Resend's `onboarding@resend.dev` sender is suitable for local testing but can only deliver to addresses allowed by the Resend account until a sending domain is verified.
+
+Agent text calls use `OPENAI_API_KEY` and optional `OPENAI_BASE_URL`. Image generation uses the same provider by default. When the text provider does not expose OpenAI-compatible image models, configure `OPENAI_IMAGE_API_KEY` and optional `OPENAI_IMAGE_BASE_URL` as an independent route. An explicit image base URL always requires an explicit image key so credentials are never inherited across provider endpoints.
 
 GitHub and Google OAuth buttons are only shown when both the provider credentials and the matching enable flag are configured. This avoids rendering social login buttons that would fail in a clean local run. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_AUTH_ENABLED=true` for GitHub; set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_AUTH_ENABLED=true` for Google.
 

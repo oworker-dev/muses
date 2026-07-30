@@ -10,12 +10,45 @@ export type AgentDelegationWorkflowDriverStatus =
   | "failed"
   | "cancelled"
 
+export type AgentDelegationPersistedDriverStatus =
+  | "unclaimed"
+  | "starting"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled"
+
+export type AgentDelegationDriverSnapshot = {
+  status: AgentDelegationPersistedDriverStatus
+  runId: string | null
+  attemptId: string | null
+  leaseExpiresAt: string | null
+}
+
+type AgentDelegationSdkRun = {
+  readonly exists: Promise<boolean>
+  readonly status: Promise<AgentDelegationWorkflowDriverStatus>
+  cancel(): Promise<void>
+}
+
+type AgentDelegationDriverCancellationDependencies = {
+  readonly drivers: {
+    inspect(
+      delegationRunId: string
+    ): Promise<AgentDelegationDriverSnapshot | null>
+    finish(
+      delegationRunId: string,
+      attemptId: string,
+      driverRunId: string,
+      status: "completed" | "failed" | "cancelled"
+    ): Promise<boolean>
+  }
+  readonly readRun: (driverRunId: string) => AgentDelegationSdkRun
+}
+
 export type AgentDelegationDriverCoordinator = {
   claim(delegationRunId: string): Promise<AgentDelegationDriverClaim>
-  start(
-    delegationRunId: string,
-    attemptId: string
-  ): Promise<{ runId: string }>
+  start(delegationRunId: string, attemptId: string): Promise<{ runId: string }>
   attach(
     delegationRunId: string,
     attemptId: string,
@@ -95,4 +128,41 @@ export async function ensureAgentDelegationDriverWithCoordinator(
   throw new Error(
     "Agent delegation driver ownership changed too frequently to reconcile."
   )
+}
+
+export async function cancelAgentDelegationSdkDriver(
+  delegationRunId: string,
+  dependencies: AgentDelegationDriverCancellationDependencies
+) {
+  const driver = await dependencies.drivers.inspect(delegationRunId)
+  if (!driver?.runId || !driver.attemptId) return driver
+
+  const sdkRun = dependencies.readRun(driver.runId)
+  if (!(await sdkRun.exists.catch(() => false))) {
+    await dependencies.drivers.finish(
+      delegationRunId,
+      driver.attemptId,
+      driver.runId,
+      "failed"
+    )
+    return dependencies.drivers.inspect(delegationRunId)
+  }
+
+  let status = await sdkRun.status
+  if (status === "pending" || status === "running") {
+    await sdkRun.cancel()
+    status = await sdkRun.status
+    if (status === "pending" || status === "running") {
+      throw new Error(
+        `Delegation WorkflowRun "${driver.runId}" remained active after cancellation.`
+      )
+    }
+  }
+  await dependencies.drivers.finish(
+    delegationRunId,
+    driver.attemptId,
+    driver.runId,
+    status
+  )
+  return dependencies.drivers.inspect(delegationRunId)
 }

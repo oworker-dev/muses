@@ -257,13 +257,16 @@
         "taskCount": "{count} 个任务",
         "artifactCount": "{count} 个成果",
         "approvalTitle": "专业 Agent 操作需要批准",
+        "cancel": "取消专业 Agent 任务",
         "status": {
           "pending": "排队中",
           "ready": "等待执行",
           "claimed": "正在启动",
           "running": "执行中",
+          "cancelling": "正在取消",
           "waitingApproval": "等待批准",
           "completed": "已完成",
+          "completedWithFailures": "完成但有异常",
           "failed": "失败",
           "cancelled": "已取消",
           "blocked": "已阻塞"

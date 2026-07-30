@@ -401,6 +401,65 @@ describe("HeadlessAgentRuntime", () => {
     );
   });
 
+  it("replays one immutable follow-up without reopening or another model call", async () => {
+    const model = new ScriptedModel([
+      stop("Initial result"),
+      stop("Delegated result summarized"),
+    ]);
+    const fixture = createRuntimeWithModel(model);
+    const ref = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(ref.runId);
+    const message: AgentMessage = {
+      id: "delegation-result-1",
+      role: "system",
+      content: '{"delegationRunId":"delegation-1","artifactRefs":["image-1"]}',
+      createdAt: "2026-07-29T00:00:05.000Z",
+      metadata: { kind: "delegation-result", schemaVersion: 1 },
+    };
+
+    await fixture.runtime.followUp(ref.runId, message);
+    const queued = await fixture.runtime.inspect(ref.runId);
+    await fixture.runtime.followUp(ref.runId, {
+      ...message,
+      metadata: { schemaVersion: 1, kind: "delegation-result" },
+    });
+    const replayed = await fixture.runtime.inspect(ref.runId);
+    expect(replayed.revision).toBe(queued.revision);
+    expect(replayed.pendingMessages).toHaveLength(1);
+
+    await fixture.runtime.resume(ref.runId);
+    const completed = await fixture.runtime.inspect(ref.runId);
+    await fixture.runtime.followUp(ref.runId, message);
+    const terminalReplay = await fixture.runtime.inspect(ref.runId);
+
+    expect(terminalReplay.revision).toBe(completed.revision);
+    expect(terminalReplay.status).toBe("completed");
+    expect(model.completeCalls).toBe(2);
+    expect(
+      terminalReplay.context.messages.filter(({ id }) => id === message.id),
+    ).toHaveLength(1);
+  });
+
+  it("rejects reuse of a follow-up message id with another payload", async () => {
+    const fixture = createRuntime([stop("Initial result")]);
+    const ref = await fixture.runtime.start(startInput());
+    await fixture.runtime.resume(ref.runId);
+    const message: AgentMessage = {
+      id: "delegation-result-conflict",
+      role: "system",
+      content: "First immutable result",
+      createdAt: "2026-07-29T00:00:05.000Z",
+    };
+    await fixture.runtime.followUp(ref.runId, message);
+
+    await expect(
+      fixture.runtime.followUp(ref.runId, {
+        ...message,
+        content: "Conflicting result",
+      }),
+    ).rejects.toMatchObject({ code: "message-id-conflict" });
+  });
+
   it("compacts context into versioned facts and rehydrates them after recovery", async () => {
     const fixture = createRuntime([
       {

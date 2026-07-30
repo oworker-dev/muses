@@ -94,9 +94,34 @@ describe("Agent delegation activity projection", () => {
     ).rejects.toThrow("scope does not match")
     expect(query).not.toHaveBeenCalled()
   })
+
+  it("keeps polling while durable cancellation is being reconciled", async () => {
+    const query = vi.fn(async (sql: string) =>
+      sql.includes("muses_agent_delegation_run")
+        ? {
+            rows: [
+              {
+                delegationRunId: "delegation-1",
+                status: "cancelling",
+                record: delegationRecord("cancelling"),
+              },
+            ],
+          }
+        : { rows: [] }
+    )
+
+    const activity = await readAgentDelegationActivity({
+      workspaceId: "workspace-1",
+      run: rootRun(),
+      pool: { query } as unknown as Pool,
+    })
+
+    expect(activity.active).toBe(true)
+    expect(activity.runs[0]?.status).toBe("cancelling")
+  })
 })
 
-function delegationRecord() {
+function delegationRecord(status = "running") {
   return {
     plan: {
       tasks: [
@@ -112,7 +137,7 @@ function delegationRecord() {
     },
     snapshot: {
       delegationRunId: "delegation-1",
-      status: "running",
+      status,
       failureMode: "fail-fast",
       tasks: [
         {

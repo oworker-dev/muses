@@ -1065,3 +1065,81 @@ items:
     createdAt: 2026-07-29T15:20:01.963Z
     updatedAt: 2026-07-29T18:23:59.597Z
     statusChangedAt: 2026-07-29T18:23:59.597Z
+  - id: define-delegation-continuation-contract
+    name: 冻结委托结果续跑与取消契约
+    summary: 已冻结 Scheduler 权威、受信结果投影、PostgreSQL 续跑收据、幂等恢复、取消顺序、预算与 A11 验收契约。
+    status: done
+    planRef: agent-delegation-continuation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T19:54:01.976Z
+    updatedAt: 2026-07-29T19:59:48.638Z
+    statusChangedAt: 2026-07-29T19:59:48.638Z
+  - id: implement-parent-result-continuation
+    name: 实现父 Agent 聚合结果续跑
+    summary: 已交付 followUp 消息指纹幂等、0016 PostgreSQL continuation 收据、受信终态投影、driver 续跑 Step、并发/租约/中断恢复和零重复调用门禁。
+    status: done
+    planRef: agent-delegation-continuation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T19:54:02.195Z
+    updatedAt: 2026-07-29T20:21:39.541Z
+    statusChangedAt: 2026-07-29T20:21:39.541Z
+  - id: implement-delegation-user-cancellation
+    name: 实现独立 DelegationRun 用户取消
+    summary: 已交付完成父 Run 后的精确作用域 DelegationRun 取消 API、Studio 入口、Scheduler/Child/SDK 顺序、跳过父模型续跑、幂等审计及 cancelling 刷新恢复；并修复取消期间 envelope 恢复覆盖状态缺陷。
+    status: done
+    planRef: agent-delegation-continuation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T19:54:02.432Z
+    updatedAt: 2026-07-29T20:21:39.739Z
+    statusChangedAt: 2026-07-29T20:21:39.739Z
+  - id: verify-delegation-continuation-gate
+    name: 验证 A11 恢复、取消与真实结果闭环
+    summary: 确定性恢复、权限、预算、父续跑、SDK driver 与真实浏览器取消均通过；当前阻塞仅为运行环境没有 image-capable Provider 凭证。配置 OPENAI_IMAGE_API_KEY（自定义 endpoint 同时配 OPENAI_IMAGE_BASE_URL）后重跑双 Specialist，取得两个真实 Asset 并证明 exactly-once 父续跑。
+    status: blocked
+    planRef: agent-delegation-continuation
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-29T19:54:02.674Z
+    updatedAt: 2026-07-30T03:11:06.587Z
+    statusChangedAt: 2026-07-30T03:11:06.587Z
+  - id: provider-1
+    name: 修正图像 Provider 路由与确定性失败
+    summary: 已交付独立图像 Provider 环境路由、安全凭证隔离、model_not_found 确定性失败分类、production doctor、测试与长期控制面文档；管理员 Credential Vault 和能力健康路由留在后续控制面切片。
+    status: done
+    planRef: agent-delegation-continuation
+    parentTaskId: verify-delegation-continuation-gate
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T02:59:04.685Z
+    updatedAt: 2026-07-30T03:09:08.321Z
+    statusChangedAt: 2026-07-30T03:09:08.321Z
+  - id: provider-connection-credential-vault-61
+    name: 交付 Provider Connection 与 Credential Vault
+    summary: 扩展 Site Admin：以服务端加密密钥引用管理多 Provider/多 Key，按 LLM、图像、视频、语音和音乐能力绑定 Offering，提供脱敏轮换、审计、健康检查与安全路由；环境变量仅保留部署引导和回退。
+    status: pending
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T03:10:52.514Z
+    updatedAt: 2026-07-30T03:11:00.141Z
+    statusChangedAt: 2026-07-30T03:10:52.514Z

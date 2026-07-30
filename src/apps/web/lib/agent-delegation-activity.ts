@@ -152,7 +152,10 @@ export async function readAgentDelegationActivity(input: {
   return {
     rootRunId,
     active: runs.some(
-      ({ status }) => status === "queued" || status === "running"
+      ({ status }) =>
+        status === "queued" ||
+        status === "running" ||
+        status === "cancelling"
     ),
     runs,
     approvals,

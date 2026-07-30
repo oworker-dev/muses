@@ -11,7 +11,7 @@ import {
   createOpenAI,
   type OpenAIImageModelGenerationOptions,
 } from "@ai-sdk/openai"
-import { APICallError, generateImage } from "ai"
+import { generateImage } from "ai"
 import sharp from "sharp"
 
 import {
@@ -35,6 +35,10 @@ import {
   readGeneratedImage,
   storeGeneratedImage,
 } from "@/lib/generated-image-storage"
+import {
+  isDefinitiveImageProviderRejection,
+  resolveOpenAiImageProviderConfig,
+} from "@/lib/openai-image-provider"
 import { readReadyReferenceImageBytes } from "@/lib/reference-image-storage"
 import {
   attachWorkflowSdkRun,
@@ -652,8 +656,13 @@ async function executeRealImageNodeStep(
   if (!prompt || prompt.valueType !== "text" || !prompt.value.trim()) {
     throw new FatalError("Image generation requires a non-empty prompt.")
   }
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
+  let providerConfig
+  try {
+    providerConfig = resolveOpenAiImageProviderConfig()
+  } catch {
+    throw new FatalError("The OpenAI image provider is misconfigured.")
+  }
+  if (!providerConfig) {
     throw new FatalError("The OpenAI image provider is not configured.")
   }
   const imageConfig = request.node.config
@@ -685,10 +694,8 @@ async function executeRealImageNodeStep(
 
   try {
     const provider = createOpenAI({
-      apiKey,
-      ...(process.env.OPENAI_BASE_URL
-        ? { baseURL: process.env.OPENAI_BASE_URL }
-        : {}),
+      apiKey: providerConfig.apiKey,
+      ...(providerConfig.baseURL ? { baseURL: providerConfig.baseURL } : {}),
     })
     const size = executionModel.resolvedSize
     const referenceImages = await resolveReferenceImageBytes(
@@ -792,7 +799,7 @@ async function executeRealImageNodeStep(
       },
     }
   } catch (error) {
-    const permanent = isPermanentImageProviderError(error)
+    const permanent = isDefinitiveImageProviderRejection(error)
     await writeRuntimeEvent(
       request.runId,
       {
@@ -955,17 +962,6 @@ async function resolveReferenceImageBytes(
       })
       return object.bytes
     })
-  )
-}
-
-function isPermanentImageProviderError(error: unknown) {
-  if (!APICallError.isInstance(error)) return false
-  const status = error.statusCode
-  return (
-    typeof status === "number" &&
-    status >= 400 &&
-    status < 500 &&
-    status !== 429
   )
 }
 
