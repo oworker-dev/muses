@@ -81,6 +81,25 @@ test("personal workspace and initial credit grant are idempotent", async ({
   await expect(page.getByText("100", { exact: true }).first()).toBeVisible();
 });
 
+test("Studio uses one full-height right rail for Agent and node settings", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/studio?mode=professional");
+
+  const agent = page.getByTestId("studio-agent-panel");
+  await expect(agent).toBeVisible();
+  expect((await agent.boundingBox())?.height).toBeGreaterThan(780);
+
+  await page.getByTestId("workflow-node-image-generator-1").click();
+  await expect(agent).toHaveCount(0);
+  await expect(page.getByTestId("studio-node-inspector")).toBeVisible();
+
+  await page.locator(".react-flow__pane").click({ position: { x: 20, y: 20 } });
+  await expect(page.getByTestId("studio-node-inspector")).toHaveCount(0);
+  await expect(page.getByTestId("studio-agent-panel")).toBeVisible();
+});
+
 test("Site Admin can inspect the credential-safe Provider control plane", async ({
   page,
 }) => {
@@ -95,9 +114,7 @@ test("Site Admin can inspect the credential-safe Provider control plane", async 
     "password",
   );
   await expect(
-    page.getByText(
-      /Plaintext is never shown again|提交后不会再次显示明文/i,
-    ),
+    page.getByText(/Plaintext is never shown again|提交后不会再次显示明文/i),
   ).toBeVisible();
   await expect(page.locator("body")).not.toContainText(/encrypted_secret/i);
 
@@ -954,6 +971,7 @@ test("the default professional workflow produces and restores one image result",
       deploymentId?: string;
     };
   } | null = null;
+  let workflowInspectionCount = 0;
 
   await page.route("**/api/studio/workflow-runs*", async (route) => {
     if (route.request().method() === "POST") {
@@ -971,21 +989,23 @@ test("the default professional workflow produces and restores one image result",
       return;
     }
 
+    workflowInspectionCount += 1;
+    const running = workflowInspectionCount <= 3;
     await route.fulfill({
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
         runId,
         runtime: "muses-workflow-runtime",
-        sdkStatus: "completed",
-        status: "completed",
+        sdkStatus: running ? "running" : "completed",
+        status: running ? "running" : "completed",
         attempts: [
           {
             nodeId: "image-generator-1",
             nodeKind: "image-generator",
             attempt: 1,
             maxAttempts: 1,
-            status: "succeeded",
+            status: running ? "running" : "succeeded",
           },
         ],
         events: [],
@@ -1020,19 +1040,27 @@ test("the default professional workflow produces and restores one image result",
           source: "workflow-sdk-world",
           run: {
             startedAt: "2026-07-28T00:00:00.000Z",
-            completedAt: "2026-07-28T00:00:01.240Z",
-            durationMs: 1240,
+            ...(running
+              ? {}
+              : {
+                  completedAt: "2026-07-28T00:00:01.240Z",
+                  durationMs: 1240,
+                }),
             workflowCoreVersion: "4.6.2",
           },
           nodes: [
             {
               nodeId: "image-generator-1",
               nodeKind: "image-generator",
-              status: "succeeded",
+              status: running ? "running" : "succeeded",
               attempt: 1,
               startedAt: "2026-07-28T00:00:00.000Z",
-              completedAt: "2026-07-28T00:00:01.240Z",
-              durationMs: 1240,
+              ...(running
+                ? {}
+                : {
+                    completedAt: "2026-07-28T00:00:01.240Z",
+                    durationMs: 1240,
+                  }),
               inputSummary: [
                 {
                   portId: "prompt",
@@ -1046,9 +1074,9 @@ test("the default professional workflow produces and restores one image result",
                   count: 1,
                 },
               ],
-              outputSummary: [
-                { portId: "image", valueType: "image", count: 1 },
-              ],
+              outputSummary: running
+                ? []
+                : [{ portId: "image", valueType: "image", count: 1 }],
               model: {
                 modelRef: "openai/gpt-image-1.5@2026-07-28",
                 capabilityProfile: {
@@ -1146,7 +1174,24 @@ test("the default professional workflow produces and restores one image result",
     .last()
     .click();
 
+  const generatorNode = page.getByTestId("workflow-node-image-generator-1");
+  await expect(generatorNode).toHaveAttribute("data-runtime-status", "running");
+  await expect(generatorNode).toHaveAttribute("aria-busy", "true");
+  await expect(
+    page.getByTestId("workflow-node-result-image-generator-1"),
+  ).toContainText("Waiting for node output");
+
   await expect(page.getByTestId("durable-run-images")).toBeVisible();
+  await expect(generatorNode).toHaveAttribute(
+    "data-runtime-status",
+    "succeeded",
+  );
+  await expect(
+    page.getByTestId("workflow-node-result-image-generator-1"),
+  ).toContainText("1.2 sec");
+  await expect(
+    page.getByTestId("workflow-node-result-image-generator-1"),
+  ).toContainText("1 image");
   const observability = page.getByTestId("durable-run-observability");
   await expect(observability).toBeVisible();
   await expect(observability).toContainText(
@@ -1224,6 +1269,7 @@ test("the default professional workflow produces and restores one image result",
   await expect(page.getByTestId("durable-run-panel")).toContainText(
     "Completed",
   );
+  await page.getByTestId("durable-run-collapse").click();
   await page.getByTestId("workflow-node-image-generator-1").click();
   await expect(page.getByTestId("image-prompt-input")).toHaveValue(
     "A precise launch visual for Muses",

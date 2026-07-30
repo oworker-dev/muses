@@ -111,7 +111,7 @@ export function CreativeCanvasView({
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
             <div className="grid justify-items-center gap-2 text-muted-foreground">
               <ImageIcon className="size-6" />
-              <span className="text-[10px] font-medium">{t("empty")}</span>
+              <span className="text-[13px] font-medium">{t("empty")}</span>
             </div>
           </div>
         ) : null}
@@ -168,8 +168,8 @@ const CreativeItemCard = memo(function CreativeItemCard({
           <Icon className="size-3.5" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[10px] font-semibold">{item.title}</p>
-          <p className="truncate text-[8px] text-muted-foreground">
+          <p className="truncate text-[13px] font-semibold">{item.title}</p>
+          <p className="truncate text-[13px] text-muted-foreground">
             {asset
               ? t("assetMeta", {
                   model: modelLabel(asset.modelRef),

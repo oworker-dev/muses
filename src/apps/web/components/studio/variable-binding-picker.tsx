@@ -99,14 +99,14 @@ export function VariableBindingPicker({
 
   return (
     <div>
-      <label className="mb-1.5 block text-[10px] font-medium text-muted-foreground">
+      <label className="mb-1.5 block text-[13px] font-medium text-muted-foreground">
         {t("variables.field", { port: portLabel })}
       </label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-2.5 py-2 text-left text-[11px] hover:bg-accent"
+            className="flex w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-2.5 py-2 text-left text-[13px] hover:bg-accent"
             aria-label={t("variables.field", { port: portLabel })}
           >
             <span className="flex min-w-0 items-center gap-2">
@@ -160,7 +160,7 @@ export function VariableBindingPicker({
               groups.map((group) => (
                 <section key={group.nodeId} className="py-1">
                   <div className="px-2.5 py-1.5">
-                    <p className="truncate text-[10px] font-semibold">
+                    <p className="truncate text-[13px] font-semibold">
                       {group.nodeTitle}
                     </p>
                   </div>
@@ -178,14 +178,14 @@ export function VariableBindingPicker({
                           <BracesIcon className="size-3" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-[11px] font-medium">
+                          <span className="block truncate text-[13px] font-medium">
                             {variable.portLabel}
                           </span>
-                          <span className="block truncate text-[9px] text-muted-foreground">
+                          <span className="block truncate text-[12px] text-muted-foreground">
                             {t("variables.from", { node: group.nodeTitle })}
                           </span>
                         </span>
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[8px] text-muted-foreground">
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-[13px] text-muted-foreground">
                           {variable.valueType}
                         </span>
                         {selected ? (

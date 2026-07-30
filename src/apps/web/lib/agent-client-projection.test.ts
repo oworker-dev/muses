@@ -43,6 +43,31 @@ describe("Agent client projection", () => {
     ).not.toContain(rawMessage)
   })
 
+  it("redacts provider rejection failures from snapshots and events", () => {
+    const rawMessage = "The Agent model provider rejected this turn."
+    const failure = {
+      code: "model-provider-rejected",
+      message: rawMessage,
+      retryable: true,
+    }
+    const event: AgentEvent = {
+      schemaVersion: AGENT_CORE_SCHEMA_VERSION,
+      eventId: "event-provider-rejected",
+      runId: "run-provider-rejected",
+      sequence: 1,
+      type: "run.failed",
+      createdAt: "2026-07-30T00:00:00.000Z",
+      data: failure,
+    }
+
+    expect(toPublicAgentFailure(failure)?.message).toBe(
+      AGENT_MODEL_FAILURE_MESSAGE
+    )
+    expect(toPublicAgentEvent(event).data.message).toBe(
+      AGENT_MODEL_FAILURE_MESSAGE
+    )
+  })
+
   it("preserves domain failures that are already safe", () => {
     const failure = {
       code: "duration-budget-exceeded",

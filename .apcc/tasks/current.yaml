@@ -1195,3 +1195,16 @@ items:
     createdAt: 2026-07-30T15:01:16.259Z
     updatedAt: 2026-07-30T15:01:54.671Z
     statusChangedAt: 2026-07-30T15:01:54.671Z
+  - id: stabilize-studio-runtime-feedback
+    name: 稳定 Studio 运行状态与交互反馈
+    summary: 已修复 Agent 模型/供应商失败后阶段与计划持续转圈，并将失败安全本地化；节点卡消费 observability 显示运行高亮、实时计时、终态耗时、输出或错误；Agent 与节点配置共用 400px 全高右栏；Studio 超小字号提升并保持 100% 初始缩放。单元测试 75/75、定向 Playwright 2/2、类型检查、生产构建与 4730 已登录冒烟均通过。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T15:22:03.784Z
+    updatedAt: 2026-07-30T16:14:58.232Z
+    statusChangedAt: 2026-07-30T16:14:58.232Z

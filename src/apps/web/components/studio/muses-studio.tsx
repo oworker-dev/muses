@@ -96,6 +96,7 @@ import { StudioAgentPanel } from "./studio-agent-panel"
 import {
   type CanvasInputBinding,
   type CanvasNodeData,
+  type CanvasNodeRuntime,
   type MusesFlowNode,
   WorkflowNodeCard,
 } from "./workflow-node"
@@ -372,9 +373,7 @@ export function MusesStudio({
   const [creativeCanvasProjection, setCreativeCanvasProjection] =
     useState<CreativeCanvasProjection>(initialCreativeCanvasProjection)
   const [hydrated, setHydrated] = useState(false)
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
-    "image-generator-1"
-  )
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
   const [activeDesignDocumentId, setActiveDesignDocumentId] = useState<
     string | null
   >(null)
@@ -1169,6 +1168,9 @@ export function MusesStudio({
             designDocument,
             inputBindings,
             modelDisplayName: getModelDisplayName(node, initialModelCatalog),
+            runtime: durableRun?.observability?.nodes.find(
+              (runtimeNode) => runtimeNode.nodeId === node.id
+            ) satisfies CanvasNodeRuntime | undefined,
           }
           return {
             id: node.id,
@@ -1179,7 +1181,7 @@ export function MusesStudio({
             selected: selectedNodeId === node.id,
           }
         }),
-    [initialModelCatalog.offerings, selectedNodeId, t, workspace]
+    [durableRun, initialModelCatalog, selectedNodeId, t, workspace]
   )
 
   const [canvasNodes, setCanvasNodes, onCanvasNodesChange] =
@@ -1461,7 +1463,7 @@ export function MusesStudio({
             {studioMode === "professional" ? (
               <div
                 role="status"
-                className="pointer-events-none absolute top-3 left-1/2 z-20 flex max-w-[min(560px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 py-2 text-[10px] text-muted-foreground shadow-sm backdrop-blur"
+                className="pointer-events-none absolute top-3 left-1/2 z-20 flex max-w-[min(560px,calc(100%-24px))] -translate-x-1/2 items-center gap-2 rounded-lg border border-border/80 bg-background/90 px-3 py-2 text-[13px] text-muted-foreground shadow-sm backdrop-blur"
               >
                 <CircleDotIcon className="size-3 shrink-0 text-emerald-500" />
                 <span className="truncate">{notice}</span>
@@ -1478,11 +1480,6 @@ export function MusesStudio({
                 onRetry={() => void retryDurableRun()}
               />
             ) : null}
-            <StudioAgentPanel
-              workspaceId={initialContext.workspace.id}
-              projectId={initialOperationGatewaySnapshot.project.id}
-              onCanvasChanged={refreshCreativeCanvas}
-            />
             {studioMode === "creative" ? (
               <CreativeCanvasView
                 key={`${creativeCanvasProjection.canvas.canvasId}:${creativeCanvasProjection.canvas.revision}`}
@@ -1526,7 +1523,6 @@ export function MusesStudio({
                 zoomOnPinch
                 selectionKeyCode="Shift"
               >
-                <CanvasBootstrap enabled={hydrated} />
                 {miniMapVisible ? (
                   <MiniMap
                     position="bottom-right"
@@ -1557,7 +1553,7 @@ export function MusesStudio({
               </Canvas>
             )}
           </section>
-          {studioMode === "professional" ? (
+          {studioMode === "professional" && selectedNode ? (
             <Inspector
               selectedNode={selectedNode}
               workspace={workspace}
@@ -1567,7 +1563,13 @@ export function MusesStudio({
               actions={actions}
               onClose={() => setSelectedNodeId(null)}
             />
-          ) : null}
+          ) : (
+            <StudioAgentPanel
+              workspaceId={initialContext.workspace.id}
+              projectId={initialOperationGatewaySnapshot.project.id}
+              onCanvasChanged={refreshCreativeCanvas}
+            />
+          )}
         </div>
 
         {studioMode === "professional" && activeDocument ? (
@@ -1581,31 +1583,6 @@ export function MusesStudio({
       </main>
     </StudioActionsProvider>
   )
-}
-
-function CanvasBootstrap({ enabled }: { enabled: boolean }) {
-  const { fitView, getNodes } = useReactFlow<MusesFlowNode>()
-  const fitted = useRef(false)
-
-  useEffect(() => {
-    if (!enabled || fitted.current) return
-    const timer = window.setTimeout(() => {
-      const initialNodes = getNodes().filter((node) =>
-        ["start", "image-generator", "selector"].includes(node.type || "")
-      )
-      if (initialNodes.length === 0) return
-      fitted.current = true
-      void fitView({
-        nodes: initialNodes,
-        padding: 0.22,
-        duration: 0,
-        maxZoom: 0.9,
-      })
-    }, 120)
-    return () => window.clearTimeout(timer)
-  }, [enabled, fitView, getNodes])
-
-  return null
 }
 
 function StudioHeader({
@@ -1645,11 +1622,11 @@ function StudioHeader({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="truncate text-sm font-semibold">{t("title")}</h1>
-            <span className="rounded-full border border-violet-500/20 bg-violet-500/8 px-2 py-0.5 text-[8px] font-semibold tracking-[0.12em] text-violet-700 uppercase dark:text-violet-200">
+            <span className="rounded-full border border-violet-500/20 bg-violet-500/8 px-2 py-0.5 text-[13px] font-semibold tracking-[0.12em] text-violet-700 uppercase dark:text-violet-200">
               {t("alpha")}
             </span>
           </div>
-          <p className="hidden text-[9px] text-muted-foreground sm:block">
+          <p className="hidden text-[12px] text-muted-foreground sm:block">
             {mode === "creative" ? t("modes.creativeSubtitle") : t("subtitle")}
           </p>
         </div>
@@ -1660,7 +1637,7 @@ function StudioHeader({
           type="button"
           onClick={() => onModeChange("creative")}
           className={cn(
-            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] font-medium",
+            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] font-medium",
             mode === "creative"
               ? "border border-border bg-background font-semibold shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -1676,7 +1653,7 @@ function StudioHeader({
           type="button"
           onClick={() => onModeChange("professional")}
           className={cn(
-            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] font-medium",
+            "flex h-8 items-center gap-1.5 rounded-md px-2 text-[13px] font-medium",
             mode === "professional"
               ? "border border-border bg-background font-semibold shadow-sm"
               : "text-muted-foreground hover:text-foreground"
@@ -1693,14 +1670,14 @@ function StudioHeader({
       <div className="flex items-center gap-1.5">
         <span
           data-testid="studio-credit-balance"
-          className="flex h-8 items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 text-[9px] font-semibold"
+          className="flex h-8 items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 text-[12px] font-semibold"
           title={t("header.creditBalance")}
         >
           <CoinsIcon className="size-3.5 text-amber-500" />
           {formatCreditMicros(studioContext.credits.availableMicros)}
         </span>
         <span
-          className="flex items-center gap-1.5 px-1.5 text-[9px] text-muted-foreground"
+          className="flex items-center gap-1.5 px-1.5 text-[12px] text-muted-foreground"
           aria-label={hydrated ? t("header.autosaved") : t("header.preparing")}
           title={hydrated ? t("header.autosaved") : t("header.preparing")}
         >
@@ -1709,7 +1686,7 @@ function StudioHeader({
             {hydrated ? t("header.autosaved") : t("header.preparing")}
           </span>
         </span>
-        <span className="hidden rounded-md bg-muted px-2 py-1 text-[9px] text-muted-foreground 2xl:inline">
+        <span className="hidden rounded-md bg-muted px-2 py-1 text-[12px] text-muted-foreground 2xl:inline">
           {mode === "creative"
             ? `c${creativeRevision}`
             : `r${workspace.workflow.revision}`}
@@ -1859,7 +1836,7 @@ function Palette({
               </span>
             </div>
             {context ? (
-              <p className="mt-1 truncate pl-6 text-[9px] text-muted-foreground">
+              <p className="mt-1 truncate pl-6 text-[12px] text-muted-foreground">
                 {sourceNode
                   ? nodeDisplayTitle(sourceNode, t)
                   : context.sourceNodeId}{" "}
@@ -1899,7 +1876,7 @@ function Palette({
             if (items.length === 0) return null
             return (
               <section key={category} className="mb-3">
-                <p className="px-2 py-1.5 text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                <p className="px-2 py-1.5 text-[12px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   {t(`palette.categories.${category}`)}
                 </p>
                 <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
@@ -1918,10 +1895,10 @@ function Palette({
                           <Icon className="size-3.5" />
                         </span>
                         <span className="min-w-0">
-                          <span className="block truncate text-[11px] font-medium">
+                          <span className="block truncate text-[13px] font-medium">
                             {title}
                           </span>
-                          <span className="mt-0.5 block truncate text-[8px] text-muted-foreground">
+                          <span className="mt-0.5 block truncate text-[13px] text-muted-foreground">
                             {t(`nodes.${item.copyKey}.description`)}
                           </span>
                         </span>
@@ -1935,7 +1912,7 @@ function Palette({
         )}
       </div>
 
-      <div className="border-t border-border px-4 py-2.5 text-[9px] text-muted-foreground">
+      <div className="border-t border-border px-4 py-2.5 text-[12px] text-muted-foreground">
         {context ? t("palette.compatibleHint") : t("palette.hint")}
       </div>
     </aside>
@@ -1987,7 +1964,10 @@ function Inspector({
       : undefined
 
   return (
-    <aside className="hidden w-[400px] shrink-0 overflow-y-auto border-l border-border bg-background xl:block">
+    <aside
+      data-testid="studio-node-inspector"
+      className="h-full w-[400px] shrink-0 overflow-y-auto border-l border-border bg-background"
+    >
       <div className="sticky top-0 z-20 border-b border-border bg-background/96 px-4 py-3 backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -1997,7 +1977,7 @@ function Inspector({
                 {nodeDisplayTitle(selectedNode, t)}
               </h2>
             </div>
-            <p className="mt-1 pl-6 text-[10px] text-muted-foreground">
+            <p className="mt-1 pl-6 text-[13px] text-muted-foreground">
               {t(`nodes.${nodeCopyKey(selectedNode.kind)}.description`)}
             </p>
           </div>
@@ -2063,11 +2043,11 @@ function Inspector({
                   key={port.id}
                   className="rounded-lg border border-border bg-muted/25 px-3 py-2.5"
                 >
-                  <div className="flex items-center justify-between text-[10px]">
+                  <div className="flex items-center justify-between text-[13px]">
                     <span className="font-medium">
                       {portDisplayLabel(port.id, t)}
                     </span>
-                    <span className="rounded bg-background px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                    <span className="rounded bg-background px-1.5 py-0.5 text-[12px] text-muted-foreground">
                       {
                         workspace.workflow.edges.filter(
                           (edge) =>
@@ -2078,7 +2058,7 @@ function Inspector({
                       }
                     </span>
                   </div>
-                  <p className="mt-1 text-[9px] text-muted-foreground">
+                  <p className="mt-1 text-[12px] text-muted-foreground">
                     {t("inspector.multiInputHint")}
                   </p>
                 </div>
@@ -2111,10 +2091,10 @@ function Inspector({
             {selectedNode.outputPorts.map((port) => (
               <div
                 key={port.id}
-                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 text-[10px]"
+                className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 text-[13px]"
               >
                 <span>{portDisplayLabel(port.id, t)}</span>
-                <span className="rounded bg-background px-1.5 py-0.5 text-[9px] text-muted-foreground">
+                <span className="rounded bg-background px-1.5 py-0.5 text-[12px] text-muted-foreground">
                   {t(`types.${port.valueType}`)}
                 </span>
               </div>
@@ -2342,7 +2322,7 @@ function ImageGeneratorEditor({
                 onBindVariable(node.id, promptPort.id, reference)
               }
             />
-            <div className="rounded-md bg-muted/55 px-3 py-2 text-[10px] leading-4 text-muted-foreground">
+            <div className="rounded-md bg-muted/55 px-3 py-2 text-[13px] leading-4 text-muted-foreground">
               <span className="font-medium text-foreground">
                 {t("inspector.resolvedValue")}
               </span>
@@ -2416,7 +2396,7 @@ function ImageGeneratorEditor({
                 ))}
               </div>
             ) : null}
-            <label className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-input text-[10px] font-medium text-muted-foreground hover:border-foreground/30 hover:text-foreground">
+            <label className="flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-input text-[13px] font-medium text-muted-foreground hover:border-foreground/30 hover:text-foreground">
               <UploadIcon className="size-3.5" />
               {uploadingReference
                 ? t("inspector.referenceUploading")
@@ -2434,13 +2414,13 @@ function ImageGeneratorEditor({
                 }}
               />
             </label>
-            <p className="text-[9px] text-muted-foreground">
+            <p className="text-[12px] text-muted-foreground">
               {t("inspector.referenceHint", {
                 count: specification?.referenceImages.maxCount || 0,
               })}
             </p>
             {uploadError ? (
-              <p className="text-[9px] text-destructive">{uploadError}</p>
+              <p className="text-[12px] text-destructive">{uploadError}</p>
             ) : null}
           </div>
         )}
@@ -2654,7 +2634,7 @@ function ImageGeneratorEditor({
       </div>
       {resolvedSize?.ok ? (
         <div
-          className="rounded-md border border-border bg-muted/30 px-3 py-2 text-[9px]"
+          className="rounded-md border border-border bg-muted/30 px-3 py-2 text-[12px]"
           data-testid="resolved-image-size"
         >
           <div className="flex items-center justify-between gap-3">
@@ -2681,9 +2661,9 @@ function ImageGeneratorEditor({
           ) : null}
         </div>
       ) : resolvedSize ? (
-        <p className="text-[9px] text-destructive">{resolvedSize.message}</p>
+        <p className="text-[12px] text-destructive">{resolvedSize.message}</p>
       ) : null}
-      <p className="text-[9px] leading-4 text-muted-foreground">
+      <p className="text-[12px] leading-4 text-muted-foreground">
         {modelOffering
           ? t("inspector.costNotice", {
               credits: formatCreditMicros(modelOffering.price.unitCreditMicros),
@@ -2720,14 +2700,14 @@ function ImageInputHeader({
   const t = useTranslations("Studio")
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-[10px] font-semibold">{label}</span>
+      <span className="text-[13px] font-semibold">{label}</span>
       <div className="flex rounded-md bg-muted p-0.5">
         {(["variable", "fixed"] as const).map((candidate) => (
           <button
             key={candidate}
             type="button"
             className={cn(
-              "rounded px-2 py-1 text-[9px] font-medium",
+              "rounded px-2 py-1 text-[12px] font-medium",
               mode === candidate
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground"
@@ -2754,7 +2734,7 @@ function ImageNumberInput({
   onChange: (value: number) => void
 }) {
   return (
-    <label className="text-[9px] font-medium text-muted-foreground">
+    <label className="text-[12px] font-medium text-muted-foreground">
       {label}
       <input
         type="number"
@@ -2762,7 +2742,7 @@ function ImageNumberInput({
         step={1}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-2 text-[10px] font-medium text-foreground outline-none focus:border-violet-500"
+        className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-2 text-[13px] font-medium text-foreground outline-none focus:border-violet-500"
       />
     </label>
   )
@@ -2780,12 +2760,12 @@ function ImageConfigSelect({
   onChange: (value: string) => void
 }) {
   return (
-    <label className="text-[9px] font-medium text-muted-foreground">
+    <label className="text-[12px] font-medium text-muted-foreground">
       {label}
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-2 text-[10px] font-medium text-foreground outline-none focus:border-violet-500"
+        className="mt-1 w-full rounded-md border border-input bg-background px-2.5 py-2 text-[13px] font-medium text-foreground outline-none focus:border-violet-500"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -2846,10 +2826,10 @@ function StartVariablesEditor({
     <div className="space-y-2.5" data-testid="start-variable-editor">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold">
+          <p className="text-[13px] font-semibold">
             {t("inspector.startVariables")}
           </p>
-          <p className="mt-0.5 text-[9px] text-muted-foreground">
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
             {t("inspector.startVariablesHint")}
           </p>
         </div>
@@ -2868,7 +2848,7 @@ function StartVariablesEditor({
               key={`${variable.id}-${variable.name}`}
               defaultValue={variable.name}
               aria-label={t("inspector.variableName")}
-              className="h-8 flex-1 text-[11px]"
+              className="h-8 flex-1 text-[13px]"
               onBlur={(event) => {
                 const name = event.target.value.trim()
                 if (name && name !== variable.name) {
@@ -2879,7 +2859,7 @@ function StartVariablesEditor({
             <select
               value={variable.valueType}
               aria-label={t("inspector.variableType")}
-              className="h-8 rounded-md border border-input bg-background px-2 text-[10px]"
+              className="h-8 rounded-md border border-input bg-background px-2 text-[13px]"
               onChange={(event) => {
                 const valueType = event.target.value as WorkflowInputValueType
                 updateVariable(index, {
@@ -2917,7 +2897,7 @@ function StartVariablesEditor({
                 updateVariable(index, { defaultValue })
               }
             />
-            <label className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background px-2 text-[9px]">
+            <label className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background px-2 text-[12px]">
               <input
                 type="checkbox"
                 checked={variable.required}
@@ -2928,7 +2908,7 @@ function StartVariablesEditor({
               {t("inspector.required")}
             </label>
           </div>
-          <p className="font-mono text-[8px] text-muted-foreground">
+          <p className="font-mono text-[13px] text-muted-foreground">
             {variable.id}
           </p>
         </div>
@@ -2953,7 +2933,7 @@ function WorkflowInputDefaultEditor({
       <select
         value={String(variable.defaultValue ?? false)}
         aria-label={t("inspector.defaultValue")}
-        className="h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-[10px]"
+        className="h-8 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-[13px]"
         onChange={(event) => onChange(event.target.value === "true")}
       >
         <option value="true">true</option>
@@ -2967,7 +2947,7 @@ function WorkflowInputDefaultEditor({
       value={String(variable.defaultValue ?? "")}
       aria-label={t("inspector.defaultValue")}
       placeholder={t("inspector.defaultValue")}
-      className="h-8 min-w-0 flex-1 text-[10px]"
+      className="h-8 min-w-0 flex-1 text-[13px]"
       onChange={(event) =>
         onChange(
           variable.valueType === "number"
@@ -3008,10 +2988,10 @@ function ImageRunDetails({
         className="space-y-3 rounded-xl border border-border bg-muted/20 p-3"
       >
         <div>
-          <p className="text-[9px] font-medium text-muted-foreground">
+          <p className="text-[12px] font-medium text-muted-foreground">
             {t("inspector.actualPrompt")}
           </p>
-          <p className="mt-1.5 max-h-24 overflow-y-auto rounded-lg bg-background px-2.5 py-2 text-[10px] leading-4">
+          <p className="mt-1.5 max-h-24 overflow-y-auto rounded-lg bg-background px-2.5 py-2 text-[13px] leading-4">
             {prompt}
           </p>
         </div>
@@ -3053,7 +3033,7 @@ function ImageRunDetails({
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-3 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-2 rounded-lg border border-dashed border-border bg-background px-3 py-3 text-[13px] text-muted-foreground">
             <CircleDotIcon className="size-3.5 text-slate-400" />
             {t("inspector.notRunYet")}
           </div>
@@ -3066,8 +3046,8 @@ function ImageRunDetails({
 function RunMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-background px-2.5 py-2">
-      <p className="text-[8px] text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-[10px] font-semibold">{value}</p>
+      <p className="text-[13px] text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate text-[13px] font-semibold">{value}</p>
     </div>
   )
 }
@@ -3194,10 +3174,10 @@ function DurableRunPanel({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-[11px] font-semibold text-foreground">
+          <div className="text-[13px] font-semibold text-foreground">
             {t("durableRun.title")}
           </div>
-          <div className="mt-0.5 text-[9px] text-muted-foreground">
+          <div className="mt-0.5 text-[12px] text-muted-foreground">
             {generatedImages.length > 0
               ? t("durableRun.imageGeneration")
               : t("durableRun.creativeWorkflow")}
@@ -3210,7 +3190,7 @@ function DurableRunPanel({
               data-testid="durable-run-retry"
               disabled={retrying}
               onClick={onRetry}
-              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[9px] font-medium text-muted-foreground hover:border-foreground/30 hover:text-foreground disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[12px] font-medium text-muted-foreground hover:border-foreground/30 hover:text-foreground disabled:cursor-wait disabled:opacity-60"
             >
               <RefreshCwIcon
                 className={cn("size-2.5", retrying && "animate-spin")}
@@ -3224,7 +3204,7 @@ function DurableRunPanel({
               data-testid="durable-run-cancel"
               disabled={cancelling || Boolean(resumingAssetId)}
               onClick={onCancel}
-              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[9px] font-medium text-muted-foreground hover:border-destructive/50 hover:text-destructive disabled:cursor-wait disabled:opacity-60"
+              className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-[12px] font-medium text-muted-foreground hover:border-destructive/50 hover:text-destructive disabled:cursor-wait disabled:opacity-60"
             >
               <XIcon className="size-2.5" />
               {cancelling
@@ -3232,7 +3212,7 @@ function DurableRunPanel({
                 : t("durableRun.cancelRun")}
             </button>
           ) : null}
-          <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[9px] font-medium text-muted-foreground">
+          <span className="flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[12px] font-medium text-muted-foreground">
             <CircleDotIcon
               className={cn(
                 "size-2.5",
@@ -3284,7 +3264,7 @@ function DurableRunPanel({
 
           {projection.suspension ? (
             <div className="mt-3" data-testid="durable-run-suspension">
-              <p className="text-[10px] leading-4 text-muted-foreground">
+              <p className="text-[13px] leading-4 text-muted-foreground">
                 {t("durableRun.selectionHint")}
               </p>
               <div className="mt-2 grid gap-1.5">
@@ -3298,14 +3278,14 @@ function DurableRunPanel({
                     className="flex items-center justify-between rounded-lg border border-border bg-card px-2.5 py-2 text-left hover:border-violet-400 hover:bg-violet-500/5 disabled:cursor-wait disabled:opacity-60"
                   >
                     <span>
-                      <span className="block text-[10px] font-medium text-foreground">
+                      <span className="block text-[13px] font-medium text-foreground">
                         {t("durableRun.direction", { count: index + 1 })}
                       </span>
-                      <span className="block text-[8px] text-muted-foreground">
+                      <span className="block text-[13px] text-muted-foreground">
                         {t("durableRun.serverReference")}
                       </span>
                     </span>
-                    <span className="rounded-md bg-violet-500/10 px-2 py-1 text-[9px] font-semibold text-violet-700 dark:text-violet-200">
+                    <span className="rounded-md bg-violet-500/10 px-2 py-1 text-[12px] font-semibold text-violet-700 dark:text-violet-200">
                       {resumingAssetId === asset.assetId
                         ? t("durableRun.resuming")
                         : t("durableRun.choose")}
@@ -3333,17 +3313,17 @@ function DurableRunPanel({
                   </a>
                   <figcaption className="flex items-start justify-between gap-3 p-3">
                     <div className="min-w-0">
-                      <p className="text-[10px] font-semibold text-foreground">
+                      <p className="text-[13px] font-semibold text-foreground">
                         {generatedImages.length > 1
                           ? t("durableRun.generatedImageNumber", {
                               count: index + 1,
                             })
                           : t("durableRun.generatedImage")}
                       </p>
-                      <p className="mt-1 line-clamp-2 text-[9px] leading-4 text-muted-foreground">
+                      <p className="mt-1 line-clamp-2 text-[12px] leading-4 text-muted-foreground">
                         {asset.prompt}
                       </p>
-                      <p className="mt-1 text-[8px] text-muted-foreground">
+                      <p className="mt-1 text-[13px] text-muted-foreground">
                         {formatModelRefLabel(asset.modelRef)} · {asset.width} ×{" "}
                         {asset.height}
                       </p>
@@ -3365,7 +3345,7 @@ function DurableRunPanel({
 
           {projection.attempts.length > 0 ? (
             <details className="mt-3" data-testid="durable-run-attempts">
-              <summary className="cursor-pointer text-[9px] font-medium text-muted-foreground">
+              <summary className="cursor-pointer text-[12px] font-medium text-muted-foreground">
                 {t("durableRun.executionDetails")}
               </summary>
               <div className="mt-2 grid gap-1.5">
@@ -3373,7 +3353,7 @@ function DurableRunPanel({
                   <div
                     key={attempt.nodeId}
                     data-testid={`durable-run-attempt-${attempt.nodeId}`}
-                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/35 px-2.5 py-1.5 text-[9px]"
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/35 px-2.5 py-1.5 text-[12px]"
                   >
                     <span className="truncate font-medium text-foreground">
                       {durableNodeKindLabel(attempt.nodeKind, t)}
@@ -3403,10 +3383,10 @@ function DurableRunPanel({
               data-testid="durable-run-failure"
               className="mt-3 rounded-lg border border-rose-500/25 bg-rose-500/5 p-2.5"
             >
-              <div className="text-[10px] font-semibold text-rose-700 dark:text-rose-300">
+              <div className="text-[13px] font-semibold text-rose-700 dark:text-rose-300">
                 {t("durableRun.failureTitle")}
               </div>
-              <p className="mt-1 text-[9px] leading-4 text-foreground">
+              <p className="mt-1 text-[12px] leading-4 text-foreground">
                 {projection.failure.message}
               </p>
             </div>
@@ -3417,11 +3397,11 @@ function DurableRunPanel({
               data-testid="durable-run-output"
               className="mt-3 rounded-lg border border-emerald-500/25 bg-emerald-500/5 p-2.5"
             >
-              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+              <div className="flex items-center gap-1.5 text-[13px] font-semibold text-emerald-700 dark:text-emerald-300">
                 <CheckIcon className="size-3" />
                 {t("durableRun.typedOutput")}
               </div>
-              <div className="mt-1 font-mono text-[9px] text-foreground">
+              <div className="mt-1 font-mono text-[12px] text-foreground">
                 {designDocument.documentId} · r{designDocument.revision}
               </div>
             </div>
@@ -3475,7 +3455,7 @@ function DurableRunObservability({
         />
       </div>
 
-      <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-border py-2 text-[8px] text-muted-foreground">
+      <div className="flex flex-wrap gap-x-3 gap-y-1 border-t border-border py-2 text-[13px] text-muted-foreground">
         <span>
           {t("durableRun.startedAt")}{" "}
           {formatRunTimestamp(projection.run.startedAt, locale, t)}
@@ -3495,16 +3475,16 @@ function DurableRunObservability({
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-[10px] font-semibold text-foreground">
+                <p className="truncate text-[13px] font-semibold text-foreground">
                   {durableNodeKindLabel(node.nodeKind, t)}
                 </p>
-                <p className="mt-0.5 text-[8px] text-muted-foreground">
+                <p className="mt-0.5 text-[13px] text-muted-foreground">
                   {formatRunDuration(node.durationMs, t)}
                 </p>
               </div>
               <span
                 className={cn(
-                  "shrink-0 text-[8px] font-medium",
+                  "shrink-0 text-[13px] font-medium",
                   node.status === "succeeded"
                     ? "text-emerald-600 dark:text-emerald-400"
                     : node.status === "failed" || node.status === "cancelled"
@@ -3534,7 +3514,7 @@ function DurableRunObservability({
             ) : null}
 
             {node.model ? (
-              <div className="mt-2 space-y-1 text-[8px] text-muted-foreground">
+              <div className="mt-2 space-y-1 text-[13px] text-muted-foreground">
                 <KeyValue
                   label={t("durableRun.model")}
                   value={`${formatModelRefLabel(node.model.modelRef)} · ${node.model.modelRef}`}
@@ -3561,7 +3541,7 @@ function DurableRunObservability({
             ) : null}
 
             {node.usage ? (
-              <div className="mt-2 text-[8px] text-muted-foreground">
+              <div className="mt-2 text-[13px] text-muted-foreground">
                 <KeyValue
                   label={t("durableRun.usage")}
                   value={formatRunUsage(node.usage, locale, t)}
@@ -3569,7 +3549,7 @@ function DurableRunObservability({
               </div>
             ) : null}
             {node.billing ? (
-              <div className="mt-1 text-[8px] text-muted-foreground">
+              <div className="mt-1 text-[13px] text-muted-foreground">
                 <KeyValue
                   label={t("durableRun.credits")}
                   value={t("durableRun.creditComparison", {
@@ -3580,7 +3560,7 @@ function DurableRunObservability({
               </div>
             ) : null}
             {node.error ? (
-              <p className="mt-2 text-[9px] leading-4 text-rose-700 dark:text-rose-300">
+              <p className="mt-2 text-[12px] leading-4 text-rose-700 dark:text-rose-300">
                 {node.error.message}
               </p>
             ) : null}
@@ -3594,8 +3574,8 @@ function DurableRunObservability({
 function RunSummaryMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 px-2 first:pl-0 last:pr-0">
-      <p className="text-[8px] text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-[10px] font-semibold text-foreground">
+      <p className="text-[13px] text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate text-[13px] font-semibold text-foreground">
         {value}
       </p>
     </div>
@@ -3616,12 +3596,12 @@ function RunValueSummary({
     <dl className="mt-2 space-y-1.5 border-l-2 border-border pl-2.5">
       {values.map((value) => (
         <div key={`${value.portId}:${value.valueType}`}>
-          <dt className="text-[8px] font-medium text-muted-foreground">
+          <dt className="text-[13px] font-medium text-muted-foreground">
             {label} · {portDisplayLabel(value.portId, t)}
           </dt>
           <dd
             className={cn(
-              "mt-0.5 text-[9px] leading-4 text-foreground",
+              "mt-0.5 text-[12px] leading-4 text-foreground",
               value.valueType === "text" &&
                 "max-h-24 overflow-y-auto whitespace-pre-wrap"
             )}
@@ -3781,7 +3761,7 @@ function ProfessionalToolbar({
   const { fitView, zoomIn, zoomOut } = useReactFlow<MusesFlowNode>()
   const { zoom } = useViewport()
   return (
-    <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2">
+    <div className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 whitespace-nowrap">
       <div className="pointer-events-auto flex h-10 items-center gap-1 rounded-xl border border-border bg-background/95 px-1.5 shadow-lg backdrop-blur">
         <ToolbarIconButton
           active={inputMode === "mouse"}
@@ -3806,7 +3786,7 @@ function ProfessionalToolbar({
         </ToolbarIconButton>
         <button
           type="button"
-          className="min-w-12 rounded-md px-1.5 py-1 text-[10px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="min-w-12 rounded-md px-1.5 py-1 text-[13px] font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
           onClick={() => void fitView({ duration: 160, padding: 0.2 })}
           title={t("canvas.fit")}
         >
@@ -3829,7 +3809,7 @@ function ProfessionalToolbar({
         <button
           type="button"
           onClick={onAddNode}
-          className="ml-1 flex items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/8 px-2.5 py-1.5 text-[10px] font-semibold text-violet-700 hover:bg-violet-500/15 dark:text-violet-200"
+          className="ml-1 flex shrink-0 items-center gap-1.5 rounded-md border border-violet-500/30 bg-violet-500/8 px-2.5 py-1.5 text-[13px] font-semibold text-violet-700 hover:bg-violet-500/15 dark:text-violet-200"
           title={t("canvas.addNode")}
         >
           <PlusIcon className="size-3.5" />
@@ -3840,12 +3820,12 @@ function ProfessionalToolbar({
         type="button"
         onClick={onPublish}
         disabled={publishing}
-        className="pointer-events-auto flex h-10 items-center gap-2 rounded-xl border border-emerald-600 bg-emerald-600 px-4 text-[11px] font-semibold text-white shadow-lg hover:bg-emerald-700"
+        className="pointer-events-auto flex h-10 shrink-0 items-center gap-2 rounded-xl border border-emerald-600 bg-emerald-600 px-4 text-[13px] font-semibold text-white shadow-lg hover:bg-emerald-700"
         title={t("header.runHint")}
       >
         <PlayIcon className="size-3.5 fill-current" />
         {publishing ? t("header.publishing") : t("header.publish")}
-        <span className="rounded bg-white/15 px-1.5 py-0.5 text-[9px]">
+        <span className="rounded bg-white/15 px-1.5 py-0.5 text-[12px]">
           {lastRunId ? t("header.durable") : t("header.validate")}
         </span>
       </button>
@@ -3924,10 +3904,10 @@ function ResultGallery({
               ) : null}
             </div>
             <div className="flex items-center justify-between gap-2 px-2 py-1.5">
-              <span className="truncate text-[9px] font-medium">
+              <span className="truncate text-[12px] font-medium">
                 {node.data.variantLabel}
               </span>
-              <span className="shrink-0 text-[8px] text-muted-foreground">
+              <span className="shrink-0 text-[13px] text-muted-foreground">
                 {node.data.selected
                   ? t("nodes.selectedShort")
                   : t("nodes.chooseShort")}
@@ -3949,7 +3929,7 @@ function InspectorSection({
 }) {
   return (
     <section className="border-t border-border py-4 first:border-t-0 first:pt-0">
-      <p className="mb-3 text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+      <p className="mb-3 text-[12px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
         {title}
       </p>
       <div className="space-y-2">{children}</div>
@@ -3959,7 +3939,7 @@ function InspectorSection({
 
 function KeyValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-start justify-between gap-3 text-[10px]">
+    <div className="flex items-start justify-between gap-3 text-[13px]">
       <span className="shrink-0 text-muted-foreground">{label}</span>
       <span className="text-right break-all">{value}</span>
     </div>
@@ -3969,8 +3949,8 @@ function KeyValue({ label, value }: { label: string; value: string }) {
 function InspectorField({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg border border-border bg-muted/25 px-3 py-2.5">
-      <p className="text-[9px] text-muted-foreground">{label}</p>
-      <p className="mt-1 truncate text-[11px] font-medium">{value}</p>
+      <p className="text-[12px] text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate text-[13px] font-medium">{value}</p>
     </div>
   )
 }

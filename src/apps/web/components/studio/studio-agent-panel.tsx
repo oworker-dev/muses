@@ -3,6 +3,7 @@
 import {
   BanIcon,
   CheckIcon,
+  CircleXIcon,
   CircleStopIcon,
   LoaderCircleIcon,
   ListChecksIcon,
@@ -26,8 +27,9 @@ import type {
 import type { WorkflowRuntimeImageAsset } from "@muses/domain"
 
 import type { AgentDelegationActivityProjection } from "@/lib/agent-delegation-activity"
-import { cn } from "@/lib/utils"
 import { createClientId } from "@/lib/client-id"
+import { agentStages } from "@/lib/studio-agent-stage-projection"
+import { cn } from "@/lib/utils"
 
 type AgentRunResponse = {
   run: AgentRunSnapshot
@@ -323,7 +325,7 @@ export function StudioAgentPanel({
   return (
     <aside
       data-testid="studio-agent-panel"
-      className="absolute bottom-16 left-3 z-20 flex max-h-[min(680px,calc(100%-92px))] w-[min(380px,calc(100%-24px))] flex-col overflow-hidden rounded-lg border border-border bg-background/95 shadow-xl backdrop-blur"
+      className="flex h-full w-[400px] shrink-0 flex-col overflow-hidden border-l border-border bg-background"
     >
       <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
         <div className="flex min-w-0 items-center gap-2">
@@ -331,10 +333,10 @@ export function StudioAgentPanel({
             <SparklesIcon className="size-3.5" />
           </span>
           <div className="min-w-0">
-            <div className="truncate text-[11px] font-semibold text-foreground">
+            <div className="truncate text-sm font-semibold text-foreground">
               {t("title")}
             </div>
-            <div className="truncate text-[9px] text-muted-foreground">
+            <div className="truncate text-[12px] text-muted-foreground">
               {delegation?.approvals.length
                 ? t("waiting")
                 : delegationBusy
@@ -365,23 +367,29 @@ export function StudioAgentPanel({
             {stages.map((stage) => (
               <div
                 key={stage.key}
+                data-testid={`studio-agent-stage-${stage.key}`}
+                data-state={stage.state}
                 className={cn(
                   "flex min-h-12 items-center gap-1.5 rounded-md border px-2 py-1.5",
                   stage.state === "done"
                     ? "border-emerald-500/25 bg-emerald-500/5"
-                    : stage.state === "active"
-                      ? "border-foreground/20 bg-muted"
-                      : "border-border bg-background"
+                    : stage.state === "failed"
+                      ? "border-destructive/25 bg-destructive/5"
+                      : stage.state === "active"
+                        ? "border-foreground/20 bg-muted"
+                        : "border-border bg-background"
                 )}
               >
                 {stage.state === "done" ? (
                   <CheckIcon className="size-3 shrink-0 text-emerald-600" />
+                ) : stage.state === "failed" ? (
+                  <CircleXIcon className="size-3 shrink-0 text-destructive" />
                 ) : stage.state === "active" ? (
                   <LoaderCircleIcon className="size-3 shrink-0 animate-spin" />
                 ) : (
                   <span className="size-3 shrink-0 rounded-full border border-border" />
                 )}
-                <span className="text-[9px] font-medium text-foreground">
+                <span className="text-[12px] font-medium text-foreground">
                   {t(`stages.${stage.key}`)}
                 </span>
               </div>
@@ -393,7 +401,7 @@ export function StudioAgentPanel({
               className="mt-2.5 rounded-md border border-border bg-muted/20"
               data-testid="studio-agent-plan"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-2.5 py-2 text-[9px] font-medium text-foreground">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-2.5 py-2 text-[12px] font-medium text-foreground">
                 <span className="flex items-center gap-1.5">
                   <ListChecksIcon className="size-3.5 text-muted-foreground" />
                   {t("plan")}
@@ -408,19 +416,22 @@ export function StudioAgentPanel({
                 </span>
               </summary>
               <div className="border-t border-border px-2.5 py-2">
-                <p className="line-clamp-2 text-[9px] leading-4 text-muted-foreground">
+                <p className="line-clamp-2 text-[12px] leading-4 text-muted-foreground">
                   {run.plan.goal}
                 </p>
                 <ol className="mt-1.5 grid gap-1.5">
                   {run.plan.steps.map((step) => (
                     <li
                       key={step.id}
-                      className="flex min-h-5 items-center gap-2 text-[9px] text-foreground"
+                      className="flex min-h-5 items-center gap-2 text-[12px] text-foreground"
                     >
                       {step.status === "completed" ? (
                         <CheckIcon className="size-3 shrink-0 text-emerald-600" />
-                      ) : step.status === "in-progress" ? (
+                      ) : step.status === "in-progress" &&
+                        !isTerminal(run.status) ? (
                         <LoaderCircleIcon className="size-3 shrink-0 animate-spin" />
+                      ) : step.status === "in-progress" ? (
+                        <CircleXIcon className="size-3 shrink-0 text-destructive" />
                       ) : (
                         <span className="size-3 shrink-0 rounded-full border border-border" />
                       )}
@@ -438,10 +449,10 @@ export function StudioAgentPanel({
               data-testid="studio-agent-delegation"
             >
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[10px] font-semibold text-foreground">
+                <p className="text-[13px] font-semibold text-foreground">
                   {t("delegation.title")}
                 </p>
-                <span className="text-[9px] text-muted-foreground">
+                <span className="text-[12px] text-muted-foreground">
                   {t("delegation.taskCount", { count: delegatedTaskCount })}
                   {delegatedArtifactCount
                     ? ` · ${t("delegation.artifactCount", { count: delegatedArtifactCount })}`
@@ -455,7 +466,7 @@ export function StudioAgentPanel({
                     className="border-t border-border py-2 first:border-t-0 first:pt-0 last:pb-0"
                   >
                     <div className="flex min-h-6 items-center justify-between gap-3">
-                      <span className="text-[8px] font-medium text-muted-foreground">
+                      <span className="text-[13px] font-medium text-muted-foreground">
                         {delegationStatusLabel(item.status, t)}
                       </span>
                       {isDelegationRunCancellable(item.status) ? (
@@ -488,10 +499,10 @@ export function StudioAgentPanel({
                             <span className="mt-0.5 size-3 shrink-0 rounded-full border border-border" />
                           )}
                           <div className="min-w-0">
-                            <p className="line-clamp-2 text-[9px] leading-4 text-foreground">
+                            <p className="line-clamp-2 text-[12px] leading-4 text-foreground">
                               {task.objective}
                             </p>
-                            <p className="text-[8px] leading-3 text-muted-foreground">
+                            <p className="text-[13px] leading-3 text-muted-foreground">
                               {task.profile.profileId} ·{" "}
                               {delegationStatusLabel(task.status, t)}
                               {task.artifactRefs.length
@@ -515,22 +526,22 @@ export function StudioAgentPanel({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-foreground">
+                  <p className="text-[13px] font-semibold text-foreground">
                     {t("approval.title")}
                   </p>
-                  <p className="mt-0.5 text-[9px] leading-4 text-muted-foreground">
+                  <p className="mt-0.5 text-[12px] leading-4 text-muted-foreground">
                     {run.pendingApproval.reason}
                   </p>
                 </div>
-                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[8px] text-foreground">
+                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[13px] text-foreground">
                   {run.pendingApproval.toolCall.name}
                 </span>
               </div>
               <details className="mt-2 rounded border border-border bg-background/70">
-                <summary className="cursor-pointer list-none px-2 py-1.5 text-[9px] font-medium text-muted-foreground">
+                <summary className="cursor-pointer list-none px-2 py-1.5 text-[12px] font-medium text-muted-foreground">
                   {t("approval.input")}
                 </summary>
-                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[8px] leading-4 whitespace-pre-wrap text-foreground">
+                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[13px] leading-4 whitespace-pre-wrap text-foreground">
                   {formatApprovalInput(run.pendingApproval.toolCall.input)}
                 </pre>
               </details>
@@ -539,7 +550,7 @@ export function StudioAgentPanel({
                   type="button"
                   disabled={submitting}
                   onClick={() => void decideApproval("denied")}
-                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[9px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
                 >
                   <BanIcon className="size-3" />
                   {t("approval.deny")}
@@ -548,7 +559,7 @@ export function StudioAgentPanel({
                   type="button"
                   disabled={submitting}
                   onClick={() => void decideApproval("approved")}
-                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[9px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
                 >
                   <CheckIcon className="size-3" />
                   {t("approval.approve")}
@@ -565,22 +576,22 @@ export function StudioAgentPanel({
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[10px] font-semibold text-foreground">
+                  <p className="text-[13px] font-semibold text-foreground">
                     {t("delegation.approvalTitle")}
                   </p>
-                  <p className="mt-0.5 text-[9px] leading-4 text-muted-foreground">
+                  <p className="mt-0.5 text-[12px] leading-4 text-muted-foreground">
                     {approval.reason}
                   </p>
                 </div>
-                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[8px] text-foreground">
+                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[13px] text-foreground">
                   {approval.toolCall.name}
                 </span>
               </div>
               <details className="mt-2 rounded border border-border bg-background/70">
-                <summary className="cursor-pointer list-none px-2 py-1.5 text-[9px] font-medium text-muted-foreground">
+                <summary className="cursor-pointer list-none px-2 py-1.5 text-[12px] font-medium text-muted-foreground">
                   {t("approval.input")}
                 </summary>
-                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[8px] leading-4 whitespace-pre-wrap text-foreground">
+                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[13px] leading-4 whitespace-pre-wrap text-foreground">
                   {formatApprovalInput(approval.toolCall.input)}
                 </pre>
               </details>
@@ -591,7 +602,7 @@ export function StudioAgentPanel({
                   onClick={() =>
                     void decideDelegatedApproval(approval, "denied")
                   }
-                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[9px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
+                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
                 >
                   <BanIcon className="size-3" />
                   {t("approval.deny")}
@@ -602,7 +613,7 @@ export function StudioAgentPanel({
                   onClick={() =>
                     void decideDelegatedApproval(approval, "approved")
                   }
-                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[9px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
                 >
                   <CheckIcon className="size-3" />
                   {t("approval.approve")}
@@ -624,7 +635,7 @@ export function StudioAgentPanel({
                     alt={asset.prompt}
                     className="max-h-[360px] w-full object-contain"
                   />
-                  <figcaption className="flex items-center justify-between gap-3 px-2.5 py-2 text-[9px] text-muted-foreground">
+                  <figcaption className="flex items-center justify-between gap-3 px-2.5 py-2 text-[12px] text-muted-foreground">
                     <span className="truncate">{asset.prompt}</span>
                     <span className="shrink-0">
                       {asset.width} x {asset.height}
@@ -636,13 +647,13 @@ export function StudioAgentPanel({
           ) : null}
 
           {latestAssistant ? (
-            <p className="mt-3 text-[10px] leading-4 whitespace-pre-wrap text-foreground">
+            <p className="mt-3 text-[13px] leading-4 whitespace-pre-wrap text-foreground">
               {latestAssistant.content}
             </p>
           ) : null}
           {run.failure ? (
-            <p className="mt-3 rounded-md border border-destructive/25 bg-destructive/5 px-2.5 py-2 text-[9px] leading-4 text-destructive">
-              {run.failure.code === "model-failed"
+            <p className="mt-3 rounded-md border border-destructive/25 bg-destructive/5 px-2.5 py-2 text-[12px] leading-4 text-destructive">
+              {isModelProviderFailure(run.failure.code)
                 ? t("modelFailed")
                 : run.failure.message}
             </p>
@@ -664,7 +675,7 @@ export function StudioAgentPanel({
             onChange={(event) => setPrompt(event.target.value)}
             placeholder={run ? t("followUpPlaceholder") : t("placeholder")}
             rows={2}
-            className="max-h-32 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-1.5 py-1 text-[11px] leading-4 outline-none placeholder:text-muted-foreground"
+            className="max-h-32 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-1.5 py-1 text-sm leading-5 outline-none placeholder:text-muted-foreground"
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {
                 event.preventDefault()
@@ -689,7 +700,7 @@ export function StudioAgentPanel({
           </button>
         </div>
         {error ? (
-          <p className="mt-1.5 text-[9px] leading-4 text-destructive">
+          <p className="mt-1.5 text-[12px] leading-4 text-destructive">
             {error}
           </p>
         ) : null}
@@ -719,39 +730,8 @@ function formatApprovalInput(input: Readonly<Record<string, unknown>>) {
     : formatted
 }
 
-function agentStages(
-  run: AgentRunSnapshot | null,
-  events: readonly AgentEvent[]
-) {
-  const eventTypes = new Set(events.map(({ type }) => type))
-  const imageRequested = events.some(
-    (event) =>
-      event.type === "tool.started" && event.data.toolName === "image.generate"
-  )
-  const imageCompleted = events.some(
-    (event) =>
-      event.type === "tool.completed" &&
-      event.data.toolName === "image.generate"
-  )
-  const completed = run?.status === "completed"
-  return [
-    {
-      key: "understand" as const,
-      state: eventTypes.has("model.completed")
-        ? "done"
-        : run
-          ? "active"
-          : "idle",
-    },
-    {
-      key: "create" as const,
-      state: imageCompleted ? "done" : imageRequested ? "active" : "idle",
-    },
-    {
-      key: "place" as const,
-      state: completed ? "done" : imageCompleted ? "active" : "idle",
-    },
-  ] as const
+function isModelProviderFailure(code: string) {
+  return code === "model-failed" || code === "model-provider-rejected"
 }
 
 function isSettled(status: AgentRunSnapshot["status"]) {

@@ -497,8 +497,22 @@
     "statusLabels": {
       "idle": "Not run",
       "running": "Running",
+      "waiting": "Waiting",
       "succeeded": "Completed",
-      "failed": "Failed"
+      "failed": "Failed",
+      "cancelled": "Cancelled"
+    },
+    "nodeRuntime": {
+      "result": "Run result",
+      "duration": "Duration",
+      "pending": "Timing",
+      "durationMs": "{count} ms",
+      "durationSeconds": "{count} sec",
+      "waitingOutput": "Waiting for node output…",
+      "noOutput": "This run has no output summary.",
+      "true": "Yes",
+      "false": "No",
+      "imageCount": "{count, plural, one {# image} other {# images}}"
     },
     "canvas": {
       "mouseMode": "Mouse mode: drag the canvas to pan and scroll to zoom",

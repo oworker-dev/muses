@@ -53,13 +53,13 @@ export default function DesignEditor({
             <ArrowLeftIcon className="size-4" />
           </button>
           <div>
-            <p className="text-[9px] font-semibold tracking-[0.16em] text-rose-700 uppercase dark:text-rose-300">
+            <p className="text-[12px] font-semibold tracking-[0.16em] text-rose-700 uppercase dark:text-rose-300">
               {t("design.documentKind")}
             </p>
             <h1 className="text-sm font-semibold">{document.title}</h1>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
           <span className="rounded-lg border border-border bg-muted/50 px-2.5 py-1.5">
             960 × 540
           </span>
@@ -92,7 +92,7 @@ export default function DesignEditor({
                 </div>
               ))}
           </div>
-          <div className="mt-6 rounded-lg border border-border bg-muted/40 p-3 text-[10px] leading-5 text-muted-foreground">
+          <div className="mt-6 rounded-lg border border-border bg-muted/40 p-3 text-[13px] leading-5 text-muted-foreground">
             <MoveIcon className="mb-2 size-4" />
             {t("design.moveHint")}
           </div>
@@ -142,7 +142,7 @@ export default function DesignEditor({
           <div className="mt-4 space-y-4">
             {textElements.map((element) => (
               <label key={element.id} className="block">
-                <span className="mb-2 block text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                <span className="mb-2 block text-[12px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   {element.id}
                 </span>
                 <textarea
@@ -163,10 +163,10 @@ export default function DesignEditor({
             ))}
           </div>
           <div className="mt-6 border-t border-border pt-4">
-            <p className="text-[9px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+            <p className="text-[12px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
               {t("design.backgroundAsset")}
             </p>
-            <p className="mt-2 text-[10px] leading-5 break-all text-muted-foreground">
+            <p className="mt-2 text-[13px] leading-5 break-all text-muted-foreground">
               {document.backgroundAssetId || t("design.noBackground")}
             </p>
           </div>

@@ -497,8 +497,22 @@
     "statusLabels": {
       "idle": "未运行",
       "running": "运行中",
+      "waiting": "等待中",
       "succeeded": "已完成",
-      "failed": "失败"
+      "failed": "失败",
+      "cancelled": "已取消"
+    },
+    "nodeRuntime": {
+      "result": "运行结果",
+      "duration": "耗时",
+      "pending": "计时中",
+      "durationMs": "{count} 毫秒",
+      "durationSeconds": "{count} 秒",
+      "waitingOutput": "正在等待节点输出…",
+      "noOutput": "本次运行没有输出摘要。",
+      "true": "是",
+      "false": "否",
+      "imageCount": "{count} 张图片"
     },
     "canvas": {
       "mouseMode": "鼠标模式：拖动空白处平移，滚轮缩放",
