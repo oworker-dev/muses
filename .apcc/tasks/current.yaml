@@ -1169,3 +1169,16 @@ items:
     createdAt: 2026-07-30T07:12:45.587Z
     updatedAt: 2026-07-30T07:52:27.760Z
     statusChangedAt: 2026-07-30T07:52:27.760Z
+  - id: restore-database-after-disk-exhaustion
+    name: 恢复磁盘耗尽后的生产认证
+    summary: 释放可重建缓存，恢复 PostgreSQL 健康状态，并复测已登录用户的登录与 Studio 链路。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T08:18:13.000Z
+    updatedAt: 2026-07-30T08:21:20.528Z
+    statusChangedAt: 2026-07-30T08:21:20.528Z
