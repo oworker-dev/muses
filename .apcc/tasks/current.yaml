@@ -1182,3 +1182,16 @@ items:
     createdAt: 2026-07-30T08:18:13.000Z
     updatedAt: 2026-07-30T08:21:20.528Z
     statusChangedAt: 2026-07-30T08:21:20.528Z
+  - id: diagnose-admin-console-visibility
+    name: 诊断管理员后台入口不可见
+    summary: 确认生产管理员授权配置、账号状态与账户中心入口投影。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T15:01:16.259Z
+    updatedAt: 2026-07-30T15:01:54.671Z
+    statusChangedAt: 2026-07-30T15:01:54.671Z
