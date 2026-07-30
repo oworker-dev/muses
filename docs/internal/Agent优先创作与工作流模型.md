@@ -110,6 +110,8 @@ spawn / wait / close
 
 Agent Core 不依赖 React、Next.js、XYFlow、PPT 或具体 Harness，必须能作为嵌入式包、独立 Worker/API 和 CLI/Eval Harness 运行。
 
+这只是内核独立性的最低要求，不是最终产品边界。Codex 级 Agent 必须进一步作为 Web-first 项目独立发布，拥有自己的服务端 Runtime、Web 会话体验、Client/Host SDK、扩展、沙盒、运维与 eval；CLI 是辅助入口。Muses 是第一个 Host，Canvas、Asset、Media 和 Workflow 都是可选宿主工具。完整产品与依赖规则见[独立 Web Agent 项目与 Muses 宿主集成](独立WebAgent项目与Muses宿主集成.md)。
+
 AI SDK 负责模型与工具协议；Workflow SDK 负责耐久步骤、等待、重试和恢复；Harness 负责 Agent loop、上下文和扩展装配；Muses Agent Core 负责稳定产品身份、权限、预算、控制和审计。
 
 ## 9. Skill、MCP 与沙盒

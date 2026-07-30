@@ -1,6 +1,7 @@
 {
   "title": "内部",
   "pages": [
+    "独立WebAgent项目与Muses宿主集成",
     "Agent优先创作与工作流模型",
     "用户成果驱动交付计划",
     "平台核心Alpha路线",

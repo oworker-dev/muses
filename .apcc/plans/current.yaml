@@ -11,15 +11,15 @@ items:
     createdAt: 2026-07-24T18:27:47.205Z
     updatedAt: 2026-07-24T18:30:21.000Z
   - id: platform-core-alpha
-    name: Platform Core Alpha：工作流原生创作空间
-    summary: 已形成可复用的图像、身份计费、耐久运行与观测底座；首图产品验收保留并行，但不再阻塞 Agent Core 主线。
+    name: Platform Core Alpha：创作与工作流基础设施
+    summary: 保留画布、资产、模型、身份计费和耐久 Workflow 基础设施；Workflow Engine 与 Agent Engine 分开演进，平台能力只在 Muses 集成层组合。
     parentPlanId: null
     versionRef: null
     owner: codex-main
     pinned: false
     pinnedReason: 当前唯一工程关键路径。
     createdAt: 2026-07-24T19:56:41.199Z
-    updatedAt: 2026-07-28T17:08:46.580Z
+    updatedAt: 2026-07-30T18:00:14.091Z
   - id: first-image-value-gate
     name: 价值 Gate 1：用户友好的真实生图闭环
     summary: 工程闭环已完成，产品负责人无讲解验收继续作为并行证据，不再决定下一项工程组件。
@@ -91,25 +91,25 @@ items:
     createdAt: 2026-07-24T19:00:24.937Z
     updatedAt: 2026-07-24T19:56:40.723Z
   - id: agent-core-alpha
-    name: Agent Core Alpha：单 Agent 驱动创作空间
-    summary: 先冻结创作空间、工作流调用和 Agent Runtime 契约，再交付服务端 Operation Gateway、扩展安全边界、Harness 对照与单 Agent 驱动画布闭环。
+    name: Agent Core Alpha：框架无关内核证据
+    summary: 已完成框架无关状态、恢复、预算、审批、委托和真实供应商 Alpha 证据；不等于独立 Agent 产品、Eve 默认发行版、Codex 级界面或生产完成。
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: true
-    pinnedReason: 当前工程主 Gate：场景 MVP 前完成独立、可恢复、可控的 Codex 级单 Agent 内核。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-24T19:56:42.138Z
-    updatedAt: 2026-07-28T17:08:47.022Z
+    updatedAt: 2026-07-30T18:01:15.721Z
   - id: agent-orchestration-alpha
-    name: Agent Orchestration：MusesAgent、领域 Agent 与多 Agent
-    summary: 在单 Agent 可靠闭环后建立平台级 MusesAgent、领域 Agent 和受 Runtime 管理的执行型 SubAgents 委托架构。
+    name: Agent Orchestration Alpha：委托内核证据
+    summary: 已验证 MusesAgent 与图像领域 Agent 的受控委托路径；现有 Profile 和产品行为仍为代码配置与首图夹具，不代表平台自举或通用 Agent 产品完成。
     parentPlanId: null
     versionRef: null
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-24T19:56:42.295Z
-    updatedAt: 2026-07-24T19:56:42.295Z
+    updatedAt: 2026-07-30T18:00:13.982Z
   - id: scenario-mvp
     name: Scenario MVP：用真实场景验证通用层
     summary: 仅在 Agent Core 可靠性 Gate 和最小 Orchestration 通过后进入 PPT；场景用于验证通用层，不定义内核。
@@ -201,15 +201,15 @@ items:
     createdAt: 2026-07-28T17:08:48.583Z
     updatedAt: 2026-07-28T17:08:48.583Z
   - id: agent-reliability-gate
-    name: A9：Codex 级可靠性 Gate
-    summary: 验证恢复、steering、压缩、幂等费用、审批、取消、隔离、追踪和固定 eval。
+    name: A9：Agent Core Alpha 可靠性 Gate
+    summary: 验证了内核层恢复、steering、压缩、幂等费用、审批、取消、逻辑隔离、追踪和固定 eval；不得表述为 Codex 级产品已完成。
     parentPlanId: agent-core-alpha
     versionRef: null
     owner: codex-main
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-28T17:08:48.806Z
-    updatedAt: 2026-07-28T17:08:48.806Z
+    updatedAt: 2026-07-30T18:00:13.867Z
   - id: agent-delegation-continuation
     name: A11：Agent 委托结果续跑与用户取消
     summary: 将 Scheduler 聚合结果幂等回注父 Agent，并提供根 Run 终态后的独立 DelegationRun 取消入口和恢复验收。
@@ -220,3 +220,83 @@ items:
     pinnedReason: null
     createdAt: 2026-07-29T19:54:01.736Z
     updatedAt: 2026-07-29T19:54:01.736Z
+  - id: agent-platform-production
+    name: Agent Platform Production：独立引擎、工作流与平台自举
+    summary: 独立交付一个 Web 集成友好、可插拔、能力开放的 Codex 级 Agent 项目；保持 Workflow Engine 独立。Agent 项目拥有服务端 Engine、Web 产品、SDK 与嵌入协议，Muses 仅作为第一个宿主，通过工具和 agent.run 节点组合。
+    parentPlanId: null
+    versionRef: null
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前生产主线：Agent 与 Workflow 独立交付，并通过 Muses 集成层组合。
+    createdAt: 2026-07-30T17:59:41.357Z
+    updatedAt: 2026-07-30T18:06:04.912Z
+  - id: standalone-agent-engine
+    name: G1：独立 Web-first Codex 级 Agent 项目
+    summary: 把 Agent 作为可独立发布、部署和运行的 Web-first 产品交付，包含服务端 Engine、Web 会话体验、SDK/嵌入协议、扩展系统、运维与 eval；CLI 仅为辅助调试入口。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.541Z
+    updatedAt: 2026-07-30T18:06:04.993Z
+  - id: eve-default-harness
+    name: G2：Eve 默认 Harness 与可替换适配
+    summary: 以安装版本文档和兼容性 Gate 为依据，将 Eve 建设为默认现代 Web Harness；Pi 和 Muses Headless 保留为可替换实现，Muses 契约始终权威。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.637Z
+    updatedAt: 2026-07-30T17:59:59.637Z
+  - id: agent-production-gate
+    name: G6：Agent 生产可靠性与开放交付
+    summary: 完成物理沙盒、Skill/MCP、全链路观测、计费、安全、负载、故障恢复、eval、SLO、自托管文档和版本迁移 Gate。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.728Z
+    updatedAt: 2026-07-30T17:59:59.728Z
+  - id: codex-agent-experience
+    name: G5：Muses 首个宿主集成与体验一致性
+    summary: Muses 通过公开 SDK、事件协议和工具适配托管独立 Agent，不复制 Agent Web 产品逻辑；画布、资产、媒体、Workflow、身份和计费只作为宿主能力注入。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.801Z
+    updatedAt: 2026-07-30T18:06:05.203Z
+  - id: agent-independence-contract
+    name: G0：Agent 与 Workflow 独立性契约
+    summary: 冻结包依赖、运行身份、工具注入、独立发布与组合边界；Agent Core 不得依赖 Canvas、Workflow、Studio 或媒体领域。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.858Z
+    updatedAt: 2026-07-30T17:59:59.858Z
+  - id: workflow-agent-composition
+    name: G3：Agent 与 Workflow 双向组合
+    summary: Workflow 通过 agent.run 节点调用通用 Agent；Agent 通过版本化工具构建、发布和调用 Workflow，二者不形成编译期循环依赖。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T17:59:59.958Z
+    updatedAt: 2026-07-30T17:59:59.958Z
+  - id: agent-platform-self-hosting
+    name: G4：Profile、Solution 与平台自举
+    summary: 交付版本化 AgentProfile、WorkflowDefinition、SolutionDefinition、Deployment、管理员发布评测回滚和用户安全 Fork。
+    parentPlanId: agent-platform-production
+    versionRef: null
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:00:00.073Z
+    updatedAt: 2026-07-30T18:00:00.073Z

@@ -116,25 +116,25 @@ AI SDK/Chat SDK 主要覆盖模型协议、结构化输出、工具调用和流�
 
 | 候选 | 当前角色 | 原生优势 | 必须由 Muses 补齐或持有 | 当前硬阻断 |
 | --- | --- | --- | --- | --- |
-| Muses headless | 主 Runtime | 权威生命周期、审批、预算、事件、Checkpoint、Run 隔离 | PostgreSQL Store 与生产 Model Adapter | 无框架级阻断 |
+| Muses headless | 契约参考与兼容 Runtime | 权威生命周期、审批、预算、事件、Checkpoint、Run 隔离 | PostgreSQL Store 与生产 Model Adapter | 不再承担独立 Web Agent 默认产品实现 |
 | Pi 0.82.1 | 可选循环 Adapter | 工具循环、事件、steering/follow-up、工具前后置 Hook、Node 22 可运行 | 耐久状态、审批暂停、Skill/MCP、Sandbox、权限与费用 | 不可独立承担生产耐久 Runtime |
-| Eve 0.27.8 | 延后隔离候选 | 耐久 Session、HITL、Skill、MCP、Sandbox、Subagent、自托管 World | Muses 权威状态、Run 级隔离、消息队列和 Gateway Adapter | Node 24、Workflow 5 beta、per-session sandbox 与当前基线冲突 |
+| Eve 0.27.8 | 独立 Web Agent 默认 Harness | 耐久 Session、HITL、Skill、MCP、Sandbox、Subagent、自托管 World、Web channel | 稳定公开契约、Run 级物理隔离、消息队列、Host Adapter 与生产 Gate | 必须独立运行 Node 24 与 Workflow 5 beta，不能嵌入 Muses Node 22 进程 |
 
-### Eve：延后隔离候选
+### Eve：独立 Agent 项目的默认 Harness
 
 Eve 是 Apache-2.0、filesystem-first 的耐久 Agent Framework，`0.27.8`
 仍处于 Preview。随包文档确认其默认 Agent loop、上下文压缩、Tools、
 Skills、State、Channels、Schedules、Human-in-the-loop、Subagents、Sandbox
 和基于 Workflow SDK 的 step checkpoint/resume 都有较完整实现。
 
-适合验证：
+当前在独立项目 `/root/projects/muses-agent` 中验证：
 
 - MusesAgent 和领域 Agent 的长会话、暂停恢复和多入口渠道。
 - Workflow SDK 与 Agent Run 的集成。
 - per-session sandbox、工具审批、技能加载和子 Agent 隔离。
 - 自托管 world、状态、流和运行观测能否满足 Muses 开放要求。
 
-当前不能直接采用，原因是：
+当前不能直接导入 `/root/projects/saas` Web/Worker 进程，原因是：
 
 - 安装版要求 Node.js `>=24`，Muses 当前为 Node `22.22.0`。
 - Eve vendored `@workflow/* 5.0.0-beta` 协议，Muses 当前生产路径为
@@ -144,8 +144,7 @@ Skills、State、Channels、Schedules、Human-in-the-loop、Subagents、Sandbox
 - Eve 不保证同 Session 并发消息的耐久 FIFO；应用层仍需串行队列。
 - 中断中的 step 会重跑，计费、发送和发布等副作用仍必须使用 Muses 幂等收据。
 
-因此不在当前 Web/Worker 进程导入 Eve。未来只在 Node 24、独立 Workflow World
-和 Run-sandbox Adapter 的隔离部署中复验，删除候选不影响 Muses 状态格式。
+因此 Eve 在 Node 24、独立 Workflow World 和独立部署中成为 Web Agent 默认 Harness；Muses 只通过 Client/Host SDK 与 Agent 服务组合。Node 与 Workflow 协议差异由项目边界隔离，不再被误判为暂停 Agent 产品的理由。若 Eve 未通过 Run-sandbox、消息顺序或生产 SLO Gate，可切换 Pi/Headless Adapter，且不改变公开状态与 Host 集成协议。
 
 ### Pi Agent Core：可选轻量循环 Adapter
 
@@ -213,18 +212,18 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 - 外层画布：AI Elements + XYFlow。
 - 耐久工作流：Workflow SDK。
-- Agent Runtime：Muses Agent Core headless 实现；Muses PostgreSQL 保存权威 Agent Run/Event，Workflow SDK Postgres World 驱动可恢复 Node step。
+- Agent Runtime：独立 `/root/projects/muses-agent` 以 Eve 作为默认 Web Harness；Muses Headless 与 Pi 保留为兼容实现。Muses 通过 Host SDK 注入平台工具、身份、预算与计费，不把 Eve 导入自身 Node 22 进程。
 - 生成 Asset：Muses PostgreSQL 保存 Asset 身份、对象键、元数据和来源，S3 兼容对象存储保存二进制；Workflow SDK 输出只作为执行结果，不作为 Asset 授权或生命周期权威。
 - 模型工具协议：AI SDK 7；内部点分工具名通过可逆别名映射到供应商安全名称。
 - 首批 Agent 工具：`canvas.inspect`、`canvas.item.put`、`image.generate`，写操作统一经过 Operation Gateway。
 - 可选 Agent loop：Pi Agent Core Adapter。
-- 隔离耐久候选：Eve，当前延后。
+- 默认独立 Harness：Eve；其 Node 24 与 Workflow 5 beta 运行面和 Muses Workflow SDK 4.x 完全隔离。
 
 ### 暂缓
 
 - 最终专业画布渲染器。
 - 生产环境 Workflow World 的托管/自托管部署选择；本地自托管开发已固定 Postgres World。
-- Eve 的生产采用；Pi 当前只固定 Spike 版本，不承诺成为唯一 Loop。
+- Eve 的生产流量切换仍需通过物理 Run Sandbox、消息顺序、故障恢复和 SLO Gate；Pi 不承诺成为唯一 Loop。
 - 固定多 Agent 组织拓扑、唯一 Agent SDK、唯一模型供应商和长期记忆实现。框架无关的 A10 委派契约已冻结，持久 Runtime Scheduler 与真实多 Agent 执行仍待实现。
 
 ## 10. 后续验证顺序
@@ -233,7 +232,8 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
 3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据、可展开最小 ExecutionPlan 和真实 steering/follow-up 浏览器验收。
 4. 已完成 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition，以及单 Agent 恢复、压缩、费用、预算、审批、取消、隔离、追踪与固定 eval Gate。
-5. A10 第一切片已冻结 root/direct-parent Run、显式上下文、服务端授权、任务 DAG、结构化结果和预算包络协议；下一步实现持久 Scheduler，再交付 MusesAgent、领域 Agent 和受控 SubAgent 执行。
-6. 最小 Orchestration 运行与恢复 Gate 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
+5. 已冻结 Agent 与 Workflow 课题分离：先在独立 `muses-agent` 项目交付 Codex 形态 Web 产品、Eve Harness、开放 UI/SDK、Sandbox、Skill/MCP 和 Conformance Suite。
+6. 独立 Agent Gate 通过后，以 Host SDK 集成到 Muses，并移除 Studio 的首图固化 Agent 行为；随后实现 Workflow `agent.run` 与平台自举。
+7. Agent 独立性、Muses Host 一致性与 Workflow 组合 Gate 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
 
 技术候选的新版本不会自动改变路线。升级、替换和正式采用必须由可复现证据与 APCC 决策驱动。

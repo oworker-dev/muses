@@ -651,16 +651,16 @@ items:
     statusChangedAt: 2026-07-27T19:29:45.920Z
   - id: deliver-first-image-minimum-loop
     name: 交付首张真实图片最小闭环
-    summary: 首图工程闭环、Agent 单图/跟进图与 A11 双 Specialist 真实图片 Gate 均已通过：支持文生图/图生图、模型规格、授权 Asset、积分计费、恢复下载、Provider 分能力密钥和 exactly-once 父续跑。唯一剩余条件是产品负责人在 4730 无讲解完成真实首图并记录通过、补缺口或停止；在此之前不进入 PPT 场景。
+    summary: 工程首图闭环证据保留；后续产品负责人验收作为并行价值证据，不再定义通用 Agent 或 Workflow 主线。
     status: in_progress
     planRef: first-image-value-gate
     parentTaskId: null
-    countedForProgress: true
+    countedForProgress: false
     owner: codex-main
-    pinned: true
-    pinnedReason: 当前唯一产品 Gate：请产品负责人在 4730 无讲解完成真实首图并决定通过、补缺口或停止；工程自动化与 A11 已通过，在该决定前不进入 PPT。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-27T19:12:33.010Z
-    updatedAt: 2026-07-30T05:22:58.517Z
+    updatedAt: 2026-07-30T18:01:15.936Z
     statusChangedAt: 2026-07-27T19:29:46.147Z
   - id: define-first-image-value-gate
     name: 冻结首图用户成果 Gate
@@ -1221,3 +1221,380 @@ items:
     createdAt: 2026-07-30T16:27:24.783Z
     updatedAt: 2026-07-30T16:39:16.247Z
     statusChangedAt: 2026-07-30T16:39:16.247Z
+  - id: enforce-agent-package-boundaries
+    name: 实施 Agent 包依赖边界检查
+    summary: 禁止通用 Agent 包导入 Canvas、Workflow、Studio、PPT、Image 和 Next.js 产品实现。
+    status: pending
+    planRef: agent-independence-contract
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:00.028Z
+    updatedAt: 2026-07-30T18:01:00.028Z
+    statusChangedAt: 2026-07-30T18:01:00.028Z
+  - id: build-standalone-agent-distribution
+    name: 交付独立 Agent Web 应用、服务端与嵌入 SDK
+    summary: 已在 /root/projects/muses-agent 以 Eve 0.27.8、Node 24 和 Next.js Web channel 建立独立脚手架；当前推进多会话 Web 产品、恢复、取消与独立部署验收。
+    status: in_progress
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:00.693Z
+    updatedAt: 2026-07-30T18:22:31.852Z
+    statusChangedAt: 2026-07-30T18:22:31.852Z
+  - id: verify-harness-parity
+    name: 验证 Eve、Pi 与 Headless Harness 一致性
+    summary: 同一 Conformance Suite 下保持运行语义、审批、取消、用量和恢复一致。
+    status: pending
+    planRef: eve-default-harness
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.129Z
+    updatedAt: 2026-07-30T18:01:01.129Z
+    statusChangedAt: 2026-07-30T18:01:01.129Z
+  - id: verify-agent-production-slo
+    name: 完成安全、负载、故障、Eval 与 SLO Gate
+    summary: 真实供应商与故障注入覆盖并发、恢复、幂等、隔离、滥用、灰度和回滚。
+    status: pending
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.340Z
+    updatedAt: 2026-07-30T18:01:01.340Z
+    statusChangedAt: 2026-07-30T18:01:01.340Z
+  - id: implement-eve-default-adapter
+    name: 实现 Eve 默认 Harness Adapter
+    summary: 让 Eve 通过 Muses Agent Contracts、Tool、Store、Policy、Sandbox 与 Event 端口运行。
+    status: pending
+    planRef: eve-default-harness
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.456Z
+    updatedAt: 2026-07-30T18:01:01.456Z
+    statusChangedAt: 2026-07-30T18:01:01.456Z
+  - id: deliver-generic-agent-events
+    name: 交付通用 Agent 消息与事件协议
+    summary: 直接投影 Eve 文本、推理、工具、审批、授权、错误、Usage 与恢复事件，不包含理解、生图、放置等业务固化阶段。
+    status: in_progress
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.556Z
+    updatedAt: 2026-07-30T18:22:32.901Z
+    statusChangedAt: 2026-07-30T18:22:32.901Z
+  - id: define-agent-run-node-contract
+    name: 定义 agent.run 工作流节点契约
+    summary: 节点只引用版本化 Profile、输入输出、权限、预算和 Deployment，不内嵌 Agent 实现。
+    status: pending
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.657Z
+    updatedAt: 2026-07-30T18:01:01.657Z
+    statusChangedAt: 2026-07-30T18:01:01.657Z
+  - id: implement-workflow-agent-bridge
+    name: 实现 Workflow 到 Agent Runtime 适配
+    summary: 由应用组合层桥接独立引擎，支持等待、取消、恢复、子 Run 血缘和费用。
+    status: pending
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.761Z
+    updatedAt: 2026-07-30T18:01:01.761Z
+    statusChangedAt: 2026-07-30T18:01:01.761Z
+  - id: expose-workflow-authoring-tools
+    name: 为 Agent 提供工作流构建发布工具
+    summary: 交付 catalog、inspect、draft、validate、publish、invoke 工具，所有写入经服务端权限和修订校验。
+    status: pending
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.863Z
+    updatedAt: 2026-07-30T18:01:01.863Z
+    statusChangedAt: 2026-07-30T18:01:01.863Z
+  - id: revalidate-eve-compatibility
+    name: 重新验证 Eve 运行兼容性
+    summary: 按已安装版本验证 Node、Workflow 协议、流、消息顺序、权限和 per-Run 沙盒。
+    status: pending
+    planRef: eve-default-harness
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:01.986Z
+    updatedAt: 2026-07-30T18:01:01.986Z
+    statusChangedAt: 2026-07-30T18:01:01.986Z
+  - id: unify-agent-observability-usage
+    name: 统一 Agent、Workflow、模型、工具和费用观测
+    summary: 使用 OpenTelemetry、Workflow World 与 Muses Usage/Billing，记录缓存 Token 并避免重复事实。
+    status: pending
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.084Z
+    updatedAt: 2026-07-30T18:01:02.084Z
+    statusChangedAt: 2026-07-30T18:01:02.084Z
+  - id: publish-open-agent-kit
+    name: 发布开放可自托管 Agent Kit
+    summary: 提供包、CLI、服务、示例、迁移、运维和集成文档，使第三方项目可直接嵌入。
+    status: pending
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.189Z
+    updatedAt: 2026-07-30T18:01:02.189Z
+    statusChangedAt: 2026-07-30T18:01:02.189Z
+  - id: implement-solution-definition
+    name: 交付 SolutionDefinition 与平台功能绑定
+    summary: 让 PPT 等平台入口引用已发布 Profile 与 Workflow，而不是隐藏业务代码。
+    status: pending
+    planRef: agent-platform-self-hosting
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.301Z
+    updatedAt: 2026-07-30T18:01:02.301Z
+    statusChangedAt: 2026-07-30T18:01:02.301Z
+  - id: establish-agent-conformance-suite
+    name: 建立跨宿主 Agent Conformance Suite
+    summary: 用同一测试验证独立 CLI/API、平台 MusesAgent 和工作流 Agent 节点。
+    status: pending
+    planRef: agent-independence-contract
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.419Z
+    updatedAt: 2026-07-30T18:01:02.419Z
+    statusChangedAt: 2026-07-30T18:01:02.419Z
+  - id: verify-standalone-agent-outcomes
+    name: 验证独立 Web Agent 自主任务与用户体验
+    summary: 在不加载任何 Muses/Canvas 工具的独立 Web 产品中，以文件、终端、Web、Skill、MCP 和自定义工具任务证明 Codex 级体验。
+    status: pending
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.530Z
+    updatedAt: 2026-07-30T18:06:05.376Z
+    statusChangedAt: 2026-07-30T18:01:02.530Z
+  - id: admin-agent-authoring-publishing
+    name: 交付管理员编辑、评测、发布、灰度与回滚
+    summary: 管理员在统一画布和控制面维护平台行为，无需修改产品入口代码。
+    status: pending
+    planRef: agent-platform-self-hosting
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.621Z
+    updatedAt: 2026-07-30T18:01:02.621Z
+    statusChangedAt: 2026-07-30T18:01:02.621Z
+  - id: extract-agent-contracts-package
+    name: 拆分稳定 Agent Contracts
+    summary: 将 Session、Run、Event、Tool、Profile、Usage 与控制协议从运行实现中分离。
+    status: pending
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.710Z
+    updatedAt: 2026-07-30T18:01:02.710Z
+    statusChangedAt: 2026-07-30T18:01:02.710Z
+  - id: persist-agent-profile-catalog
+    name: 交付版本化 Agent Profile 控制面
+    summary: 持久化草稿、不可变版本、Deployment、模型策略、Instructions、Skills、MCP、工具、预算和输出 Schema。
+    status: pending
+    planRef: agent-platform-self-hosting
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.820Z
+    updatedAt: 2026-07-30T18:01:02.820Z
+    statusChangedAt: 2026-07-30T18:01:02.820Z
+  - id: remove-image-coupled-agent-behavior
+    name: 移除 Agent 首图固化行为与界面阶段
+    summary: Muses 宿主删除理解、生图、放置固定计划和图像专属结果假设，直接投影独立 Agent 的通用消息与事件。
+    status: pending
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:02.925Z
+    updatedAt: 2026-07-30T18:06:19.234Z
+    statusChangedAt: 2026-07-30T18:01:02.925Z
+  - id: implement-safe-solution-fork
+    name: 交付平台模板安全 Fork 与升级
+    summary: 复制公开定义并自动移除密钥、私有 MCP 和管理员工具，记录上游与迁移差异。
+    status: pending
+    planRef: agent-platform-self-hosting
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.033Z
+    updatedAt: 2026-07-30T18:01:03.033Z
+    statusChangedAt: 2026-07-30T18:01:03.033Z
+  - id: add-agent-model-context-controls
+    name: 交付模型、推理强度与上下文控制
+    summary: 在独立 Agent Web 产品中显示宿主允许的模型、推理级别、上下文用量、Token 与预计费用，并通过嵌入配置投影。
+    status: pending
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.134Z
+    updatedAt: 2026-07-30T18:06:19.340Z
+    statusChangedAt: 2026-07-30T18:01:03.134Z
+  - id: freeze-agent-workflow-separation
+    name: 冻结 Agent 与 Workflow 课题分离架构
+    summary: 明确为两个独立项目：/root/projects/muses-agent 交付 Web-first 通用 Agent，/root/projects/saas 交付 Muses Host 与独立 Workflow Engine；两者只通过稳定 SDK、工具与 Run 身份组合。
+    status: in_progress
+    planRef: agent-independence-contract
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前先冻结长期正确的独立性边界，再开始代码重构。
+    createdAt: 2026-07-30T18:01:03.239Z
+    updatedAt: 2026-07-30T18:22:31.603Z
+    statusChangedAt: 2026-07-30T18:01:03.239Z
+  - id: deliver-resumable-agent-streaming
+    name: 交付可恢复实时流与错误续跑体验
+    summary: 基于 Eve SessionState、可回放事件流和 continuation token 实现多线程持久化、刷新恢复、取消、失败后同线程继续。
+    status: in_progress
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.359Z
+    updatedAt: 2026-07-30T18:22:32.403Z
+    statusChangedAt: 2026-07-30T18:22:32.403Z
+  - id: integrate-ai-elements-agent-ui
+    name: 交付独立 Agent 的 AI Elements Web 体验
+    summary: 以 Codex 桌面端宽屏和小尺寸截图为体验校准，采用 AI Elements 交付会话侧栏、消息/推理/工具/审批时间线、响应式专注态与底部输入区。
+    status: in_progress
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.452Z
+    updatedAt: 2026-07-30T18:22:32.147Z
+    statusChangedAt: 2026-07-30T18:22:32.147Z
+  - id: deliver-production-skills-mcp
+    name: 交付生产 Skill 与 MCP 生命周期
+    summary: 覆盖安装、版本、校验和、授权、OAuth、网络出口、审批、审计和撤销。
+    status: pending
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.576Z
+    updatedAt: 2026-07-30T18:01:03.576Z
+    statusChangedAt: 2026-07-30T18:01:03.576Z
+  - id: deliver-physical-run-sandbox
+    name: 交付 per-AgentRun 物理计算沙盒
+    summary: 隔离文件、进程、网络、资源、密钥和销毁生命周期，SubAgent 默认独立沙盒。
+    status: pending
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:01:03.766Z
+    updatedAt: 2026-07-30T18:01:03.766Z
+    statusChangedAt: 2026-07-30T18:01:03.766Z
+  - id: verify-muses-host-parity
+    name: 验证独立 Web 与 Muses Host 体验一致性
+    summary: 同一 Run/Event/Tool 协议在独立产品和 Studio 中保持语义一致，宿主只增加能力和主题，不改变 Agent 内核。
+    status: pending
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:06:31.778Z
+    updatedAt: 2026-07-30T18:06:31.778Z
+    statusChangedAt: 2026-07-30T18:06:31.778Z
+  - id: package-agent-web-embed
+    name: 封装 Agent Web 嵌入组件与 Host SDK
+    summary: 把独立 Agent 工作台、会话存储、事件投影、配置和 Host slots 设计为受控可嵌入模块，Muses 不复制 Agent UI。
+    status: in_progress
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:06:31.911Z
+    updatedAt: 2026-07-30T18:22:32.652Z
+    statusChangedAt: 2026-07-30T18:22:32.652Z
+  - id: integrate-muses-agent-host
+    name: 将 Muses 实现为第一个 Agent Host
+    summary: 通过 Host SDK 注入身份、Workspace、模型目录、积分、画布、资产、媒体和 Workflow 工具。
+    status: pending
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T18:06:32.045Z
+    updatedAt: 2026-07-30T18:06:32.045Z
+    statusChangedAt: 2026-07-30T18:06:32.045Z
