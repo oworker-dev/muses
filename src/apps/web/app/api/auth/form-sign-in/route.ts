@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server"
 
 import { getAuth } from "@/lib/auth"
+import {
+  classifyFormSignInFailure,
+  type FormSignInErrorCode,
+} from "@/lib/auth-error-classification"
 import { normalizeInternalPath } from "@/lib/urls"
-
-type AuthErrorCode =
-  | "invalid-credentials"
-  | "email-not-verified"
-  | "too-many-attempts"
-  | "auth-unavailable"
 
 export async function POST(request: Request) {
   let formData: FormData
@@ -43,15 +41,22 @@ export async function POST(request: Request) {
     )
 
     if (!authResponse.ok) {
+      const payload = await authResponse
+        .clone()
+        .json()
+        .catch(() => null)
       return redirectToLogin(
         request,
         callbackURL,
-        mapAuthError(authResponse.status)
+        classifyFormSignInFailure(authResponse.status, payload)
       )
     }
 
     const responseHeaders = new Headers(authResponse.headers)
-    responseHeaders.set("location", new URL(callbackURL, request.url).toString())
+    responseHeaders.set(
+      "location",
+      new URL(callbackURL, request.url).toString()
+    )
     responseHeaders.set("cache-control", "no-store")
     responseHeaders.set("referrer-policy", "no-referrer")
     responseHeaders.delete("content-length")
@@ -66,23 +71,10 @@ export async function POST(request: Request) {
   }
 }
 
-function mapAuthError(status: number): AuthErrorCode {
-  switch (status) {
-    case 401:
-      return "invalid-credentials"
-    case 403:
-      return "email-not-verified"
-    case 429:
-      return "too-many-attempts"
-    default:
-      return "auth-unavailable"
-  }
-}
-
 function redirectToLogin(
   request: Request,
   callbackURL: string,
-  authError: AuthErrorCode
+  authError: FormSignInErrorCode
 ) {
   const loginURL = new URL("/login", request.url)
   loginURL.searchParams.set("callbackURL", callbackURL)

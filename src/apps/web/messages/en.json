@@ -20,6 +20,7 @@
     "tooManyAttempts": "Too many sign-in attempts. Please try again shortly.",
     "authUnavailable": "Sign-in is temporarily unavailable. Please try again.",
     "couldNotSendVerification": "could not send the verification email.",
+    "verificationNotSent": "No verification email was sent. Try signing in again.",
     "accountCreatedBut": "Account created, but",
     "oauthGithub": "Continue with GitHub",
     "oauthGoogle": "Continue with Google",

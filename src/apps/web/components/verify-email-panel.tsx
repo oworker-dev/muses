@@ -55,17 +55,18 @@ export function VerifyEmailPanel({
         return
       }
 
-      setMessage("Verification email sent. Open the link in your inbox to continue.")
+      const payload = await response.json().catch(() => null)
+      setMessage(
+        payload?.sent === true
+          ? "Verification email sent. Open the link in your inbox to continue."
+          : "No verification email was sent. This address may already be verified; return to sign in."
+      )
     })
   }
 
   return (
     <div className="grid gap-5">
-      {message ? (
-        <Alert>
-          {message}
-        </Alert>
-      ) : null}
+      {message ? <Alert>{message}</Alert> : null}
 
       <form onSubmit={onSubmit} className="grid gap-3">
         <div className="space-y-2">
@@ -84,14 +85,14 @@ export function VerifyEmailPanel({
           />
         </div>
 
-        {error ? (
-          <Alert variant="destructive">
-            {error}
-          </Alert>
-        ) : null}
+        {error ? <Alert variant="destructive">{error}</Alert> : null}
 
         <Button type="submit" size="lg" disabled={isPending}>
-          {isPending ? <Loader2Icon className="animate-spin" /> : <RefreshCwIcon />}
+          {isPending ? (
+            <Loader2Icon className="animate-spin" />
+          ) : (
+            <RefreshCwIcon />
+          )}
           Resend verification email
         </Button>
       </form>

@@ -11,6 +11,7 @@ import { Alert } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { OAuthButtons } from "@/components/oauth-buttons"
+import { isEmailVerificationRequiredError } from "@/lib/auth-error-classification"
 
 type AuthMode = "login" | "register"
 
@@ -26,6 +27,7 @@ export type AuthFormCopy = {
   register: string
   authFailed: string
   couldNotSendVerification: string
+  verificationNotSent: string
   accountCreatedBut: string
   oauthGithub: string
   oauthGoogle: string
@@ -44,6 +46,7 @@ const defaultCopy: AuthFormCopy = {
   register: "Register",
   authFailed: "Authentication failed",
   couldNotSendVerification: "could not send the verification email.",
+  verificationNotSent: "No verification email was sent. Try signing in again.",
   accountCreatedBut: "Account created, but",
   oauthGithub: "Continue with GitHub",
   oauthGoogle: "Continue with Google",
@@ -92,14 +95,18 @@ export function AuthForm({
           })
 
       if (result.error) {
-        if (!isRegister && isEmailVerificationError(result.error)) {
-          const verificationError = await sendVerificationEmail(
+        if (!isRegister && isEmailVerificationRequiredError(result.error)) {
+          const verification = await requestVerificationEmail(
             email,
             callbackURL,
             copy.couldNotSendVerification
           )
-          if (verificationError) {
-            setError(verificationError)
+          if (verification.error) {
+            setError(verification.error)
+            return
+          }
+          if (!verification.sent) {
+            setError(copy.verificationNotSent)
             return
           }
 
@@ -115,13 +122,17 @@ export function AuthForm({
       }
 
       if (isRegister) {
-        const verificationError = await sendVerificationEmail(
+        const verification = await requestVerificationEmail(
           email,
           callbackURL,
           copy.couldNotSendVerification
         )
-        if (verificationError) {
-          setError(`${copy.accountCreatedBut} ${verificationError}`)
+        if (verification.error) {
+          setError(`${copy.accountCreatedBut} ${verification.error}`)
+          return
+        }
+        if (!verification.sent) {
+          setError(`${copy.accountCreatedBut} ${copy.verificationNotSent}`)
           return
         }
 
@@ -204,17 +215,13 @@ export function AuthForm({
           required
         />
       </div>
-      {error ? (
-        <Alert variant="destructive">
-          {error}
-        </Alert>
-      ) : null}
+      {error ? <Alert variant="destructive">{error}</Alert> : null}
       <Button type="submit" className="w-full" size="lg" disabled={isPending}>
         {isPending ? <Loader2Icon className="animate-spin" /> : null}
         {isRegister ? copy.createAccount : copy.signIn}
         {!isPending ? <ArrowRightIcon /> : null}
       </Button>
-      <p className="text-muted-foreground text-center text-sm">
+      <p className="text-center text-sm text-muted-foreground">
         {isRegister ? copy.alreadyHaveAccount : copy.needAccount}{" "}
         <Link
           href={
@@ -222,7 +229,7 @@ export function AuthForm({
               ? `/login?callbackURL=${encodeURIComponent(callbackURL)}`
               : `/register?callbackURL=${encodeURIComponent(callbackURL)}`
           }
-          className="text-foreground font-medium underline-offset-4 hover:underline"
+          className="font-medium text-foreground underline-offset-4 hover:underline"
         >
           {isRegister ? copy.signIn : copy.register}
         </Link>
@@ -231,7 +238,7 @@ export function AuthForm({
   )
 }
 
-async function sendVerificationEmail(
+async function requestVerificationEmail(
   email: string,
   callbackURL = "/",
   fallback = "could not send the verification email."
@@ -247,23 +254,9 @@ async function sendVerificationEmail(
     }),
   })
 
-  if (response.ok) {
-    return ""
-  }
-
   const payload = await response.json().catch(() => null)
-  return payload?.message || fallback
-}
-
-function isEmailVerificationError(error: unknown) {
-  const payload = error as { code?: string; message?: string; status?: number }
-  const code = payload.code?.toLowerCase() || ""
-  const message = payload.message?.toLowerCase() || ""
-
-  return (
-    code.includes("email_not_verified") ||
-    message.includes("email not verified") ||
-    message.includes("email is not verified") ||
-    payload.status === 403
-  )
+  if (!response.ok) {
+    return { sent: false, error: payload?.message || fallback }
+  }
+  return { sent: payload?.sent === true, error: "" }
 }

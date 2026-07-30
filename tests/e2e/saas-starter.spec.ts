@@ -9,6 +9,69 @@ const configuredAdminEmail =
   firstConfiguredEmail(process.env.E2E_SITE_ADMIN_EMAILS) ||
   firstConfiguredEmail(process.env.SITE_ADMIN_EMAILS)
 
+test("unrelated forbidden sign-in errors do not start email verification", async ({
+  page,
+}) => {
+  let verificationRequests = 0
+  await page.route("**/api/auth/sign-in/email", (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "INVALID_ORIGIN",
+        message: "Invalid origin",
+      }),
+    })
+  )
+  await page.route("**/api/email-verification/send", (route) => {
+    verificationRequests += 1
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: true, sent: true }),
+    })
+  })
+
+  await page.goto("/login?callbackURL=%2Fstudio")
+  await page.getByLabel("Email").fill("verified@example.com")
+  await page.getByLabel("Password").fill("ValidPassword123!")
+  await page.getByRole("button", { name: /^Sign in$/i }).click()
+
+  await expect(page).toHaveURL(/\/login/)
+  await expect(page.getByText("Invalid origin", { exact: true })).toBeVisible()
+  expect(verificationRequests).toBe(0)
+})
+
+test("verification redirect requires an email to be sent", async ({ page }) => {
+  await page.route("**/api/auth/sign-in/email", (route) =>
+    route.fulfill({
+      status: 403,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "EMAIL_NOT_VERIFIED",
+        message: "Email is not verified",
+      }),
+    })
+  )
+  await page.route("**/api/email-verification/send", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ status: true, sent: false }),
+    })
+  )
+
+  await page.goto("/login?callbackURL=%2Fstudio")
+  await page.getByLabel("Email").fill("verified@example.com")
+  await page.getByLabel("Password").fill("ValidPassword123!")
+  await page.getByRole("button", { name: /^Sign in$/i }).click()
+
+  await expect(page).toHaveURL(/\/login/)
+  await expect(
+    page.getByText("No verification email was sent. Try signing in again.")
+  ).toBeVisible()
+})
+
 test("SaaS starter release path is reachable", async ({ page, request }) => {
   test.setTimeout(180_000)
 

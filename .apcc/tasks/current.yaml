@@ -1208,3 +1208,16 @@ items:
     createdAt: 2026-07-30T15:22:03.784Z
     updatedAt: 2026-07-30T16:14:58.232Z
     statusChangedAt: 2026-07-30T16:14:58.232Z
+  - id: fix-public-auth-and-enable-provider-vault
+    name: 修复公网认证并启用 Provider Vault
+    summary: 已修复公网 Origin 认证误判与验证邮件假成功；生产运行配置已启用 Credential Vault，管理员控制面投影为 vaultConfigured=true，公网真实登录进入 Studio 且未触发验证邮件。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T16:27:24.783Z
+    updatedAt: 2026-07-30T16:39:16.247Z
+    statusChangedAt: 2026-07-30T16:39:16.247Z

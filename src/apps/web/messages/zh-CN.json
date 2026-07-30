@@ -20,6 +20,7 @@
     "tooManyAttempts": "登录尝试次数过多，请稍后重试。",
     "authUnavailable": "登录暂时不可用，请重试。",
     "couldNotSendVerification": "无法发送验证邮件。",
+    "verificationNotSent": "没有发送验证邮件，请重新登录。",
     "accountCreatedBut": "账号已创建，但",
     "oauthGithub": "使用 GitHub 继续",
     "oauthGoogle": "使用 Google 继续",

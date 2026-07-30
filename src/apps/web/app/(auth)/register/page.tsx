@@ -16,7 +16,10 @@ export default async function RegisterPage({
 }: {
   searchParams?: Promise<Record<string, string | string[] | undefined>>
 }) {
-  const [session, locale] = await Promise.all([getServerSession(), getRequestLocale()])
+  const [session, locale] = await Promise.all([
+    getServerSession(),
+    getRequestLocale(),
+  ])
   const oauthProviders = getEnabledOAuthProviders()
   const params = await searchParams
   const callbackURL = normalizeInternalPath(
@@ -52,6 +55,7 @@ export default async function RegisterPage({
           register: t("register"),
           authFailed: t("authFailed"),
           couldNotSendVerification: t("couldNotSendVerification"),
+          verificationNotSent: t("verificationNotSent"),
           accountCreatedBut: t("accountCreatedBut"),
           oauthGithub: t("oauthGithub"),
           oauthGoogle: t("oauthGoogle"),
