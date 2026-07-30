@@ -7,6 +7,7 @@ import {
   BoxesIcon,
   HeartPulseIcon,
   LayoutDashboardIcon,
+  PlugZapIcon,
   ReceiptTextIcon,
   SearchIcon,
   ShieldCheckIcon,
@@ -127,6 +128,18 @@ export function AdminAppSidebar({
                 <Link href="/admin/models">
                   <BoxesIcon />
                   <span>{t("navModels")}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                tooltip={t("navProviders")}
+                asChild
+                isActive={isItemActive(pathname, "/admin/providers")}
+              >
+                <Link href="/admin/providers">
+                  <PlugZapIcon />
+                  <span>{t("navProviders")}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -15,6 +15,7 @@ import {
   ModelCatalogError,
   resolveImageModelOffering,
 } from "@/lib/model-catalog"
+import { resolveProviderConnectionIdForOffering } from "./provider-connections"
 import { prefixedId } from "@/lib/studio-access"
 import { getReadyReferenceImages } from "@/lib/reference-image-storage"
 
@@ -25,8 +26,10 @@ export type WorkflowCreditContext = {
   estimatedMicros: string
   nodePrices: Array<{
     nodeId: string
+    modelOfferingId?: string
     modelRef: string
     providerId: string
+    providerConnectionId?: string
     providerModelId: string
     capabilityProfileId: string
     capabilityProfileVersion: string
@@ -308,8 +311,12 @@ export async function claimWorkflowSubmission(input: {
         estimatedMicros: pricing.estimatedMicros.toString(),
         nodePrices: pricing.nodePrices.map((price) => ({
           nodeId: price.nodeId,
+          modelOfferingId: price.modelOfferingId,
           modelRef: price.modelRef,
           providerId: price.providerId,
+          ...(price.providerConnectionId
+            ? { providerConnectionId: price.providerConnectionId }
+            : {}),
           providerModelId: price.providerModelId,
           capabilityProfileId: price.capabilityProfileId,
           capabilityProfileVersion: price.capabilityProfileVersion,
@@ -642,6 +649,12 @@ async function estimateWorkflowCredits(definition: WorkflowDefinition) {
   const nodePrices = await Promise.all(
     imageNodes.map(async (node) => {
       const offering = await resolveImageModelOffering(node.config.modelRef)
+      const providerConnectionId = await resolveProviderConnectionIdForOffering(
+        {
+          offeringId: offering.id,
+          capabilityFamily: "image",
+        }
+      )
       const profile = offering.capability.specification
       const size = resolveImageOutputSize(node.config.output.size, profile)
       const fixedReferenceIds =
@@ -688,8 +701,10 @@ async function estimateWorkflowCredits(definition: WorkflowDefinition) {
       }
       return {
         nodeId: node.id,
+        modelOfferingId: offering.id,
         modelRef: offering.modelRef,
         providerId: offering.provider.id,
+        providerConnectionId,
         providerModelId: offering.providerModelId,
         capabilityProfileId: offering.capability.profileId,
         capabilityProfileVersion: offering.capability.profileVersion,

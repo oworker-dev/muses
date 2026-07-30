@@ -37,7 +37,7 @@ import {
 } from "@/lib/generated-image-storage"
 import {
   isDefinitiveImageProviderRejection,
-  resolveOpenAiImageProviderConfig,
+  resolveOpenAiImageExecutionConfig,
 } from "@/lib/openai-image-provider"
 import { readReadyReferenceImageBytes } from "@/lib/reference-image-storage"
 import {
@@ -650,20 +650,13 @@ async function executeRealImageNodeStep(
   }
   const projectId = request.projectId?.trim()
   if (!projectId) {
-    throw new FatalError("Image generation requires an authorized Project scope.")
+    throw new FatalError(
+      "Image generation requires an authorized Project scope."
+    )
   }
   const prompt = request.inputs.prompt
   if (!prompt || prompt.valueType !== "text" || !prompt.value.trim()) {
     throw new FatalError("Image generation requires a non-empty prompt.")
-  }
-  let providerConfig
-  try {
-    providerConfig = resolveOpenAiImageProviderConfig()
-  } catch {
-    throw new FatalError("The OpenAI image provider is misconfigured.")
-  }
-  if (!providerConfig) {
-    throw new FatalError("The OpenAI image provider is not configured.")
   }
   const imageConfig = request.node.config
   const executionModel = request.creditContext?.nodePrices.find(
@@ -677,6 +670,20 @@ async function executeRealImageNodeStep(
     throw new FatalError(
       "The image model execution snapshot is missing or incompatible."
     )
+  }
+  let providerConfig
+  try {
+    providerConfig = await resolveOpenAiImageExecutionConfig({
+      providerId: executionModel.providerId,
+      providerModelId: executionModel.providerModelId,
+      offeringId: executionModel.modelOfferingId,
+      providerConnectionId: executionModel.providerConnectionId,
+    })
+  } catch {
+    throw new FatalError("The OpenAI image provider is misconfigured.")
+  }
+  if (!providerConfig) {
+    throw new FatalError("The OpenAI image provider is not configured.")
   }
 
   const metadata = getStepMetadata()

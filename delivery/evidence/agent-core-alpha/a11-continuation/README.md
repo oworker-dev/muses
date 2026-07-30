@@ -5,11 +5,11 @@ Evidence date: 2026-07-30
 ## Passing gates
 
 - `@muses/agent-core` typecheck and tests: 5 files, 75 tests passed.
-- Web unit tests: 12 files, 59 tests passed.
+- Web unit tests: 14 files, 65 tests passed.
 - A11 focused Web tests: 5 files, 22 tests passed.
 - Agent Harness adapter check: 1 file, 3 tests passed.
 - Web typecheck passed.
-- Workflow SDK validation scanned 225 files and reported no serde issues.
+- Workflow SDK validation scanned 231 files and reported no serde issues.
 - PostgreSQL delegation verification passed continuation commit/recovery/replay,
   exact-scope cancellation, Scheduler cancellation, budget finalization and SDK
   driver cancellation state.
@@ -19,36 +19,33 @@ Evidence date: 2026-07-30
 
 ## Real-result gate status
 
-The authenticated two-Specialist browser case was attempted twice in this
-round. In both attempts:
+The authenticated two-Specialist browser Gate passed in 1.7 minutes after an
+independent image-capable Provider route was configured. The run proved:
 
-- the root Agent, two Child Agents and the bounded parent continuation all
-  completed their model turns;
-- the parent advanced exactly one continuation turn; and
-- both image tools failed before producing an Asset, so the Scheduler correctly
-  recorded `completed-with-failures` and the browser assertion did not pass.
+- two independent Child AgentRuns executed with concurrency two and both tasks
+  reached `completed`;
+- two distinct authorized `image_` Asset refs were produced and placed through
+  the Operation Gateway;
+- the direct parent received exactly one trusted delegation-result message,
+  advanced exactly one bounded turn, and its final answer contained both exact
+  Asset ids;
+- one continuation receipt reached `completed` with its message-commit
+  milestone, while the trace joined one DelegationRun, three AgentRuns and both
+  Assets;
+- two image reservations were recorded; and
+- browser refresh did not change the continuation receipt, model-call count,
+  result message count or billing facts.
 
-A non-billing capability probe showed that the currently configured shared
-OpenAI-compatible endpoint exposes no image-like models and returns the
-sanitized classification `503 / new_api_error / model_not_found` for
-`gpt-image-2`, `gpt-image-1.5` and `gpt-image-1`. The current credential is not
-an OpenAI first-party credential. No provider response body, message, endpoint,
-credential, user content or private identity is retained in this evidence.
+The earlier failed attempts established that the shared LLM-only endpoint did
+not expose enabled image models. The passing attempt confirms the product
+requirement that LLM and image capabilities can use different keys and
+endpoints. The runtime supports the independent environment bootstrap route,
+and the Provider Connection/Credential Vault control plane now provides the
+long-term capability-scoped database route. An explicit image endpoint cannot
+inherit a shared LLM key.
 
-The runtime now supports `OPENAI_IMAGE_API_KEY` and
-`OPENAI_IMAGE_BASE_URL` as an independent image route while retaining the
-shared-provider fallback. An explicit image endpoint cannot inherit the shared
-key. Whitelisted `model_not_found` responses are now treated as definitive
-request rejection even when a compatible gateway reports HTTP 503, allowing
-the reservation to release instead of entering unnecessary billing review.
-
-## Remaining acceptance item
-
-A provider credential and endpoint that actually expose one enabled catalog
-image model are still required. After configuration, rerun the authenticated
-two-Specialist case and require two real Asset refs, one trusted continuation
-message, parent turn `+1`, one completed continuation receipt, a completed SDK
-driver and no duplicate charge after refresh.
+No provider response body, endpoint, credential, prompt, user identity or
+Playwright trace is committed in this evidence.
 
 No Playwright trace is committed because traces contain private test input and
 identity data.

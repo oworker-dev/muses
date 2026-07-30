@@ -29,7 +29,7 @@ OAuth secrets, production credentials, or private telemetry. See
 
 ## Current Stage
 
-The current APCC engineering phase is **A11 Agent delegation continuation**. The professional
+The current APCC engineering phase is **Platform Core Alpha**. The professional
 image path has delivered reusable image, identity/credit, model-catalog,
 durable-runtime, and observability foundations. The platform now separates
 `CreativeCanvas`, `ExecutionPlan`, and callable `WorkflowDefinition`, has a
@@ -58,14 +58,15 @@ Profile. A real provider-driven multi-Agent creative run with two independent
 image Specialists and child approvals has passed. A11 now adds a trusted,
 idempotent terminal-result projection into the direct parent Agent, one bounded
 parent continuation turn, and an independently cancellable DelegationRun after
-the parent Run completes. PostgreSQL recovery, authorization, budget and SDK
-driver-state gates pass, and real browser cancellation passes. The remaining
-real browser continuation Gate requires two actual image Artifacts; the
-currently configured shared model endpoint exposes no image model, so Muses
-now supports an independent image Provider route and leaves this Gate open
-until working image credentials are configured. Production Skill/MCP
-resolution, a provider-backed physical sandbox and PPT scenario work remain
-explicit later gates. See
+the parent Run completes. PostgreSQL recovery, authorization, budget, SDK
+driver-state and real browser cancellation gates pass. The authenticated
+two-Specialist Gate now also passes with two real image Artifacts, exactly one
+bounded parent continuation, complete lineage and unchanged billing/message
+facts after refresh. LLM and image capabilities can use separate Provider
+credentials; Site Admin now exposes capability-scoped Provider Connections,
+encrypted credential rotation, Offering binding and health checks. Production
+Skill/MCP resolution, a provider-backed physical sandbox, KMS/HSM credentials
+and PPT scenario work remain explicit later gates. See
 `docs/internal/Agent优先创作与工作流模型.md`,
 `docs/internal/用户成果驱动交付计划.md`,
 `docs/internal/平台核心Alpha路线.md`, and run `apcc status` for current state.
@@ -254,7 +255,11 @@ Stripe credentials are optional for local development. Without them, checkout an
 
 Resend credentials are optional. Without them, account lifecycle emails run in local-test mode and are printed by the web process. With `RESEND_API_KEY` and `RESEND_FROM`, verification, password reset, and email-change confirmations send through Resend. Resend's `onboarding@resend.dev` sender is suitable for local testing but can only deliver to addresses allowed by the Resend account until a sending domain is verified.
 
-Agent text calls use `OPENAI_API_KEY` and optional `OPENAI_BASE_URL`. Image generation uses the same provider by default. When the text provider does not expose OpenAI-compatible image models, configure `OPENAI_IMAGE_API_KEY` and optional `OPENAI_IMAGE_BASE_URL` as an independent route. An explicit image base URL always requires an explicit image key so credentials are never inherited across provider endpoints.
+Site administrators can manage capability-scoped model connections at `/admin/providers`. Configure `MUSES_CREDENTIAL_MASTER_KEY` as a base64-encoded 32-byte server secret and keep it stable across restarts; `MUSES_CREDENTIAL_MASTER_KEY_ID` identifies the active encryption key. Provider API keys submitted through the page are AES-256-GCM encrypted, versioned for rotation, and never returned to the browser. Generate a deployment key with `openssl rand -base64 32`; do not commit it.
+
+Admin-managed custom Provider URLs must use HTTPS in production and match an exact hostname in `MUSES_PROVIDER_ALLOWED_HOSTS` (comma-separated; `api.openai.com` is the default). This allowlist applies to stored runtime routes and health checks. Deployment-owned `OPENAI_BASE_URL` variables remain trusted operator configuration.
+
+Agent text calls use database Provider Connections with the `llm` capability when available, then fall back to `OPENAI_API_KEY` and optional `OPENAI_BASE_URL`. Image generation first uses an Offering-bound `image` connection, then the independent `OPENAI_IMAGE_API_KEY`/`OPENAI_IMAGE_BASE_URL`, and finally the shared text provider for compatibility. An explicit image base URL always requires an explicit image key so credentials are never inherited across provider endpoints. Paid runs freeze the selected database connection id before Workflow SDK execution and never perform automatic post-request provider failover.
 
 GitHub and Google OAuth buttons are only shown when both the provider credentials and the matching enable flag are configured. This avoids rendering social login buttons that would fail in a clean local run. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_AUTH_ENABLED=true` for GitHub; set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_AUTH_ENABLED=true` for Google.
 
@@ -271,6 +276,7 @@ Before deploying with production environment variables, run:
 ```bash
 pnpm run doctor:production
 pnpm run doctor:production:strict
+DATABASE_URL=postgresql://oworker:oworker@127.0.0.1:5432/oworker_saas pnpm --filter ./src/apps/web run verify:provider-connections
 ```
 
 The non-strict run reports production-readiness warnings for local development. The strict run fails on unsafe defaults or missing required production configuration.

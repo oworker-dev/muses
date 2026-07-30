@@ -29,3 +29,39 @@ offerings, and omits provider execution ids and credentials. Site administrators
 inspect versions and audit enable/disable changes at `/admin/models`. Published
 Profile and PriceBook content is immutable in PostgreSQL; a changed
 specification or price requires a new version.
+
+Site administrators manage capability-scoped connections at
+`/admin/providers`. A connection declares its Provider, Base URL, capability
+families, optional model allowlist, explicit Offering bindings, status, and
+priority. One API key is not assumed to support every capability. LLM, image,
+video, audio, and music keys can therefore be isolated as separate
+connections, including multiple connections for one Provider.
+
+Credential submission and rotation are server-only mutations. The local
+Credential Vault adapter encrypts each version with AES-256-GCM and
+`MUSES_CREDENTIAL_MASTER_KEY`; PostgreSQL stores ciphertext, authenticated
+metadata, key id, and a four-character hint. Admin projections, Studio APIs,
+workflow definitions, run events, pricing snapshots, and audit metadata never
+contain plaintext credentials or ciphertext. Production deployments must keep
+the master key stable across restarts and treat master-key rotation as an
+explicit re-encryption operation.
+
+New paid image submissions resolve an enabled Offering binding before the
+Workflow SDK run starts and freeze only `providerConnectionId` into the
+server-owned execution snapshot. The Step opens that exact connection at call
+time. A missing, disabled, unhealthy, or undecryptable frozen connection fails
+closed; it does not switch providers after a possibly billable request. Agent
+LLM calls use the same capability-aware resolver. Existing
+`OPENAI_API_KEY`/`OPENAI_IMAGE_API_KEY` variables remain deployment bootstrap
+fallbacks only when no database route was selected.
+
+Health checks use a non-generating model metadata request and persist a
+capability-specific status (`unknown`, `healthy`, `degraded`, or
+`unavailable`), sanitized result code, HTTP status, latency, and last success.
+They do not prove output quality or spend credits. Rate limits and provider
+5xx responses degrade a route; deterministic credential or model rejection
+marks it unavailable. All connection creation, rotation, binding, status, and
+health-check mutations are site-admin authorized and audited.
+Admin-managed custom Base URLs accept only HTTP(S), reject embedded credentials
+and URL parameters, require HTTPS outside explicit local development, and in
+production must match an exact hostname in `MUSES_PROVIDER_ALLOWED_HOSTS`.

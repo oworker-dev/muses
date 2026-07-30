@@ -118,18 +118,16 @@ The Gate passes only when all of the following are proven:
 
 ## Verification status
 
-Deterministic Agent Core, Web, PostgreSQL and Workflow SDK gates pass. The real
-authenticated cancellation case also passes after the parent AgentRun has
-completed. The real two-Specialist result case has proven one bounded parent
-continuation on both success-path model execution and terminal failure
-projection, but it has not yet produced the two required image Artifacts in the
-current environment.
+All deterministic Agent Core, Web, PostgreSQL and Workflow SDK gates pass. The
+real authenticated cancellation case passes after the parent AgentRun has
+completed. The real two-Specialist result case also passes with two independent
+image Artifacts, one trusted continuation message, parent turn `+1`, a
+completed continuation receipt, complete three-Agent lineage, two image
+reservations and unchanged facts after browser refresh.
 
-The configured shared OpenAI-compatible endpoint exposes no image model and
-returns a sanitized `model_not_found` classification for all enabled image
-catalog candidates. Muses now supports an independent image Provider route and
-correctly treats that gateway response as a definitive rejection rather than
-an ambiguous billing outcome. A working image Provider credential remains an
-external acceptance prerequisite; A11 must not be marked complete until the
-two real Artifact refs and their exactly-once parent continuation pass in the
-browser. See `delivery/evidence/agent-core-alpha/a11-continuation/README.md`.
+The passing configuration uses an independent image-capable route rather than
+assuming the LLM key also exposes image models. This validates the
+capability-scoped Provider boundary and closes A11. Provider-backed physical
+sandboxing, production Skill/MCP resolution, KMS/HSM-backed credentials and
+PPT scenario behavior remain separate later gates. See
+`delivery/evidence/agent-core-alpha/a11-continuation/README.md`.

@@ -21,14 +21,14 @@ import {
   PostgresAgentModelCallStore,
   type AgentModelCallStore,
 } from "./agent-model-call-store"
+import { resolveProviderRuntimeConnection } from "./provider-connections"
 
 const DEFAULT_AGENT_MODEL = "gpt-5.6-sol"
 const MODEL_TIMEOUT_MS = 2 * 60 * 1000
 
 export class AiSdkAgentModel implements AgentModelPort {
   constructor(
-    private readonly calls: AgentModelCallStore =
-      new PostgresAgentModelCallStore(),
+    private readonly calls: AgentModelCallStore = new PostgresAgentModelCallStore(),
     private readonly generate: typeof generateText = generateText
   ) {}
 
@@ -86,7 +86,28 @@ export class AiSdkAgentModel implements AgentModelPort {
         )
     }
 
-    const apiKey = process.env.OPENAI_API_KEY
+    const modelId = providerModelId(input.run.profile.modelRef)
+    let storedProvider
+    try {
+      storedProvider = await resolveProviderRuntimeConnection({
+        capabilityFamily: "llm",
+        providerSlug: providerSlug(input.run.profile.modelRef),
+        providerModelId: modelId,
+      })
+    } catch {
+      await this.calls.failDefinitive({
+        callId: input.callId,
+        attemptId: claim.attemptId,
+        failureCode: "model-provider-connection-invalid",
+      })
+      throw new AgentModelError(
+        "model-provider-not-configured",
+        "The Agent model provider connection is unavailable.",
+        false
+      )
+    }
+    const apiKey = storedProvider?.apiKey || process.env.OPENAI_API_KEY
+    const baseURL = storedProvider?.baseURL || process.env.OPENAI_BASE_URL
     if (!apiKey) {
       await this.calls.failDefinitive({
         callId: input.callId,
@@ -102,11 +123,8 @@ export class AiSdkAgentModel implements AgentModelPort {
 
     const provider = createOpenAI({
       apiKey,
-      ...(process.env.OPENAI_BASE_URL
-        ? { baseURL: process.env.OPENAI_BASE_URL }
-        : {}),
+      ...(baseURL ? { baseURL } : {}),
     })
-    const modelId = providerModelId(input.run.profile.modelRef)
     const toolAliases = createToolAliases(input.tools)
     const { system, messages } = toAiSdkTranscript(
       input.messages,
@@ -440,6 +458,11 @@ function providerModelId(modelRef: string) {
   const value = slash >= 0 ? modelRef.slice(slash + 1) : modelRef
   const version = value.indexOf("@")
   return (version >= 0 ? value.slice(0, version) : value).trim()
+}
+
+function providerSlug(modelRef: string) {
+  const slash = modelRef.indexOf("/")
+  return (slash >= 0 ? modelRef.slice(0, slash) : "openai").trim() || "openai"
 }
 
 function modelCreditMicros(inputTokens: number, outputTokens: number) {

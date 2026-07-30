@@ -74,6 +74,44 @@ if (!process.env.OPENAI_API_KEY) {
   );
 }
 
+if (!process.env.MUSES_CREDENTIAL_MASTER_KEY) {
+  report(
+    "MUSES_CREDENTIAL_MASTER_KEY is missing. Provider Connection credentials cannot be created or decrypted.",
+    strict
+  );
+} else {
+  const encodedKey = process.env.MUSES_CREDENTIAL_MASTER_KEY.trim();
+  const validBase64 = /^[A-Za-z0-9+/]*={0,2}$/.test(encodedKey) && encodedKey.length % 4 === 0;
+  const keyBytes = validBase64 ? Buffer.from(encodedKey, "base64") : Buffer.alloc(0);
+  if (keyBytes.length !== 32) {
+    report(
+      "MUSES_CREDENTIAL_MASTER_KEY must be a base64-encoded 32-byte key.",
+      strict
+    );
+  }
+}
+
+if (
+  process.env.MUSES_CREDENTIAL_MASTER_KEY_ID &&
+  !/^[a-zA-Z0-9._-]{1,80}$/.test(process.env.MUSES_CREDENTIAL_MASTER_KEY_ID)
+) {
+  report("MUSES_CREDENTIAL_MASTER_KEY_ID is invalid.", strict);
+}
+
+if (process.env.MUSES_ALLOW_INSECURE_PROVIDER_URLS === "true") {
+  report(
+    "MUSES_ALLOW_INSECURE_PROVIDER_URLS is enabled. Disable plaintext Provider endpoints in production.",
+    strict
+  );
+}
+
+if (!process.env.MUSES_PROVIDER_ALLOWED_HOSTS) {
+  report(
+    "MUSES_PROVIDER_ALLOWED_HOSTS is not set. Only the built-in api.openai.com host will be accepted for Admin-managed production Provider URLs.",
+    false
+  );
+}
+
 if (process.env.OPENAI_BASE_URL && !process.env.OPENAI_API_KEY) {
   report("OPENAI_BASE_URL is set without OPENAI_API_KEY.", strict);
 }

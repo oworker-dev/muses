@@ -700,6 +700,111 @@ export const modelProvider = pgTable("model_provider", {
     .defaultNow(),
 });
 
+export const providerConnection = pgTable(
+  "provider_connection",
+  {
+    id: text("id").primaryKey(),
+    providerId: text("provider_id").notNull(),
+    name: text("name").notNull(),
+    baseUrl: text("base_url"),
+    status: text("status").notNull().default("active"),
+    capabilities: jsonb("capabilities").notNull(),
+    modelAllowlist: jsonb("model_allowlist").notNull().default([]),
+    priority: integer("priority").notNull().default(100),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("provider_connection_provider_name_idx").on(
+      table.providerId,
+      table.name,
+    ),
+    index("provider_connection_route_idx").on(
+      table.providerId,
+      table.status,
+      table.priority,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const providerCredentialVersion = pgTable(
+  "provider_credential_version",
+  {
+    id: text("id").primaryKey(),
+    connectionId: text("connection_id").notNull(),
+    encryptedSecret: text("encrypted_secret").notNull(),
+    nonce: text("nonce").notNull(),
+    authTag: text("auth_tag").notNull(),
+    algorithm: text("algorithm").notNull().default("aes-256-gcm"),
+    keyId: text("key_id").notNull(),
+    secretHint: text("secret_hint").notNull(),
+    status: text("status").notNull().default("active"),
+    createdByUserId: text("created_by_user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("provider_credential_connection_created_idx").on(
+      table.connectionId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const providerConnectionOffering = pgTable(
+  "provider_connection_offering",
+  {
+    connectionId: text("connection_id").notNull(),
+    modelOfferingId: text("model_offering_id").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    priority: integer("priority").notNull().default(100),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.connectionId, table.modelOfferingId] }),
+    index("provider_connection_offering_route_idx").on(
+      table.modelOfferingId,
+      table.enabled,
+      table.priority,
+    ),
+  ],
+);
+
+export const providerConnectionHealth = pgTable(
+  "provider_connection_health",
+  {
+    connectionId: text("connection_id").notNull(),
+    capabilityFamily: text("capability_family").notNull(),
+    status: text("status").notNull().default("unknown"),
+    httpStatus: integer("http_status"),
+    latencyMs: integer("latency_ms"),
+    resultCode: text("result_code"),
+    checkedAt: timestamp("checked_at", { withTimezone: true }),
+    lastSuccessAt: timestamp("last_success_at", { withTimezone: true }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.connectionId, table.capabilityFamily] }),
+    index("provider_connection_health_status_idx").on(
+      table.capabilityFamily,
+      table.status,
+      table.checkedAt,
+    ),
+  ],
+);
+
 export const modelOffering = pgTable(
   "model_offering",
   {

@@ -81,6 +81,35 @@ test("personal workspace and initial credit grant are idempotent", async ({
   await expect(page.getByText("100", { exact: true }).first()).toBeVisible();
 });
 
+test("Site Admin can inspect the credential-safe Provider control plane", async ({
+  page,
+}) => {
+  await page.goto("/admin/providers");
+  await expect(
+    page.getByRole("heading", {
+      name: /Provider connections and credentials|供应连接与凭证/i,
+    }),
+  ).toBeVisible();
+  await expect(page.getByLabel(/API key|API 密钥/i).first()).toHaveAttribute(
+    "type",
+    "password",
+  );
+  await expect(
+    page.getByText(
+      /Plaintext is never shown again|提交后不会再次显示明文/i,
+    ),
+  ).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/encrypted_secret/i);
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  const hasHorizontalOverflow = await page.evaluate(
+    () =>
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth + 1,
+  );
+  expect(hasHorizontalOverflow).toBeFalsy();
+});
+
 test("MusesAgent generates a real image and restores it after refresh", async ({
   page,
 }) => {

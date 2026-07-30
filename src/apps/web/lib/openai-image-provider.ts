@@ -1,8 +1,15 @@
 import { APICallError } from "ai"
 
+import { resolveProviderRuntimeConnection } from "./provider-connections"
+
 export type OpenAiImageProviderConfig = {
   readonly apiKey: string
   readonly baseURL?: string
+}
+
+export type OpenAiImageExecutionConfig = OpenAiImageProviderConfig & {
+  readonly providerConnectionId?: string
+  readonly source: "credential-vault" | "environment"
 }
 
 type OpenAiImageProviderEnv = Readonly<Record<string, string | undefined>>
@@ -39,6 +46,31 @@ export function resolveOpenAiImageProviderConfig(
     apiKey: sharedApiKey,
     ...(sharedBaseURL ? { baseURL: sharedBaseURL } : {}),
   }
+}
+
+export async function resolveOpenAiImageExecutionConfig(input: {
+  providerId: string
+  providerModelId: string
+  offeringId?: string
+  providerConnectionId?: string
+}): Promise<OpenAiImageExecutionConfig | null> {
+  const stored = await resolveProviderRuntimeConnection({
+    capabilityFamily: "image",
+    providerId: input.providerId,
+    providerModelId: input.providerModelId,
+    ...(input.offeringId ? { offeringId: input.offeringId } : {}),
+    connectionId: input.providerConnectionId,
+  })
+  if (stored) {
+    return {
+      apiKey: stored.apiKey,
+      ...(stored.baseURL ? { baseURL: stored.baseURL } : {}),
+      providerConnectionId: stored.id,
+      source: "credential-vault",
+    }
+  }
+  const environment = resolveOpenAiImageProviderConfig()
+  return environment ? { ...environment, source: "environment" } : null
 }
 
 export function isDefinitiveImageProviderRejection(error: unknown) {

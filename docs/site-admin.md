@@ -51,3 +51,18 @@ They should not record ordinary page views.
 ## Diagnostics Boundary
 
 Diagnostics are for provider and runtime debugging. They should sit behind the operational console and focus on recent webhook, email, storage, billing, and integration failures. They are useful for developers and operators, but they are not the primary business view.
+
+## Muses Provider Boundary
+
+The Muses Platform group extends Site Admin with `/admin/models` and
+`/admin/providers`. Models owns published Offering, Profile, PriceBook, and
+availability metadata. Providers owns capability-scoped connections, encrypted
+credential rotation, explicit Offering bindings, and non-generating health
+checks.
+
+Provider secrets are write-only browser inputs. Admin lists expose only a
+four-character hint and rotation time. Every connection mutation is audited
+without plaintext or ciphertext, and creator-facing Studio routes never expose
+connection metadata. A deployment must provide a stable
+`MUSES_CREDENTIAL_MASTER_KEY`; database backups without that server secret do
+not contain usable provider credentials.

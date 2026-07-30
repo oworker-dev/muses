@@ -20,6 +20,7 @@
     "verify:agent-isolation-tracing": "tsx scripts/verify-agent-isolation-tracing.ts",
     "verify:agent-fixed-evals": "tsx scripts/verify-agent-fixed-evals.ts --expect ../../../delivery/evidence/agent-core-alpha/a9-reliability/fixed-evals-v1.json",
     "verify:generated-asset-scope": "tsx scripts/verify-generated-asset-project-scope.ts",
+    "verify:provider-connections": "tsx scripts/verify-provider-credential-vault.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },

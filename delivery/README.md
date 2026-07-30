@@ -36,6 +36,10 @@ contract is `interfaces/agent-runtime.md`. Current deterministic and browser
 cancellation evidence, together with the open image-Provider prerequisite for
 the real Artifact continuation case, is under
 `delivery/evidence/agent-core-alpha/a11-continuation/`.
+The capability-scoped Provider Connection, encrypted credential rotation,
+Offering binding, runtime route freezing, health projection, and verification
+evidence is under
+`delivery/evidence/platform-core-alpha/provider-connection-vault/`.
 The earlier PPT-first slice remains historical scenario-planning context in
 `delivery/mvp-delivery.md` and `docs/internal/MVP交付路线.md`.
 The corrected durable execution boundary, supported-node interpreter, and its

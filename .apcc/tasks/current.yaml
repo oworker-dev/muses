@@ -651,16 +651,16 @@ items:
     statusChangedAt: 2026-07-27T19:29:45.920Z
   - id: deliver-first-image-minimum-loop
     name: 交付首张真实图片最小闭环
-    summary: 首图工程闭环和 Gate 1.1 边界已完成：默认 Start→image.generate→End 支持真实文生图/图生图、模型驱动尺寸与参数、工作区授权 Asset、积分预留/结算、结果恢复/下载和用户安全运行观测。Domain 32/32、Studio 12/12、pnpm check、生产构建与 Workflow/APCC 门禁通过。当前唯一剩余条件是 product-owner 无讲解完成真实首图验收并记录 Gate 通过、补缺口或停止决定；此前不进入 PPT、Agent 或新增节点。
+    summary: 首图工程闭环、Agent 单图/跟进图与 A11 双 Specialist 真实图片 Gate 均已通过：支持文生图/图生图、模型规格、授权 Asset、积分计费、恢复下载、Provider 分能力密钥和 exactly-once 父续跑。唯一剩余条件是产品负责人在 4730 无讲解完成真实首图并记录通过、补缺口或停止；在此之前不进入 PPT 场景。
     status: in_progress
     planRef: first-image-value-gate
     parentTaskId: null
     countedForProgress: true
     owner: codex-main
     pinned: true
-    pinnedReason: 当前唯一 Gate：工程闭环已完成，等待产品负责人无讲解完成真实首图并决定通过、补缺口或停止；在此之前不进入 PPT 或新增节点。
+    pinnedReason: 当前唯一产品 Gate：请产品负责人在 4730 无讲解完成真实首图并决定通过、补缺口或停止；工程自动化与 A11 已通过，在该决定前不进入 PPT。
     createdAt: 2026-07-27T19:12:33.010Z
-    updatedAt: 2026-07-28T02:08:53.513Z
+    updatedAt: 2026-07-30T05:22:58.517Z
     statusChangedAt: 2026-07-27T19:29:46.147Z
   - id: define-first-image-value-gate
     name: 冻结首图用户成果 Gate
@@ -1106,8 +1106,8 @@ items:
     statusChangedAt: 2026-07-29T20:21:39.739Z
   - id: verify-delegation-continuation-gate
     name: 验证 A11 恢复、取消与真实结果闭环
-    summary: 确定性恢复、权限、预算、父续跑、SDK driver 与真实浏览器取消均通过；当前阻塞仅为运行环境没有 image-capable Provider 凭证。配置 OPENAI_IMAGE_API_KEY（自定义 endpoint 同时配 OPENAI_IMAGE_BASE_URL）后重跑双 Specialist，取得两个真实 Asset 并证明 exactly-once 父续跑。
-    status: blocked
+    summary: A11 全部 Gate 已通过：确定性恢复、精确权限、预算、SDK driver、完成父 Run 后取消、两个真实 Specialist 图像 Artifact、父 turn 恰好 +1、单一 continuation receipt 与刷新后无重复调用或计费。
+    status: done
     planRef: agent-delegation-continuation
     parentTaskId: null
     countedForProgress: true
@@ -1115,8 +1115,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-29T19:54:02.674Z
-    updatedAt: 2026-07-30T03:11:06.587Z
-    statusChangedAt: 2026-07-30T03:11:06.587Z
+    updatedAt: 2026-07-30T05:18:30.399Z
+    statusChangedAt: 2026-07-30T05:18:13.111Z
   - id: provider-1
     name: 修正图像 Provider 路由与确定性失败
     summary: 已交付独立图像 Provider 环境路由、安全凭证隔离、model_not_found 确定性失败分类、production doctor、测试与长期控制面文档；管理员 Credential Vault 和能力健康路由留在后续控制面切片。
@@ -1132,8 +1132,8 @@ items:
     statusChangedAt: 2026-07-30T03:09:08.321Z
   - id: provider-connection-credential-vault-61
     name: 交付 Provider Connection 与 Credential Vault
-    summary: 扩展 Site Admin：以服务端加密密钥引用管理多 Provider/多 Key，按 LLM、图像、视频、语音和音乐能力绑定 Offering，提供脱敏轮换、审计、健康检查与安全路由；环境变量仅保留部署引导和回退。
-    status: pending
+    summary: Site Admin 已交付按 LLM、图像、视频、音频、音乐能力隔离的 Provider Connection、AES-256-GCM 版本化 Credential Vault、Offering 绑定、健康检查、审计、冻结连接路由与环境变量回退；KMS/HSM 和工作区 BYOK 属后续 Gate。
+    status: done
     planRef: first-image-value-gate
     parentTaskId: null
     countedForProgress: true
@@ -1141,5 +1141,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T03:10:52.514Z
-    updatedAt: 2026-07-30T03:11:00.141Z
-    statusChangedAt: 2026-07-30T03:10:52.514Z
+    updatedAt: 2026-07-30T05:18:30.642Z
+    statusChangedAt: 2026-07-30T05:18:30.642Z
