@@ -27,6 +27,7 @@ import type { WorkflowRuntimeImageAsset } from "@muses/domain"
 
 import type { AgentDelegationActivityProjection } from "@/lib/agent-delegation-activity"
 import { cn } from "@/lib/utils"
+import { createClientId } from "@/lib/client-id"
 
 type AgentRunResponse = {
   run: AgentRunSnapshot
@@ -137,7 +138,7 @@ export function StudioAgentPanel({
                 workspaceId,
                 projectId,
                 prompt: content,
-                idempotencyKey: crypto.randomUUID(),
+                idempotencyKey: createClientId(),
               }
         ),
       })
@@ -307,10 +308,7 @@ export function StudioAgentPanel({
   const running = Boolean(run && !isTerminal(run.status))
   const delegationBusy = Boolean(delegation?.active)
   const delegatedTaskCount =
-    delegation?.runs.reduce(
-      (count, item) => count + item.tasks.length,
-      0
-    ) || 0
+    delegation?.runs.reduce((count, item) => count + item.tasks.length, 0) || 0
   const delegatedArtifactCount =
     delegation?.runs.reduce(
       (count, item) =>

@@ -81,6 +81,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { isAppLocale } from "@/i18n/config"
+import { createClientId } from "@/lib/client-id"
 import { cn } from "@/lib/utils"
 import type { CreativeCanvasProjection } from "@/lib/creative-canvas-projection"
 
@@ -105,6 +106,17 @@ const LAST_RUN_STORAGE_KEY = "muses.platform-core-alpha.last-durable-run"
 
 type CanvasInputMode = "mouse" | "trackpad"
 type StudioMode = "creative" | "professional"
+type GatewayWriteFailureKind = "conflict" | "failed"
+
+class GatewayWriteError extends Error {
+  constructor(
+    readonly kind: GatewayWriteFailureKind,
+    message: string
+  ) {
+    super(message)
+    this.name = "GatewayWriteError"
+  }
+}
 
 type StudioContextProjection = {
   workspace: {
@@ -497,8 +509,8 @@ export function MusesStudio({
 
   const moveCreativeItem = useCallback(
     async (itemId: string, position: { x: number; y: number }) => {
-      const canvas = creativeCanvasProjection.canvas
-      const item = canvas.items.find((candidate) => candidate.id === itemId)
+      let canvas = creativeCanvasProjection.canvas
+      let item = canvas.items.find((candidate) => candidate.id === itemId)
       if (
         !item ||
         (item.position.x === position.x && item.position.y === position.y)
@@ -514,42 +526,63 @@ export function MusesStudio({
           ),
         },
       }))
-      const commandId = `command_${crypto.randomUUID().replaceAll("-", "")}`
       try {
-        const response = await fetch("/api/studio/operation-gateway", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
-            commandId,
-            idempotencyKey: commandId,
-            workspaceId: canvas.workspaceId,
-            projectId: canvas.projectId,
-            target: { type: "creative-canvas", id: canvas.canvasId },
-            expectedRevision: canvas.revision,
-            issuedAt: new Date().toISOString(),
-            payload: {
-              type: "creative.item.put",
-              item: { ...item, position },
-            },
-          }),
-        })
-        const result =
-          (await response.json()) as Partial<OperationCommandResponse>
-        if (!response.ok || !result.accepted || !result.snapshot) {
-          throw new Error("Creative canvas move was rejected.")
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+          const commandId = createClientId("command")
+          const response = await fetch("/api/studio/operation-gateway", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
+              commandId,
+              idempotencyKey: commandId,
+              workspaceId: canvas.workspaceId,
+              projectId: canvas.projectId,
+              target: { type: "creative-canvas", id: canvas.canvasId },
+              expectedRevision: canvas.revision,
+              issuedAt: new Date().toISOString(),
+              payload: {
+                type: "creative.item.put",
+                item: { ...item, position },
+              },
+            }),
+          })
+          const result =
+            (await response.json()) as Partial<OperationCommandResponse>
+          if (result.snapshot) {
+            operationGatewaySnapshotRef.current = result.snapshot
+            canvas = result.snapshot.creativeCanvas
+            item = canvas.items.find((candidate) => candidate.id === itemId)
+          }
+          if (response.status === 409 && attempt === 0 && item) continue
+          if (response.status === 409) {
+            throw new GatewayWriteError(
+              "conflict",
+              "Creative canvas revision conflict."
+            )
+          }
+          if (!response.ok || !result.accepted || !result.snapshot) {
+            throw new GatewayWriteError(
+              "failed",
+              "Creative canvas move was rejected."
+            )
+          }
+          setCreativeCanvasProjection((current) => ({
+            ...current,
+            canvas: result.snapshot!.creativeCanvas,
+          }))
+          setNotice(t("status.saved"))
+          return
         }
-        setCreativeCanvasProjection((current) => ({
-          ...current,
-          canvas: result.snapshot!.creativeCanvas,
-        }))
-        setNotice(t("status.saved"))
-      } catch {
-        await refreshCreativeCanvas()
-        setNotice(t("status.saveFailed"))
+      } catch (error) {
+        setNotice(
+          error instanceof GatewayWriteError && error.kind === "conflict"
+            ? t("status.saveConflict")
+            : t("status.saveFailed")
+        )
       }
     },
-    [creativeCanvasProjection, refreshCreativeCanvas, t]
+    [creativeCanvasProjection, t]
   )
 
   const enqueueGatewayPayloads = useCallback(
@@ -579,7 +612,7 @@ export function MusesStudio({
           if (!definition) {
             throw new Error("WorkflowDefinition is no longer available.")
           }
-          const commandId = `command_${crypto.randomUUID().replaceAll("-", "")}`
+          const commandId = createClientId("command")
           const response = await fetch("/api/studio/operation-gateway", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -606,8 +639,17 @@ export function MusesStudio({
             if (!result.snapshot) await refreshGatewaySnapshot()
             continue
           }
+          if (response.status === 409) {
+            throw new GatewayWriteError(
+              "conflict",
+              result.message || "Operation Gateway revision conflict."
+            )
+          }
           if (!response.ok || !result.accepted || !result.snapshot) {
-            throw new Error(result.message || "Operation Gateway write failed.")
+            throw new GatewayWriteError(
+              "failed",
+              result.message || "Operation Gateway write failed."
+            )
           }
           return
         }
@@ -623,16 +665,22 @@ export function MusesStudio({
       }
       const run = operationGatewayQueue.current.then(persist, persist)
       operationGatewayQueue.current = run.catch(() => undefined)
+      let persisted = false
       void run
         .then(() => {
+          persisted = true
           setNotice(t("status.saved"))
         })
-        .catch(() => {
-          setNotice(t("status.saveFailed"))
+        .catch((error) => {
+          setNotice(
+            error instanceof GatewayWriteError && error.kind === "conflict"
+              ? t("status.saveConflict")
+              : t("status.saveFailed")
+          )
         })
         .finally(() => {
           pendingGatewayWrites.current -= 1
-          if (pendingGatewayWrites.current !== 0) return
+          if (!persisted || pendingGatewayWrites.current !== 0) return
           const authoritative =
             operationGatewaySnapshotRef.current.workflowDefinitions.find(
               (candidate) => candidate.definitionId === definitionId
@@ -826,7 +874,7 @@ export function MusesStudio({
             workspaceId: workspace.id,
             deploymentId: publication.deployment.deploymentId,
           },
-          idempotencyKey: `workflow-run:${crypto.randomUUID()}`,
+          idempotencyKey: `workflow-run:${createClientId()}`,
         }),
       })
       const result = (await response.json()) as {

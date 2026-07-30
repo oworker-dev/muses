@@ -1156,3 +1156,16 @@ items:
     createdAt: 2026-07-30T06:23:24.311Z
     updatedAt: 2026-07-30T06:38:39.385Z
     statusChangedAt: 2026-07-30T06:38:39.385Z
+  - id: fix-canvas-edit-save-conflict
+    name: 修复画布编辑保存冲突
+    summary: 已修复公网 HTTP 环境缺少 crypto.randomUUID 导致画布命令未发送的问题；画布、工作流运行与 Agent 使用兼容 ID，保存失败保留本地编辑，真实版本冲突重试一次。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T07:12:45.587Z
+    updatedAt: 2026-07-30T07:52:27.760Z
+    statusChangedAt: 2026-07-30T07:52:27.760Z
