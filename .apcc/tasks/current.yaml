@@ -1143,3 +1143,16 @@ items:
     createdAt: 2026-07-30T03:10:52.514Z
     updatedAt: 2026-07-30T05:18:30.642Z
     statusChangedAt: 2026-07-30T05:18:30.642Z
+  - id: restore-production-authentication
+    name: 恢复生产认证登录链路
+    summary: 已修复外部访问时登录水合失败后的凭证泄露退化，验证 Better Auth 会话 Cookie，并以 Next 生产模式在 4730 对外启动。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-30T06:23:24.311Z
+    updatedAt: 2026-07-30T06:38:39.385Z
+    statusChangedAt: 2026-07-30T06:38:39.385Z

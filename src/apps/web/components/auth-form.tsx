@@ -55,14 +55,16 @@ export function AuthForm({
   oauthProviders,
   callbackURL = "/",
   copy = defaultCopy,
+  initialError = "",
 }: {
   mode: AuthMode
   oauthProviders: OAuthProvider[]
   callbackURL?: string
   copy?: AuthFormCopy
+  initialError?: string
 }) {
   const router = useRouter()
-  const [error, setError] = useState("")
+  const [error, setError] = useState(initialError)
   const [isPending, startTransition] = useTransition()
   const isRegister = mode === "register"
 
@@ -136,7 +138,13 @@ export function AuthForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form
+      action={isRegister ? "/api/auth/sign-up/email" : "/api/auth/form-sign-in"}
+      method="post"
+      onSubmit={onSubmit}
+      className="space-y-4"
+    >
+      <input type="hidden" name="callbackURL" value={callbackURL} />
       <OAuthButtons
         enabledProviders={oauthProviders}
         callbackURL={callbackURL}

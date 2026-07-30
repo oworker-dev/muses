@@ -23,6 +23,9 @@ export default async function LoginPage({
     typeof params?.callbackURL === "string" ? params.callbackURL : null,
     "/"
   )
+  const authError =
+    typeof params?.authError === "string" ? params.authError : null
+  const authErrorMessageKey = getAuthErrorMessageKey(authError)
 
   if (session) {
     redirect(callbackURL)
@@ -40,6 +43,7 @@ export default async function LoginPage({
         mode="login"
         oauthProviders={oauthProviders}
         callbackURL={callbackURL}
+        initialError={authErrorMessageKey ? t(authErrorMessageKey) : ""}
         copy={{
           nameLabel: t("nameLabel"),
           emailLabel: t("emailLabel"),
@@ -60,4 +64,19 @@ export default async function LoginPage({
       />
     </AuthCard>
   )
+}
+
+function getAuthErrorMessageKey(authError: string | null) {
+  switch (authError) {
+    case "invalid-credentials":
+      return "invalidCredentials" as const
+    case "email-not-verified":
+      return "emailNotVerified" as const
+    case "too-many-attempts":
+      return "tooManyAttempts" as const
+    case "auth-unavailable":
+      return "authUnavailable" as const
+    default:
+      return null
+  }
 }
