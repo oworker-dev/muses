@@ -98,6 +98,7 @@ Runtime with zero live provider or network calls. A10 orchestration remains a
 separate Gate and PPT expansion still cannot bypass it.
 
 The professional Studio now has protected Start/End nodes, typed Start inputs,
+editable named and typed End outputs,
 a framework-independent publication validator, a pure
 `WorkflowDocument → WorkflowDefinition` compiler, and a supported-node domain
 interpreter. The compiled definition has its own versioned schema and strips
@@ -259,7 +260,16 @@ Site administrators can manage capability-scoped model connections at `/admin/pr
 
 Admin-managed custom Provider URLs must use HTTPS in production and match an exact hostname in `MUSES_PROVIDER_ALLOWED_HOSTS` (comma-separated; `api.openai.com` is the default). This allowlist applies to stored runtime routes and health checks. Deployment-owned `OPENAI_BASE_URL` variables remain trusted operator configuration.
 
-Agent text calls use database Provider Connections with the `llm` capability when available, then fall back to `OPENAI_API_KEY` and optional `OPENAI_BASE_URL`. Image generation first uses an Offering-bound `image` connection, then the independent `OPENAI_IMAGE_API_KEY`/`OPENAI_IMAGE_BASE_URL`, and finally the shared text provider for compatibility. An explicit image base URL always requires an explicit image key so credentials are never inherited across provider endpoints. Paid runs freeze the selected database connection id before Workflow SDK execution and never perform automatic post-request provider failover.
+Muses does not execute Agent text-model calls in-process. Those calls belong to
+the independently deployed `muses-agent` service and currently use that
+service's deployment credential; routing them from the Muses Provider control
+plane remains a production integration Gate. Image generation first uses an
+Offering-bound `image` connection, then the independent
+`OPENAI_IMAGE_API_KEY`/`OPENAI_IMAGE_BASE_URL`, and finally the shared
+compatibility Provider. An explicit image base URL always requires an explicit
+image key so credentials are never inherited across provider endpoints. Paid
+runs freeze the selected database connection id before Workflow SDK execution
+and never perform automatic post-request provider failover.
 
 GitHub and Google OAuth buttons are only shown when both the provider credentials and the matching enable flag are configured. This avoids rendering social login buttons that would fail in a clean local run. Set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `GITHUB_AUTH_ENABLED=true` for GitHub; set `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `GOOGLE_AUTH_ENABLED=true` for Google.
 

@@ -84,6 +84,7 @@ import { isAppLocale } from "@/i18n/config"
 import { createClientId } from "@/lib/client-id"
 import { cn } from "@/lib/utils"
 import type { CreativeCanvasProjection } from "@/lib/creative-canvas-projection"
+import { MUSES_WORKFLOW_AGENT_PROFILES } from "@/lib/agent-profile-catalog"
 
 import { CreativeCanvasView } from "./creative-canvas"
 import {
@@ -276,6 +277,7 @@ const nodeTypes = {
   "image-result": WorkflowNodeCard,
   selector: WorkflowNodeCard,
   "design-document": WorkflowNodeCard,
+  "agent-run": WorkflowNodeCard,
   end: WorkflowNodeCard,
 } satisfies NodeTypes
 
@@ -286,7 +288,7 @@ type PaletteNodeKind = Exclude<
 
 const paletteItems: Array<{
   kind: PaletteNodeKind
-  copyKey: "imageGenerator" | "selector" | "designDocument"
+  copyKey: "imageGenerator" | "selector" | "designDocument" | "agentRun"
   category: "media" | "flow" | "document"
   icon: typeof SparklesIcon
 }> = [
@@ -302,6 +304,12 @@ const paletteItems: Array<{
     copyKey: "designDocument",
     category: "document",
     icon: Layers3Icon,
+  },
+  {
+    kind: "agent-run",
+    copyKey: "agentRun",
+    category: "flow",
+    icon: WorkflowIcon,
   },
 ]
 
@@ -505,6 +513,24 @@ export function MusesStudio({
       (await response.json()) as CreativeCanvasProjection
     )
   }, [initialContext.workspace.id, initialOperationGatewaySnapshot.project.id])
+
+  const refreshAgentHostState = useCallback(async () => {
+    await refreshCreativeCanvas()
+    const current = operationGatewaySnapshotRef.current
+    const query = new URLSearchParams({
+      workspaceId: current.workspaceId,
+      projectId: current.project.id,
+    })
+    const response = await fetch(`/api/studio/operation-gateway?${query}`)
+    if (!response.ok) return
+    const snapshot = (await response.json()) as OperationGatewaySnapshot
+    operationGatewaySnapshotRef.current = snapshot
+    const currentDefinition = snapshot.workflowDefinitions.find(
+      (definition) => definition.definitionId === workspace.workflow.id,
+    )
+    const authoritative = currentDefinition || snapshot.workflowDefinitions[0]
+    if (authoritative) setWorkspace(authoritative.document)
+  }, [refreshCreativeCanvas, workspace.workflow.id])
 
   const moveCreativeItem = useCallback(
     async (itemId: string, position: { x: number; y: number }) => {
@@ -1123,7 +1149,7 @@ export function MusesStudio({
                       {
                         reference: formatVariableReference(reference),
                         sourceNodeTitle: nodeDisplayTitle(sourceNode, t),
-                        sourcePortLabel: portDisplayLabel(sourcePort.id, t),
+                        sourcePortLabel: portDisplayLabel(sourcePort, t),
                         valueType: sourcePort.valueType,
                       },
                     ],
@@ -1154,7 +1180,7 @@ export function MusesStudio({
                     {
                       reference: formatVariableReference(reference),
                       sourceNodeTitle: nodeDisplayTitle(sourceNode, t),
-                      sourcePortLabel: portDisplayLabel(sourcePort.id, t),
+                      sourcePortLabel: portDisplayLabel(sourcePort, t),
                       valueType: sourcePort.valueType,
                     },
                   ]
@@ -1567,7 +1593,8 @@ export function MusesStudio({
             <StudioAgentPanel
               workspaceId={initialContext.workspace.id}
               projectId={initialOperationGatewaySnapshot.project.id}
-              onCanvasChanged={refreshCreativeCanvas}
+              canvasId={creativeCanvasProjection.canvas.canvasId}
+              onHostChanged={refreshAgentHostState}
             />
           )}
         </div>
@@ -2006,6 +2033,9 @@ function Inspector({
               onRun={() => actions.runImageGenerator(selectedNode.id)}
             />
           ) : null}
+          {selectedNode.data.kind === "agent-run" ? (
+            <AgentRunEditor node={selectedNode} dispatch={dispatch} />
+          ) : null}
           {selectedNode.data.kind === "selector" ? (
             <InspectorField
               label={t("nodes.reviewMode")}
@@ -2027,10 +2057,7 @@ function Inspector({
             </Button>
           ) : null}
           {selectedNode.data.kind === "end" ? (
-            <InspectorField
-              label={t("inspector.endBehavior")}
-              value={t("inspector.endBehaviorValue")}
-            />
+            <EndOutputsEditor node={selectedNode} dispatch={dispatch} />
           ) : null}
         </InspectorSection>
 
@@ -2045,7 +2072,7 @@ function Inspector({
                 >
                   <div className="flex items-center justify-between text-[13px]">
                     <span className="font-medium">
-                      {portDisplayLabel(port.id, t)}
+                      {portDisplayLabel(port, t)}
                     </span>
                     <span className="rounded bg-background px-1.5 py-0.5 text-[12px] text-muted-foreground">
                       {
@@ -2093,7 +2120,7 @@ function Inspector({
                 key={port.id}
                 className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2.5 text-[13px]"
               >
-                <span>{portDisplayLabel(port.id, t)}</span>
+                <span>{portDisplayLabel(port, t)}</span>
                 <span className="rounded bg-background px-1.5 py-0.5 text-[12px] text-muted-foreground">
                   {t(`types.${port.valueType}`)}
                 </span>
@@ -2113,6 +2140,86 @@ function Inspector({
         ) : null}
       </div>
     </aside>
+  )
+}
+
+function AgentRunEditor({
+  node,
+  dispatch,
+}: {
+  node: WorkflowNodeDraft
+  dispatch: (payload: MusesCommandPayload) => void
+}) {
+  const t = useTranslations("Studio")
+  if (node.data.kind !== "agent-run") return null
+  const agentData = node.data
+  const selected = MUSES_WORKFLOW_AGENT_PROFILES.find(
+    (profile) =>
+      profile.profileId === agentData.profileId &&
+      profile.profileVersion === agentData.profileVersion,
+  )
+
+  const updateProfile = (profileKey: string) => {
+    const profile = MUSES_WORKFLOW_AGENT_PROFILES.find(
+      (candidate) =>
+        `${candidate.profileId}@${candidate.profileVersion}` === profileKey,
+    )
+    if (!profile) return
+    dispatch({
+      type: "workflow.agent-run.config.set",
+      nodeId: node.id,
+      config: {
+        profileId: profile.profileId,
+        profileVersion: profile.profileVersion,
+        outputMode: profile.outputMode,
+        inputSchema: profile.inputSchema,
+        outputSchema: profile.outputSchema,
+        requiredPermissions: profile.requiredPermissions,
+        budget: profile.budget,
+      },
+    })
+  }
+
+  return (
+    <div className="space-y-3" data-testid="agent-run-profile-editor">
+      <label className="block space-y-1.5">
+        <span className="text-[13px] font-medium">
+          {t("inspector.agentProfile")}
+        </span>
+        <select
+          value={`${agentData.profileId}@${agentData.profileVersion}`}
+          onChange={(event) => updateProfile(event.target.value)}
+          className="h-9 w-full rounded-md border border-input bg-background px-2.5 text-[13px] outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/10"
+        >
+          {MUSES_WORKFLOW_AGENT_PROFILES.map((profile) => (
+            <option
+              key={`${profile.profileId}@${profile.profileVersion}`}
+              value={`${profile.profileId}@${profile.profileVersion}`}
+            >
+              {profile.label} · {profile.profileVersion}
+            </option>
+          ))}
+        </select>
+      </label>
+      <p className="text-[12px] leading-4 text-muted-foreground">
+        {selected?.description || t("inspector.agentProfileUnavailable")}
+      </p>
+      {selected ? (
+        <div className="grid grid-cols-2 gap-2">
+          <InspectorField
+            label={t("inspector.agentPermissions")}
+            value={String(selected.requiredPermissions.length)}
+          />
+          <InspectorField
+            label={t("inspector.agentBudget")}
+            value={t("inspector.agentBudgetValue", {
+              turns: selected.budget.maxTurns,
+              tools: selected.budget.maxToolCalls,
+            })}
+          />
+        </div>
+      ) : null}
+    </div>
   )
 }
 
@@ -2917,6 +3024,162 @@ function StartVariablesEditor({
   )
 }
 
+function EndOutputsEditor({
+  node,
+  dispatch,
+}: {
+  node: WorkflowNodeDraft
+  dispatch: (payload: MusesCommandPayload) => void
+}) {
+  const t = useTranslations("Studio")
+  if (node.data.kind !== "end") return null
+  const outputs = node.inputPorts.map((port) => ({
+    id: port.id,
+    name: port.label,
+    valueType: port.valueType,
+    required: Boolean(port.required),
+  }))
+
+  const setOutputs = (nextOutputs: typeof outputs) =>
+    dispatch({
+      type: "workflow.end.outputs.set",
+      nodeId: node.id,
+      outputs: nextOutputs,
+    })
+
+  const updateOutput = (
+    index: number,
+    update: Partial<(typeof outputs)[number]>
+  ) =>
+    setOutputs(
+      outputs.map((output, candidateIndex) =>
+        candidateIndex === index ? { ...output, ...update } : output
+      )
+    )
+
+  const addOutput = () => {
+    let sequence = outputs.length + 1
+    while (outputs.some((output) => output.id === `result_${sequence}`)) {
+      sequence += 1
+    }
+    setOutputs([
+      ...outputs,
+      {
+        id: `result_${sequence}`,
+        name: `result_${sequence}`,
+        valueType: "text",
+        required: true,
+      },
+    ])
+  }
+
+  return (
+    <div className="space-y-2.5" data-testid="end-output-editor">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[13px] font-semibold">
+            {t("inspector.endOutputs")}
+          </p>
+          <p className="mt-0.5 text-[12px] text-muted-foreground">
+            {t("inspector.endOutputsHint")}
+          </p>
+        </div>
+        <Button type="button" size="sm" variant="outline" onClick={addOutput}>
+          <PlusIcon className="size-3.5" />
+          {t("inspector.addOutput")}
+        </Button>
+      </div>
+      {outputs.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border px-3 py-3 text-[12px] text-muted-foreground">
+          {t("inspector.noOutputs")}
+        </p>
+      ) : null}
+      {outputs.map((output, index) => (
+        <div
+          key={output.id}
+          className="space-y-2 rounded-lg border border-border bg-muted/20 p-2.5"
+        >
+          <div className="flex items-center gap-2">
+            <Input
+              key={`${output.id}-${output.name}`}
+              defaultValue={output.name}
+              aria-label={t("inspector.outputName")}
+              className="h-8 flex-1 text-[13px]"
+              onBlur={(event) => {
+                const name = event.target.value.trim()
+                if (name && name !== output.name) updateOutput(index, { name })
+              }}
+            />
+            <select
+              value={output.valueType}
+              aria-label={t("inspector.outputType")}
+              className="h-8 rounded-md border border-input bg-background px-2 text-[13px]"
+              onChange={(event) =>
+                updateOutput(index, {
+                  valueType: event.target.value as PortValueType,
+                })
+              }
+            >
+              {(
+                [
+                  "text",
+                  "number",
+                  "boolean",
+                  "image",
+                  "design-document",
+                ] as const
+              ).map((type) => (
+                <option key={type} value={type}>
+                  {t(`types.${type}`)}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              aria-label={t("inspector.removeOutput")}
+              title={t("inspector.removeOutput")}
+              className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              onClick={() =>
+                setOutputs(
+                  outputs.filter((_, candidateIndex) => candidateIndex !== index)
+                )
+              }
+            >
+              <Trash2Icon className="size-3.5" />
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              key={`${output.id}-key`}
+              defaultValue={output.id}
+              aria-label={t("inspector.outputKey")}
+              className="h-8 min-w-0 flex-1 font-mono text-[13px]"
+              onBlur={(event) => {
+                const id = event.target.value.trim()
+                if (/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(id)) {
+                  if (id !== output.id) updateOutput(index, { id })
+                } else {
+                  event.target.value = output.id
+                }
+              }}
+            />
+            <label className="flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-border bg-background px-2 text-[12px]">
+              <input
+                type="checkbox"
+                checked={output.required}
+                onChange={(event) =>
+                  updateOutput(index, { required: event.target.checked })
+                }
+              />
+              {t("inspector.required")}
+            </label>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function WorkflowInputDefaultEditor({
   variable,
   onChange,
@@ -3713,6 +3976,8 @@ function durableNodeKindLabel(
       return t("nodes.selector.title")
     case "design-document":
       return t("nodes.designDocument.title")
+    case "agent-run":
+      return t("nodes.agentRun.title")
     case "end":
       return t("nodes.end.title")
     default:
@@ -3978,10 +4243,15 @@ function ToolbarButton({
 }
 
 function portDisplayLabel(
-  portId: string,
+  port: string | { id: string; label: string },
   t: ReturnType<typeof useTranslations<"Studio">>
 ) {
-  return t.has(`ports.${portId}`) ? t(`ports.${portId}`) : portId
+  const portId = typeof port === "string" ? port : port.id
+  return t.has(`ports.${portId}`)
+    ? t(`ports.${portId}`)
+    : typeof port === "string"
+      ? port
+      : port.label
 }
 
 function nodeCopyKey(kind: WorkflowNodeKind) {
@@ -3991,6 +4261,7 @@ function nodeCopyKey(kind: WorkflowNodeKind) {
     "image-result": "imageResult",
     selector: "selector",
     "design-document": "designDocument",
+    "agent-run": "agentRun",
     end: "end",
   }[kind] as
     | "start"
@@ -3998,6 +4269,7 @@ function nodeCopyKey(kind: WorkflowNodeKind) {
     | "imageResult"
     | "selector"
     | "designDocument"
+    | "agentRun"
     | "end"
 }
 

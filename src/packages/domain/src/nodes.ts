@@ -5,6 +5,7 @@ import type {
   WorkflowInputVariableDefinition,
   WorkflowNodeDraft,
   WorkflowNodeKind,
+  WorkflowOutputVariableDefinition,
 } from "./model";
 import { WORKSPACE_SCHEMA_VERSION } from "./model";
 import { DEFAULT_IMAGE_MODEL_REF } from "./model-catalog";
@@ -99,16 +100,40 @@ export function createNodeDraft(
         },
       };
     }
-    case "end":
+    case "agent-run":
+      return {
+        id,
+        kind,
+        title: "Run Agent",
+        position,
+        inputPorts: [input("message", "Message", "text", true)],
+        outputPorts: [output("result", "Result", "text")],
+        data: {
+          kind,
+          profileId: "general-purpose",
+          profileVersion: "0.1.0",
+          outputMode: "text",
+        },
+      };
+    case "end": {
+      const outputs: WorkflowOutputVariableDefinition[] = [
+        {
+          id: "image",
+          name: "Image",
+          valueType: "image",
+          required: true,
+        },
+      ];
       return {
         id,
         kind,
         title: "End",
         position,
-        inputPorts: [input("image", "Image", "image", true)],
+        inputPorts: createEndInputPorts(outputs),
         outputPorts: [],
         data: { kind },
       };
+    }
   }
 }
 
@@ -117,6 +142,14 @@ export function createStartOutputPorts(
 ) {
   return variables.map((variable) =>
     output(variable.id, variable.name, variable.valueType),
+  );
+}
+
+export function createEndInputPorts(
+  outputs: WorkflowOutputVariableDefinition[],
+) {
+  return outputs.map((output) =>
+    input(output.id, output.name, output.valueType, output.required),
   );
 }
 
@@ -144,6 +177,27 @@ export function validateWorkflowInputVariables(
       return `Variable "${normalizedName}" has a default value that does not match ${variable.valueType}.`;
     }
     ids.add(variable.id);
+    names.add(normalizedName);
+  }
+  return null;
+}
+
+export function validateWorkflowOutputVariables(
+  outputs: WorkflowOutputVariableDefinition[],
+) {
+  const ids = new Set<string>();
+  const names = new Set<string>();
+  for (const output of outputs) {
+    if (!/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/.test(output.id)) {
+      return `Output id "${output.id}" must start with a letter and contain only letters, numbers, underscores, or hyphens.`;
+    }
+    const normalizedName = output.name.trim();
+    if (!normalizedName) return "Output names cannot be empty.";
+    if (ids.has(output.id)) return `Output id "${output.id}" is duplicated.`;
+    if (names.has(normalizedName)) {
+      return `Output name "${normalizedName}" is duplicated.`;
+    }
+    ids.add(output.id);
     names.add(normalizedName);
   }
   return null;

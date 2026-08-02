@@ -26,7 +26,11 @@ export type WorkflowDeployment = {
 
 export type WorkflowInvocationCaller =
   | { readonly kind: "user"; readonly userId: string }
-  | { readonly kind: "agent"; readonly agentRunId: string }
+  | {
+      readonly kind: "agent"
+      readonly agentRunId: string
+      readonly runtime: "standalone"
+    }
   | { readonly kind: "api"; readonly clientId: string }
   | { readonly kind: "workflow"; readonly workflowRunId: string };
 

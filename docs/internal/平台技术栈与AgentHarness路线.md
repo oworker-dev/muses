@@ -109,14 +109,15 @@ AI SDK/Chat SDK 主要覆盖模型协议、结构化输出、工具调用和流�
 
 ## 6. Eve 与 Pi Spike 结论
 
-2026-07-29 已使用相同的 Muses 生命周期、安全与自托管夹具完成
-`@muses/agent-core`、`@earendil-works/pi-agent-core@0.82.1` 和
-`eve@0.27.8` 对照。可执行矩阵与兼容性 Gate 位于
-`src/packages/agent-harness-adapters`。
+2026-07-29 已使用相同的 Muses 生命周期、安全与自托管夹具完成旧
+Muses Headless Runtime、`@earendil-works/pi-agent-core@0.82.1` 和
+`eve@0.27.8` 对照。该 Spike 的提交与证据保留为选型依据；原
+`@muses/agent-core` 和 `src/packages/agent-harness-adapters` 已在独立 Agent
+迁移完成后从现行代码删除，不能再作为可执行入口。
 
 | 候选 | 当前角色 | 原生优势 | 必须由 Muses 补齐或持有 | 当前硬阻断 |
 | --- | --- | --- | --- | --- |
-| Muses headless | 契约参考与兼容 Runtime | 权威生命周期、审批、预算、事件、Checkpoint、Run 隔离 | PostgreSQL Store 与生产 Model Adapter | 不再承担独立 Web Agent 默认产品实现 |
+| 历史 Muses headless | 只读迁移参考与验证证据 | 曾验证生命周期、审批、预算、事件、Checkpoint 和逻辑隔离 | 不再扩展 | 已退役，不是可执行 Runtime |
 | Pi 0.82.1 | 可选循环 Adapter | 工具循环、事件、steering/follow-up、工具前后置 Hook、Node 22 可运行 | 耐久状态、审批暂停、Skill/MCP、Sandbox、权限与费用 | 不可独立承担生产耐久 Runtime |
 | Eve 0.27.8 | 独立 Web Agent 默认 Harness | 耐久 Session、HITL、Skill、MCP、Sandbox、Subagent、自托管 World、Web channel | 稳定公开契约、Run 级物理隔离、消息队列、Host Adapter 与生产 Gate | 必须独立运行 Node 24 与 Workflow 5 beta，不能嵌入 Muses Node 22 进程 |
 
@@ -127,12 +128,15 @@ Eve 是 Apache-2.0、filesystem-first 的耐久 Agent Framework，`0.27.8`
 Skills、State、Channels、Schedules、Human-in-the-loop、Subagents、Sandbox
 和基于 Workflow SDK 的 step checkpoint/resume 都有较完整实现。
 
-当前在独立项目 `/root/projects/muses-agent` 中验证：
+当前在独立项目 `/root/projects/muses-agent` 中已验证：
 
-- MusesAgent 和领域 Agent 的长会话、暂停恢复和多入口渠道。
-- Workflow SDK 与 Agent Run 的集成。
-- per-session sandbox、工具审批、技能加载和子 Agent 隔离。
-- 自托管 world、状态、流和运行观测能否满足 Muses 开放要求。
+- Web 与嵌入模式共享的多轮 durable session、continuation token、刷新恢复和 Usage。
+- 独立 Headless AgentRun API 与 Muses Workflow `agent-run` 节点组合。
+- per-session Docker sandbox 的跨 turn `/workspace` 持久化。
+- 独立 Agent 产品 schema、自托管 Workflow World、Host JWT 与会话所有权。
+
+尚未通过的是生产 Skill/MCP 全生命周期、真实供应商故障/负载 Gate、
+生产沙盒后端的对抗隔离与回收 SLO、OTel 和非零费用 reconciliation。
 
 当前不能直接导入 `/root/projects/saas` Web/Worker 进程，原因是：
 
@@ -141,8 +145,10 @@ Skills、State、Channels、Schedules、Human-in-the-loop、Subagents、Sandbox
   `workflow@4.6.2` 与 `@workflow/world-postgres@4.3.1`，不能共享 World。
 - Eve sandbox 按 Session 持久，而 Muses 的默认隔离边界是 AgentRun；不能仅靠
   名称映射假装满足隔离。
-- Eve 不保证同 Session 并发消息的耐久 FIFO；应用层仍需串行队列。
-- 中断中的 step 会重跑，计费、发送和发布等副作用仍必须使用 Muses 幂等收据。
+- Eve session 是串行 continuation 边界；Host 和 Web 客户端必须等到
+  `session.waiting` 再提交下一 turn。
+- 中断中的 step 会重放，计费、发送和发布等副作用仍必须由各自权威
+  服务使用幂等收据。
 
 因此 Eve 在 Node 24、独立 Workflow World 和独立部署中成为 Web Agent 默认 Harness；Muses 只通过 Client/Host SDK 与 Agent 服务组合。Node 与 Workflow 协议差异由项目边界隔离，不再被误判为暂停 Agent 产品的理由。若 Eve 未通过 Run-sandbox、消息顺序或生产 SLO Gate，可切换 Pi/Headless Adapter，且不改变公开状态与 Host 集成协议。
 

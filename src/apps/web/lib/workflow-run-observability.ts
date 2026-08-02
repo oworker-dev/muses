@@ -65,6 +65,11 @@ export type WorkflowRunNodeObservability = {
     inputTokens?: number
     outputTokens?: number
     totalTokens?: number
+    cacheReadTokens?: number
+    cacheWriteTokens?: number
+    costUsd?: number
+    agentRunId?: string
+    agentEventCount?: number
   }
   billing?: {
     estimatedMicros: string
@@ -90,6 +95,9 @@ export type WorkflowRunObservabilityProjection = {
     inputTokens?: number
     outputTokens?: number
     totalTokens?: number
+    cacheReadTokens?: number
+    cacheWriteTokens?: number
+    costUsd?: number
     estimatedMicros: string
     actualMicros: string
     billingStatus: string
@@ -339,6 +347,9 @@ function buildWorkflowRunObservability(input: {
       inputTokens: sumOptional(tokenUsages, "inputTokens"),
       outputTokens: sumOptional(tokenUsages, "outputTokens"),
       totalTokens: sumOptional(tokenUsages, "totalTokens"),
+      cacheReadTokens: sumOptional(tokenUsages, "cacheReadTokens"),
+      cacheWriteTokens: sumOptional(tokenUsages, "cacheWriteTokens"),
+      costUsd: sumOptional(tokenUsages, "costUsd"),
       estimatedMicros: input.billing.estimatedMicros || "0",
       actualMicros: input.billing.settledMicros || "0",
       billingStatus: input.billing.reservationStatus || "not-required",
@@ -422,11 +433,23 @@ function summarizeRuntimeValues(
 function summarizeUsage(usage: {
   readonly imageCount: number
   readonly providerUsage?: unknown
+  readonly agentRunId?: string
+  readonly agentEventCount?: number
+  readonly agentUsage?: {
+    readonly inputTokens: number
+    readonly outputTokens: number
+    readonly cacheReadTokens: number
+    readonly cacheWriteTokens: number
+    readonly costUsd: number
+  }
 }): WorkflowRunNodeObservability["usage"] {
-  const providerUsage = record(usage.providerUsage)
+  const providerUsage = record(usage.providerUsage) || record(usage.agentUsage)
   const inputTokens = finiteNumber(providerUsage?.inputTokens)
   const outputTokens = finiteNumber(providerUsage?.outputTokens)
   const totalTokens = finiteNumber(providerUsage?.totalTokens)
+  const cacheReadTokens = finiteNumber(providerUsage?.cacheReadTokens)
+  const cacheWriteTokens = finiteNumber(providerUsage?.cacheWriteTokens)
+  const costUsd = finiteNumber(providerUsage?.costUsd)
   return {
     imageCount: usage.imageCount,
     tokenStatus:
@@ -438,6 +461,11 @@ function summarizeUsage(usage: {
     inputTokens,
     outputTokens,
     totalTokens,
+    cacheReadTokens,
+    cacheWriteTokens,
+    costUsd,
+    agentRunId: usage.agentRunId,
+    agentEventCount: usage.agentEventCount,
   }
 }
 
@@ -537,7 +565,7 @@ function readNodePriceSnapshots(value: unknown): NodePriceSnapshot[] {
 
 function sumOptional(
   usages: readonly NonNullable<WorkflowRunNodeObservability["usage"]>[],
-  key: "inputTokens" | "outputTokens" | "totalTokens"
+  key: "inputTokens" | "outputTokens" | "totalTokens" | "cacheReadTokens" | "cacheWriteTokens" | "costUsd"
 ) {
   const values = usages
     .map((usage) => usage[key])

@@ -5,6 +5,7 @@ import pg from "pg";
 const { Client } = pg;
 const studioEmail = "muses-studio-e2e@example.com";
 const studioPassword = "MusesStudioE2E123!";
+const authoringEmail = "muses-agent-authoring-e2e@example.com";
 let workspaceId = "";
 
 test.beforeAll(async ({ request }) => {
@@ -90,6 +91,30 @@ test("Studio uses one full-height right rail for Agent and node settings", async
   const agent = page.getByTestId("studio-agent-panel");
   await expect(agent).toBeVisible();
   expect((await agent.boundingBox())?.height).toBeGreaterThan(780);
+  const embed = agent.locator("iframe");
+  await expect(embed).toHaveAttribute(
+    "src",
+    /^http:\/\/127\.0\.0\.1:3000\/embed$/,
+  );
+  const embedUrl = await embed.getAttribute("src");
+  expect(embedUrl).not.toContain("token");
+  expect(embedUrl).not.toContain("accessToken");
+  const agentFrame = page.frameLocator('iframe[title="MusesAgent"]');
+  await expect(
+    agentFrame.getByRole("textbox", { name: "Describe a task" }),
+  ).toBeVisible({ timeout: 30_000 });
+  await expect(
+    agentFrame.getByRole("combobox", { name: "Model" }),
+  ).toBeVisible();
+  await expect(
+    agentFrame.getByRole("combobox", { name: "Reasoning" }),
+  ).toBeVisible();
+  await expect(agentFrame.getByText("0 / 128k", { exact: true })).toBeVisible();
+  await agentFrame.getByRole("button", { name: "Open navigation" }).click();
+  await expect(
+    agentFrame.getByRole("button", { name: "New task", exact: true }),
+  ).toBeVisible();
+  await agentFrame.getByRole("button", { name: "Close navigation" }).click();
 
   await page.getByTestId("workflow-node-image-generator-1").click();
   await expect(agent).toHaveCount(0);
@@ -98,6 +123,42 @@ test("Studio uses one full-height right rail for Agent and node settings", async
   await page.locator(".react-flow__pane").click({ position: { x: 20, y: 20 } });
   await expect(page.getByTestId("studio-node-inspector")).toHaveCount(0);
   await expect(page.getByTestId("studio-agent-panel")).toBeVisible();
+});
+
+test("embedded standalone Agent completes and restores a generic conversation", async ({
+  page,
+}) => {
+  test.setTimeout(3 * 60_000);
+  await page.goto("/studio");
+  const frame = page.frameLocator('iframe[title="MusesAgent"]');
+  const composer = frame.getByRole("textbox", { name: "Describe a task" });
+  await expect(composer).toBeVisible({ timeout: 30_000 });
+  await composer.fill("Reply with exactly: MUSES EMBED READY");
+  await composer.press("Enter");
+  await expect(
+    frame.getByText("MUSES EMBED READY", { exact: true }),
+  ).toBeVisible({
+    timeout: 2 * 60_000,
+  });
+  await expect(frame.getByText(/Input \d/)).toBeVisible();
+
+  await page.reload();
+  const restored = page.frameLocator('iframe[title="MusesAgent"]');
+  await expect(
+    restored.getByText("MUSES EMBED READY", { exact: true }),
+  ).toBeVisible({
+    timeout: 30_000,
+  });
+  const continuedComposer = restored.getByRole("textbox", {
+    name: "Describe a task",
+  });
+  await continuedComposer.fill(
+    "Now reply with exactly: MUSES CONTINUATION READY",
+  );
+  await continuedComposer.press("Enter");
+  await expect(
+    restored.getByText("MUSES CONTINUATION READY", { exact: true }),
+  ).toBeVisible({ timeout: 2 * 60_000 });
 });
 
 test("Site Admin can inspect the credential-safe Provider control plane", async ({
@@ -125,642 +186,6 @@ test("Site Admin can inspect the credential-safe Provider control plane", async 
       document.documentElement.clientWidth + 1,
   );
   expect(hasHorizontalOverflow).toBeFalsy();
-});
-
-test("MusesAgent generates a real image and restores it after refresh", async ({
-  page,
-}) => {
-  test.setTimeout(6 * 60_000);
-  await page.goto("/studio");
-  const panel = page.getByTestId("studio-agent-panel");
-  await expect(panel).toBeVisible();
-  await panel
-    .getByPlaceholder("What would you like to create?")
-    .fill("Create a minimal red product poster on a white background.");
-  await panel.getByRole("button", { name: "Send" }).click();
-
-  const approval = page.getByTestId("studio-agent-approval");
-  await expect(approval).toBeVisible({ timeout: 2 * 60_000 });
-  await expect(approval).toContainText("image.generate");
-  await approval.getByRole("button", { name: "Approve" }).click();
-
-  await expect(panel.getByText("Result ready", { exact: true })).toBeVisible({
-    timeout: 5 * 60_000,
-  });
-  const generatedImage = panel.locator("figure img");
-  await expect(generatedImage).toBeVisible();
-  const runId = await page.evaluate((currentWorkspaceId) => {
-    const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
-    const key = Object.keys(window.localStorage).find((candidate) =>
-      candidate.startsWith(prefix),
-    );
-    return key ? window.localStorage.getItem(key) : null;
-  }, workspaceId);
-  expect(runId).toBeTruthy();
-  const runResponse = await page.request.get(
-    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${runId}`,
-  );
-  expect(runResponse.ok()).toBeTruthy();
-  const runProjection = (await runResponse.json()) as {
-    run: {
-      plan?: {
-        steps: Array<{ id: string; status: string }>;
-      };
-      context: {
-        messages: Array<{
-          role: string;
-          toolName?: string;
-          content: string;
-        }>;
-      };
-    };
-  };
-  const imageToolMessage = [...runProjection.run.context.messages]
-    .reverse()
-    .find(
-      (message) =>
-        message.role === "tool" && message.toolName === "image.generate",
-    );
-  expect(imageToolMessage).toBeTruthy();
-  const imageToolOutput = JSON.parse(imageToolMessage!.content) as {
-    assets?: Array<{ id: string }>;
-  };
-  const generatedAssetId = imageToolOutput.assets?.[0]?.id;
-  expect(generatedAssetId).toMatch(/^image_/);
-  expect(runProjection.run.plan?.steps).toEqual([
-    expect.objectContaining({ id: "understand-request", status: "completed" }),
-    expect.objectContaining({ id: "generate-image", status: "completed" }),
-    expect.objectContaining({ id: "place-result", status: "completed" }),
-  ]);
-  await expect(page.getByTestId("studio-agent-plan")).toBeVisible();
-  await expect(generatedImage).toHaveAttribute(
-    "src",
-    new RegExp(generatedAssetId!),
-  );
-
-  const gatewayResponse = await page.request.get(
-    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
-  );
-  expect(gatewayResponse.ok()).toBeTruthy();
-  const gateway = (await gatewayResponse.json()) as {
-    creativeCanvas: {
-      revision: number;
-      items: Array<{
-        id: string;
-        kind: string;
-        refId: string;
-        position: { x: number; y: number };
-      }>;
-    };
-  };
-  expect(gateway.creativeCanvas.items).toContainEqual(
-    expect.objectContaining({ kind: "asset", refId: generatedAssetId }),
-  );
-  const canvasItem = gateway.creativeCanvas.items.find(
-    ({ refId }) => refId === generatedAssetId,
-  );
-  expect(canvasItem).toBeTruthy();
-  const creativeItem = page.getByTestId(
-    `creative-canvas-item-${canvasItem!.id}`,
-  );
-  await expect(creativeItem).toBeVisible();
-  await expect(creativeItem.locator("img")).toHaveAttribute(
-    "src",
-    new RegExp(generatedAssetId!),
-  );
-
-  const itemBox = await creativeItem.boundingBox();
-  expect(itemBox).not.toBeNull();
-  await page.mouse.move(itemBox!.x + itemBox!.width - 24, itemBox!.y + 24);
-  await page.mouse.down();
-  await page.mouse.move(itemBox!.x + itemBox!.width + 72, itemBox!.y + 72, {
-    steps: 4,
-  });
-  await page.mouse.up();
-  await expect
-    .poll(async () => {
-      const response = await page.request.get(
-        `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
-      );
-      const current = (await response.json()) as typeof gateway;
-      return current.creativeCanvas.items.find(
-        ({ id }) => id === canvasItem!.id,
-      )?.position;
-    })
-    .not.toEqual(canvasItem!.position);
-
-  await page.reload();
-  await expect(page.getByTestId("studio-agent-panel")).toContainText(
-    "Result ready",
-  );
-  await expect(
-    page.getByTestId("studio-agent-panel").locator("figure img"),
-  ).toBeVisible();
-  await expect(
-    page.getByTestId(`creative-canvas-item-${canvasItem!.id}`),
-  ).toBeVisible();
-});
-
-test("MusesAgent delegates parallel image work and restores specialist results", async ({
-  page,
-}) => {
-  test.setTimeout(10 * 60_000);
-  await page.goto("/studio");
-  const panel = page.getByTestId("studio-agent-panel");
-  await expect(panel).toBeVisible();
-  await panel
-    .getByPlaceholder("What would you like to create?")
-    .fill(
-      [
-        "Create two independent product launch poster concepts in parallel.",
-        "You must call agent.delegate exactly once with two tasks that have no dependencies and maxConcurrency 2.",
-        "Use muses-image-specialist version 0.1.0-alpha for both tasks.",
-        "Each task must use only toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
-        "Give each task a clear distinct visual objective, no input artifacts, a bounded budget, and a result JSON Schema requiring one string assetId with artifact evidence.",
-        "Do not call image.generate directly. After the delegation is accepted, report that the specialist work has started and stop.",
-        "When trusted delegation results arrive later, give one final response that includes both exact authorized asset IDs and do not call another tool.",
-      ].join(" "),
-    );
-  await panel.getByRole("button", { name: "Send" }).click();
-
-  const rootApproval = page.getByTestId("studio-agent-approval");
-  await expect(rootApproval).toBeVisible({ timeout: 3 * 60_000 });
-  await expect(rootApproval).toContainText("agent.delegate");
-  await rootApproval.getByRole("button", { name: "Approve" }).click();
-
-  let runId: string | null = null;
-  await expect
-    .poll(
-      async () => {
-        runId = await page.evaluate((currentWorkspaceId) => {
-          const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
-          const key = Object.keys(window.localStorage).find((candidate) =>
-            candidate.startsWith(prefix),
-          );
-          return key ? window.localStorage.getItem(key) : null;
-        }, workspaceId);
-        return runId;
-      },
-      { timeout: 30_000 },
-    )
-    .toMatch(/^arun_/);
-  const rootRunId = runId!;
-
-  const delegationPanel = page.getByTestId("studio-agent-delegation");
-  await expect(delegationPanel).toBeVisible({ timeout: 3 * 60_000 });
-  await expect(delegationPanel).toContainText("2 tasks");
-
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-        );
-        const body = (await response.json()) as {
-          delegation?: { approvals?: unknown[] };
-        };
-        return body.delegation?.approvals?.length;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .toBe(2);
-
-  let beforeContinuation: { turn: number } | null = null;
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-        );
-        const body = (await response.json()) as {
-          run?: { status: string; turn: number };
-          delegation?: { active: boolean; approvals: unknown[] };
-        };
-        if (
-          body.run?.status !== "completed" ||
-          !body.delegation?.active ||
-          body.delegation.approvals.length !== 2
-        ) {
-          return null;
-        }
-        beforeContinuation = { turn: body.run.turn };
-        return beforeContinuation;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .not.toBeNull();
-
-  for (let approved = 0; approved < 2; approved += 1) {
-    const childApproval = page
-      .getByTestId("studio-agent-delegated-approval")
-      .first();
-    await expect(childApproval).toBeVisible({ timeout: 3 * 60_000 });
-    await expect(childApproval).toContainText("image.generate");
-    await childApproval.getByRole("button", { name: "Approve" }).click();
-    await expect
-      .poll(
-        async () => {
-          const response = await page.request.get(
-            `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-          );
-          const body = (await response.json()) as {
-            delegation?: { approvals?: unknown[] };
-          };
-          return body.delegation?.approvals?.length;
-        },
-        { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-      )
-      .toBe(1 - approved);
-  }
-
-  let completed: {
-    active: boolean;
-    delegationRunId?: string;
-    runStatus?: string;
-    taskStatuses: string[];
-    childRunIds: Array<string | undefined>;
-    artifactRefs: string[];
-  } | null = null;
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-        );
-        expect(response.ok()).toBeTruthy();
-        const body = (await response.json()) as {
-          delegation: {
-            active: boolean;
-            runs: Array<{
-              delegationRunId: string;
-              status: string;
-              tasks: Array<{
-                status: string;
-                artifactRefs: string[];
-                childRunId?: string;
-              }>;
-            }>;
-          };
-        };
-        const tasks = body.delegation.runs.flatMap(({ tasks }) => tasks);
-        completed = {
-          active: body.delegation.active,
-          delegationRunId: body.delegation.runs[0]?.delegationRunId,
-          runStatus: body.delegation.runs[0]?.status,
-          taskStatuses: tasks.map(({ status }) => status),
-          childRunIds: tasks.map(({ childRunId }) => childRunId),
-          artifactRefs: tasks.flatMap(({ artifactRefs }) => artifactRefs),
-        };
-        return completed;
-      },
-      { timeout: 6 * 60_000, intervals: [1000, 2000, 4000] },
-    )
-    .toMatchObject({
-      active: false,
-      runStatus: "completed",
-      taskStatuses: ["completed", "completed"],
-      childRunIds: [
-        expect.stringMatching(/^arun_/),
-        expect.stringMatching(/^arun_/),
-      ],
-      artifactRefs: [
-        expect.stringMatching(/^image_/),
-        expect.stringMatching(/^image_/),
-      ],
-    });
-  expect(new Set(completed!.artifactRefs).size).toBe(2);
-  expect(completed!.delegationRunId).toMatch(/^delegation_/);
-
-  let continued: {
-    status?: string;
-    turn?: number;
-    continuationMessages: number;
-    finalAssistant: string;
-  } | null = null;
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-        );
-        const body = (await response.json()) as {
-          run?: {
-            status: string;
-            turn: number;
-            context: {
-              messages: Array<{
-                role: string;
-                content: string;
-                metadata?: { kind?: string; delegationRunId?: string };
-              }>;
-            };
-          };
-        };
-        const messages = body.run?.context.messages || [];
-        const continuationIndex = messages.findIndex(
-          ({ metadata }) =>
-            metadata?.kind === "agent-delegation-result" &&
-            metadata.delegationRunId === completed!.delegationRunId,
-        );
-        const continuationMessages = messages.filter(
-          ({ metadata }) =>
-            metadata?.kind === "agent-delegation-result" &&
-            metadata.delegationRunId === completed!.delegationRunId,
-        ).length;
-        const finalAssistant = messages
-          .slice(continuationIndex + 1)
-          .findLast(
-            ({ role, content }) => role === "assistant" && content.trim(),
-          )?.content;
-        continued = {
-          status: body.run?.status,
-          turn: body.run?.turn,
-          continuationMessages,
-          finalAssistant: finalAssistant || "",
-        };
-        return continued;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .toMatchObject({
-      status: "completed",
-      turn: beforeContinuation!.turn + 1,
-      continuationMessages: 1,
-      finalAssistant: expect.any(String),
-    });
-  expect(continued!.finalAssistant.length).toBeGreaterThan(0);
-  for (const assetId of completed!.artifactRefs) {
-    expect(continued!.finalAssistant).toContain(assetId);
-  }
-
-  const continuationFacts = await readAgentDelegationContinuationFacts(
-    rootRunId,
-    completed!.delegationRunId!,
-  );
-  expect(continuationFacts).toMatchObject({
-    receiptCount: 1,
-    receiptStatus: "completed",
-    messageCommitted: true,
-    rootModelCalls: continued!.turn,
-    imageReservations: 2,
-  });
-
-  const gatewayResponse = await page.request.get(
-    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
-  );
-  expect(gatewayResponse.ok()).toBeTruthy();
-  const gateway = (await gatewayResponse.json()) as {
-    creativeCanvas: { items: Array<{ kind: string; refId: string }> };
-  };
-  for (const assetId of completed!.artifactRefs) {
-    expect(gateway.creativeCanvas.items).toContainEqual(
-      expect.objectContaining({ kind: "asset", refId: assetId }),
-    );
-  }
-
-  const traceResponse = await page.request.get(
-    `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=${rootRunId}`,
-  );
-  expect(traceResponse.ok()).toBeTruthy();
-  const trace = (await traceResponse.json()) as {
-    delegationLineage: {
-      agentRuns: unknown[];
-      delegations: unknown[];
-    };
-    assets: Array<{ assetId: string }>;
-  };
-  expect(trace.delegationLineage.agentRuns).toHaveLength(3);
-  expect(trace.delegationLineage.delegations).toHaveLength(1);
-  expect(trace.assets.map(({ assetId }) => assetId)).toEqual(
-    expect.arrayContaining(completed!.artifactRefs),
-  );
-
-  await page.reload();
-  await expect(page.getByTestId("studio-agent-delegation")).toBeVisible();
-  await expect(page.getByTestId("studio-agent-delegation")).toContainText(
-    "2 results",
-  );
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  expect(
-    await readAgentDelegationContinuationFacts(
-      rootRunId,
-      completed!.delegationRunId!,
-    ),
-  ).toEqual(continuationFacts);
-});
-
-test("completed MusesAgent cancels pending specialist work without continuation", async ({
-  page,
-}) => {
-  test.setTimeout(6 * 60_000);
-  await page.goto("/studio");
-  const panel = page.getByTestId("studio-agent-panel");
-  await expect(panel).toBeVisible();
-  await panel
-    .getByPlaceholder("What would you like to create?")
-    .fill(
-      [
-        "Prepare two independent product poster explorations in parallel.",
-        "You must call agent.delegate exactly once with two tasks that have no dependencies and maxConcurrency 2.",
-        "Use muses-image-specialist version 0.1.0-alpha for both tasks.",
-        "Each task must use only toolNames [image.generate], permissions [image.generate, canvas.write], and computeCapabilities [media-processing].",
-        "Give each task no input artifacts, a bounded budget, and a result JSON Schema requiring one string assetId with artifact evidence.",
-        "Do not call image.generate directly. After delegation is accepted, report that specialist work has started and stop.",
-      ].join(" "),
-    );
-  await panel.getByRole("button", { name: "Send" }).click();
-
-  const rootApproval = page.getByTestId("studio-agent-approval");
-  await expect(rootApproval).toBeVisible({ timeout: 3 * 60_000 });
-  await expect(rootApproval).toContainText("agent.delegate");
-  await rootApproval.getByRole("button", { name: "Approve" }).click();
-
-  let rootRunId: string | null = null;
-  await expect
-    .poll(
-      async () => {
-        rootRunId = await page.evaluate((currentWorkspaceId) => {
-          const prefix = `muses.agent.last-run.${currentWorkspaceId}.`;
-          const key = Object.keys(window.localStorage).find((candidate) =>
-            candidate.startsWith(prefix),
-          );
-          return key ? window.localStorage.getItem(key) : null;
-        }, workspaceId);
-        return rootRunId;
-      },
-      { timeout: 30_000 },
-    )
-    .toMatch(/^arun_/);
-
-  let active: {
-    delegationRunId: string;
-    rootTurn: number;
-    childRunIds: string[];
-  } | null = null;
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${rootRunId}`,
-        );
-        const body = (await response.json()) as {
-          run?: { status: string; turn: number };
-          delegation?: {
-            active: boolean;
-            approvals: unknown[];
-            runs: Array<{
-              delegationRunId: string;
-              status: string;
-              tasks: Array<{ childRunId?: string; status: string }>;
-            }>;
-          };
-        };
-        const delegation = body.delegation?.runs[0];
-        const childRunIds =
-          delegation?.tasks.flatMap(({ childRunId }) =>
-            childRunId ? [childRunId] : [],
-          ) || [];
-        if (
-          body.run?.status !== "completed" ||
-          !body.delegation?.active ||
-          body.delegation.approvals.length !== 2 ||
-          delegation?.status !== "running" ||
-          childRunIds.length !== 2
-        ) {
-          return null;
-        }
-        active = {
-          delegationRunId: delegation.delegationRunId,
-          rootTurn: body.run.turn,
-          childRunIds,
-        };
-        return active;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .not.toBeNull();
-
-  const modelCallsBefore = await countAgentModelCalls(rootRunId!);
-  const cancelButton = page.getByTestId("studio-agent-delegation-cancel");
-  await expect(cancelButton).toBeVisible();
-  await cancelButton.click();
-
-  await expect
-    .poll(
-      async () =>
-        readAgentDelegationCancellationFacts(
-          rootRunId!,
-          active!.delegationRunId,
-        ),
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .toMatchObject({
-      rootStatus: "completed",
-      rootTurn: active!.rootTurn,
-      delegationStatus: "cancelled",
-      driverStatus: "cancelled",
-      continuationStatus: "skipped",
-      continuationFailureCode: "delegation-cancelled",
-      cancelledChildren: 2,
-      activeChildren: 0,
-      generatedAssets: 0,
-      envelopeStatus: "settled",
-      rootModelCalls: modelCallsBefore,
-    });
-
-  const replay = await page.request.patch("/api/studio/agent-runs", {
-    data: {
-      action: "cancel-delegation",
-      workspaceId,
-      runId: rootRunId,
-      delegationRunId: active!.delegationRunId,
-      idempotencyKey: `${rootRunId}:${active!.delegationRunId}:studio-cancel:v1`,
-      reason: "Cancelled specialist work from Muses Studio.",
-    },
-  });
-  expect(replay.ok()).toBeTruthy();
-  expect(await replay.json()).toMatchObject({
-    accepted: true,
-    delegationCancellation: {
-      delegationRunId: active!.delegationRunId,
-      status: "cancelled",
-      idempotentReplay: true,
-    },
-  });
-
-  await page.reload();
-  await expect(page.getByTestId("studio-agent-delegation")).toContainText(
-    "Cancelled",
-  );
-  await expect(page.getByTestId("studio-agent-delegation-cancel")).toHaveCount(
-    0,
-  );
-  expect(await countAgentModelCalls(rootRunId!)).toBe(modelCallsBefore);
-});
-
-test("expired Agent driver claims recover without model or credit side effects", async ({
-  page,
-}) => {
-  test.setTimeout(90_000);
-  const gateway = await page.request.get(
-    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
-  );
-  expect(gateway.ok()).toBeTruthy();
-  const fixtureRunIds: string[] = [];
-  const fixture = await createExpiredAgentDriverFixture(workspaceId);
-  fixtureRunIds.push(fixture.runId);
-  try {
-    const initial = await page.request.get(
-      `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${fixture.runId}`,
-    );
-    expect(initial.ok()).toBeTruthy();
-    await expectRecoveredAgentDriver(page, fixture.runId);
-
-    const facts = await readAgentDriverFixtureFacts(fixture.runId);
-    expect(facts).toMatchObject({
-      agentStatus: "failed",
-      driverStatus: "completed",
-      driverRunId: expect.stringMatching(/^wrun_/),
-      childWorkflowRuns: 0,
-      generatedAssets: 0,
-      creditReservations: 0,
-      modelEvents: 0,
-    });
-    expect(facts.driverAttemptId).not.toBe(fixture.attemptId);
-    expect(facts.driverRunId).toBeTruthy();
-
-    await deleteAgentDriverFixture(fixture.runId);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    const attachedFixture = await createExpiredAgentDriverFixture(
-      workspaceId,
-      facts.driverRunId!,
-    );
-    fixtureRunIds.push(attachedFixture.runId);
-    const reconciled = await page.request.get(
-      `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${attachedFixture.runId}`,
-    );
-    expect(reconciled.ok()).toBeTruthy();
-    await expectRecoveredAgentDriver(page, attachedFixture.runId);
-
-    const reconciledFacts = await readAgentDriverFixtureFacts(
-      attachedFixture.runId,
-    );
-    expect(reconciledFacts).toMatchObject({
-      agentStatus: "failed",
-      driverStatus: "completed",
-      driverRunId: expect.stringMatching(/^wrun_/),
-      childWorkflowRuns: 0,
-      generatedAssets: 0,
-      creditReservations: 0,
-      modelEvents: 0,
-    });
-    expect(reconciledFacts.driverAttemptId).not.toBe(attachedFixture.attemptId);
-    expect(reconciledFacts.driverRunId).not.toBe(facts.driverRunId);
-  } finally {
-    for (const runId of fixtureRunIds) {
-      await deleteAgentDriverFixture(runId);
-    }
-  }
 });
 
 test("Operation Gateway persists independent workflows with idempotent revisions", async ({
@@ -2243,6 +1668,43 @@ test("Start and End are protected singletons and Start owns typed inputs", async
   await end.click();
   await page.keyboard.press("Backspace");
   await expect(end).toBeVisible();
+  await expect(page.getByTestId("end-output-editor")).toBeVisible();
+  await page.getByRole("textbox", { name: "Output name" }).fill("Agent result");
+  await page.getByRole("textbox", { name: "Output name" }).press("Tab");
+  await page.getByRole("textbox", { name: "Output key" }).fill("result");
+  await page.getByRole("textbox", { name: "Output key" }).press("Tab");
+  await page
+    .getByRole("combobox", { name: "Output type" })
+    .selectOption("text");
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) => {
+          const raw = window.localStorage.getItem(key);
+          if (!raw) return null;
+          const workspace = JSON.parse(raw);
+          const endNode = workspace.workflow.nodes.find(
+            (node: { id: string }) => node.id === "end-1",
+          );
+          return {
+            port: endNode?.inputPorts[0],
+            endBindings: workspace.workflow.edges.filter(
+              (edge: { targetNodeId: string }) => edge.targetNodeId === "end-1",
+            ).length,
+          };
+        },
+        studioWorkspaceStorageKey(workspaceId, true),
+      ),
+    )
+    .toMatchObject({
+      port: {
+        id: "result",
+        label: "Agent result",
+        valueType: "text",
+        required: true,
+      },
+      endBindings: 0,
+    });
 
   await page.getByRole("button", { name: "Add node" }).click();
   const library = page.getByTestId("studio-node-library");
@@ -2281,6 +1743,247 @@ test("Start and End are protected singletons and Start owns typed inputs", async
       label: "slide_count",
       valueType: "number",
     });
+});
+
+test("professional canvas authors, publishes, and runs Start to Agent to named End", async ({
+  browser,
+}, testInfo) => {
+  test.setTimeout(5 * 60_000);
+  await resetStudioUser(authoringEmail);
+  const context = await browser.newContext({
+    baseURL: process.env.OWORKER_WEB_URL || "http://127.0.0.1:3000",
+  });
+
+  try {
+    const signup = await context.request.post("/api/auth/sign-up/email", {
+      headers: {
+        "x-forwarded-for": createIsolatedAuthIp(testInfo.workerIndex),
+      },
+      data: {
+        name: "Muses Agent Authoring E2E",
+        email: authoringEmail,
+        password: studioPassword,
+        callbackURL: "/studio?mode=professional",
+      },
+    });
+    expect(signup.ok()).toBeTruthy();
+    await verifyStudioUser(authoringEmail);
+    const login = await context.request.post("/api/auth/sign-in/email", {
+      headers: {
+        "x-forwarded-for": createIsolatedAuthIp(testInfo.workerIndex),
+      },
+      data: {
+        email: authoringEmail,
+        password: studioPassword,
+        callbackURL: "/studio?mode=professional",
+      },
+    });
+    expect(login.ok()).toBeTruthy();
+    const studioContextResponse = await context.request.get(
+      "/api/studio/context",
+    );
+    expect(studioContextResponse.ok()).toBeTruthy();
+    const authoringWorkspaceId = (
+      (await studioContextResponse.json()) as { workspace: { id: string } }
+    ).workspace.id;
+
+    const page = await context.newPage();
+    page.setDefaultTimeout(30_000);
+    await page.goto("/studio?mode=professional", {
+      waitUntil: "commit",
+    });
+    const imageNode = page.getByTestId("workflow-node-image-generator-1");
+    await expect(imageNode).toBeVisible({ timeout: 30_000 });
+    await page.getByRole("button", { name: "Show or hide minimap" }).click();
+    await imageNode.click();
+    await page.keyboard.press("Delete");
+    await expect(imageNode).toHaveCount(0);
+
+    await page.getByRole("button", { name: "Add node" }).click();
+    await page
+      .getByTestId("studio-node-library")
+      .getByRole("button", { name: "Add Run Agent" })
+      .click();
+    const agentNode = page.getByTestId("workflow-node-agent-run-10");
+    await expect(agentNode).toBeVisible();
+    await page.getByRole("button", { name: "Message variable" }).click();
+    await page
+      .getByRole("button")
+      .filter({ hasText: "Prompt" })
+      .filter({ hasText: "From Start" })
+      .click();
+    await expect(agentNode).toContainText("Start · Prompt");
+
+    await page.getByTestId("workflow-node-end-1").click();
+    const outputName = page.getByRole("textbox", { name: "Output name" });
+    await outputName.fill("Agent result");
+    await outputName.press("Tab");
+    const outputKey = page.getByRole("textbox", { name: "Output key" });
+    await outputKey.fill("result");
+    await outputKey.press("Tab");
+    await page
+      .getByRole("combobox", { name: "Output type" })
+      .selectOption("text");
+    await page.getByRole("button", { name: "Agent result variable" }).click();
+    await page
+      .getByRole("button")
+      .filter({ hasText: "Result" })
+      .filter({ hasText: "From Run Agent" })
+      .click();
+
+    await expect
+      .poll(async () => {
+        const response = await context.request.get(
+          `/api/studio/operation-gateway?workspaceId=${authoringWorkspaceId}`,
+        );
+        if (!response.ok()) return null;
+        const snapshot =
+          (await response.json()) as OperationGatewayTestSnapshot;
+        const workflow = snapshot.workflowDefinitions[0]?.document.workflow as
+          | {
+              nodes: Array<{
+                id: string;
+                kind: string;
+                inputPorts: Array<{
+                  id: string;
+                  label: string;
+                  valueType: string;
+                }>;
+              }>;
+              edges: Array<{
+                sourceNodeId: string;
+                sourcePortId: string;
+                targetNodeId: string;
+                targetPortId: string;
+              }>;
+            }
+          | undefined;
+        return workflow
+          ? (() => {
+              const endPort = workflow.nodes.find(({ id }) => id === "end-1")
+                ?.inputPorts[0];
+              return {
+                nodeKinds: workflow.nodes.map(({ kind }) => kind),
+                endPort: endPort
+                  ? {
+                      id: endPort.id,
+                      label: endPort.label,
+                      valueType: endPort.valueType,
+                    }
+                  : undefined,
+                bindings: workflow.edges.map((edge) => ({
+                  source: `${edge.sourceNodeId}.${edge.sourcePortId}`,
+                  target: `${edge.targetNodeId}.${edge.targetPortId}`,
+                })),
+              };
+            })()
+          : null;
+      })
+      .toEqual({
+        nodeKinds: ["start", "end", "agent-run"],
+        endPort: {
+          id: "result",
+          label: "Agent result",
+          valueType: "text",
+        },
+        bindings: expect.arrayContaining([
+          { source: "start-1.prompt", target: "agent-run-10.message" },
+          { source: "agent-run-10.result", target: "end-1.result" },
+        ]),
+      });
+
+    const publicationResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/studio/workflow-publications") &&
+        response.request().method() === "POST",
+    );
+    const runResponsePromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/studio/workflow-runs") &&
+        response.request().method() === "POST",
+    );
+    await page.getByRole("button", { name: /Generate.*Check/ }).click();
+    const publicationResponse = await publicationResponsePromise;
+    expect(publicationResponse.ok()).toBeTruthy();
+    const publication = (await publicationResponse.json()) as {
+      deployment: { deploymentId: string };
+    };
+    const runResponse = await runResponsePromise;
+    expect(runResponse.status()).toBe(202);
+    const run = (await runResponse.json()) as { runId: string };
+
+    const inspectionResponse = await context.request.get(
+      `/api/studio/workflow-publications?workspaceId=${authoringWorkspaceId}&deploymentId=${publication.deployment.deploymentId}`,
+    );
+    expect(inspectionResponse.ok()).toBeTruthy();
+    const inspection = (await inspectionResponse.json()) as {
+      inspection: {
+        definition: {
+          outputs: Array<Record<string, unknown>>;
+          nodes: Array<{ id: string; kind: string }>;
+          dataBindings: Array<{
+            source: { nodeId: string; portId: string };
+            target: { nodeId: string; portId: string };
+          }>;
+          executionOrder: string[];
+        };
+      };
+    };
+    expect(inspection.inspection.definition).toMatchObject({
+      outputs: [
+        {
+          id: "result",
+          name: "Agent result",
+          valueType: "text",
+          required: true,
+        },
+      ],
+      nodes: [
+        { id: "start-1", kind: "start" },
+        { id: "agent-run-10", kind: "agent-run" },
+        { id: "end-1", kind: "end" },
+      ],
+      dataBindings: [
+        {
+          source: { nodeId: "start-1", portId: "prompt" },
+          target: { nodeId: "agent-run-10", portId: "message" },
+        },
+        {
+          source: { nodeId: "agent-run-10", portId: "result" },
+          target: { nodeId: "end-1", portId: "result" },
+        },
+      ],
+      executionOrder: ["start-1", "agent-run-10", "end-1"],
+    });
+
+    let completedRun: {
+      status?: string;
+      result?: {
+        outputs?: Record<string, { valueType?: string; value?: unknown }>;
+      };
+    } = {};
+    await expect
+      .poll(
+        async () => {
+          const response = await context.request.get(
+            `/api/studio/workflow-runs?workspaceId=${authoringWorkspaceId}&runId=${run.runId}`,
+          );
+          completedRun = await response.json();
+          return completedRun.status;
+        },
+        { timeout: 3 * 60_000 },
+      )
+      .toBe("completed");
+    expect(completedRun.result?.outputs?.result).toMatchObject({
+      valueType: "text",
+    });
+    expect(completedRun.result?.outputs?.result.value).toEqual(
+      expect.any(String),
+    );
+  } finally {
+    await context.close();
+    await resetStudioUser(authoringEmail);
+  }
 });
 
 test("professional canvas keeps a node under the pointer while dragging", async ({
@@ -2431,310 +2134,6 @@ test("Workflow Catalog rejects mutable, missing, disabled, and cross-workspace i
   }
 });
 
-test("MusesAgent discovers, inspects, and invokes one exact published workflow", async ({
-  page,
-}) => {
-  test.setTimeout(4 * 60_000);
-  const publication = await publishDurableHarnessPublication(page);
-  const deploymentId = publication.deployment.deploymentId;
-  const started = await page.request.post("/api/studio/agent-runs", {
-    data: {
-      workspaceId,
-      prompt: [
-        "Use the Muses workflow tools in this exact order.",
-        "First call workflow.list.",
-        `Then call workflow.inspect for deploymentId ${deploymentId}.`,
-        `Then call workflow.invoke for deploymentId ${deploymentId} with empty inputs.`,
-        "Do not call image.generate. After workflow.invoke succeeds, report its runId and stop.",
-      ].join(" "),
-      idempotencyKey: `agent-workflow-invoke:${Date.now()}`,
-    },
-  });
-  expect(started.status()).toBe(202);
-  const startedBody = (await started.json()) as { run: { runId: string } };
-  const agentRunId = startedBody.run.runId;
-  expect(agentRunId).toMatch(/^arun_/);
-
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
-        );
-        const body = (await response.json()) as {
-          run?: {
-            status?: string;
-            pendingApproval?: {
-              approvalId: string;
-              toolCall: { name: string };
-            };
-          };
-        };
-        return body.run?.status === "waiting-approval"
-          ? body.run.pendingApproval?.toolCall.name
-          : undefined;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .toBe("workflow.invoke");
-  const approvalProjection = await page.request.get(
-    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
-  );
-  const approvalId = (
-    (await approvalProjection.json()) as {
-      run: { pendingApproval: { approvalId: string } };
-    }
-  ).run.pendingApproval.approvalId;
-  const approved = await page.request.patch("/api/studio/agent-runs", {
-    data: {
-      action: "approve",
-      workspaceId,
-      runId: agentRunId,
-      approvalId,
-      decision: "approved",
-      reason: "Approved by the A9 callable workflow evidence.",
-    },
-  });
-  expect(approved.status()).toBe(200);
-
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
-        );
-        const body = (await response.json()) as {
-          run?: { status?: string };
-        };
-        return body.run?.status;
-      },
-      { timeout: 3 * 60_000, intervals: [500, 1000, 2000] },
-    )
-    .toBe("completed");
-
-  const completedResponse = await page.request.get(
-    `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${agentRunId}`,
-  );
-  expect(completedResponse.ok()).toBeTruthy();
-  const completed = (await completedResponse.json()) as {
-    run: {
-      context: {
-        messages: Array<{
-          role: string;
-          toolName?: string;
-          content: string;
-        }>;
-      };
-    };
-  };
-  const toolMessages = completed.run.context.messages.filter(
-    ({ role }) => role === "tool",
-  );
-  expect(toolMessages.map(({ toolName }) => toolName)).toEqual(
-    expect.arrayContaining([
-      "workflow.list",
-      "workflow.inspect",
-      "workflow.invoke",
-    ]),
-  );
-  const invocationMessage = [...toolMessages]
-    .reverse()
-    .find(({ toolName }) => toolName === "workflow.invoke");
-  expect(invocationMessage).toBeTruthy();
-  const invocation = JSON.parse(invocationMessage!.content) as {
-    accepted: boolean;
-    runId: string;
-    definition: TestWorkflowPublication["definition"];
-    deploymentId: string;
-  };
-  expect(invocation).toMatchObject({
-    accepted: true,
-    definition: publication.definition,
-    deploymentId,
-  });
-  expect(invocation.runId).toMatch(/^wrun_/);
-  expect(await readWorkflowInvocationAudit(invocation.runId)).toMatchObject({
-    definitionId: publication.definition.definitionId,
-    definitionVersion: publication.definition.version,
-    deploymentId,
-    callerKind: "agent",
-    callerId: agentRunId,
-  });
-
-  const waiting = await page.request.get(
-    `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${invocation.runId}`,
-  );
-  expect(await waiting.json()).toMatchObject({
-    runId: invocation.runId,
-    status: "waiting",
-  });
-  const cancelled = await page.request.delete("/api/studio/workflow-runs", {
-    data: {
-      workspaceId,
-      runId: invocation.runId,
-      idempotencyKey: `agent-workflow-cleanup:${invocation.runId}`,
-      reason: "A8 Agent invocation evidence complete",
-    },
-  });
-  expect(cancelled.status()).toBe(202);
-  await expect
-    .poll(
-      async () =>
-        (await readWorkflowInvocationAudit(invocation.runId)).workflowStatus,
-    )
-    .toBe("cancelled");
-});
-
-test("Agent cancellation stops linked Workflow SDK children and replays one receipt", async ({
-  page,
-}) => {
-  test.setTimeout(2 * 60_000);
-  const target = await publishDurableHarness(page);
-  const agentRunId = await createActiveAgentCancellationFixture(workspaceId);
-  let workflowRunId: string | null = null;
-  try {
-    const started = await page.request.post("/api/studio/workflow-runs", {
-      data: {
-        workspaceId,
-        target,
-        idempotencyKey: `agent-cancel-child:${Date.now()}`,
-      },
-    });
-    expect(started.status()).toBe(202);
-    workflowRunId = ((await started.json()) as { runId: string }).runId;
-    await expect
-      .poll(async () => {
-        const response = await page.request.get(
-          `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${workflowRunId}`,
-        );
-        return ((await response.json()) as { status?: string }).status;
-      })
-      .toBe("waiting");
-    await linkWorkflowRunToAgent(workflowRunId, agentRunId);
-
-    const request = {
-      action: "cancel",
-      workspaceId,
-      runId: agentRunId,
-      idempotencyKey: `agent-cancel:${agentRunId}`,
-      reason: "A9 linked Workflow SDK cancellation fixture",
-    };
-    const cancelled = await page.request.patch("/api/studio/agent-runs", {
-      data: request,
-    });
-    expect(cancelled.status()).toBe(200);
-    expect(await cancelled.json()).toMatchObject({
-      accepted: true,
-      run: { status: "cancelled" },
-      cancellation: {
-        idempotentReplay: false,
-        summary: {
-          children: [
-            {
-              runId: workflowRunId,
-              state: "cancelled",
-              knownCreditMicros: "0",
-            },
-          ],
-          reviewRequired: false,
-        },
-      },
-    });
-    await expect
-      .poll(async () => {
-        const response = await page.request.get(
-          `/api/studio/workflow-runs?workspaceId=${workspaceId}&runId=${workflowRunId}`,
-        );
-        return ((await response.json()) as { sdkStatus?: string }).sdkStatus;
-      })
-      .toBe("cancelled");
-
-    const replay = await page.request.patch("/api/studio/agent-runs", {
-      data: request,
-    });
-    expect(replay.status()).toBe(200);
-    expect(await replay.json()).toMatchObject({
-      accepted: true,
-      cancellation: { idempotentReplay: true },
-    });
-    const conflict = await page.request.patch("/api/studio/agent-runs", {
-      data: {
-        ...request,
-        idempotencyKey: `${request.idempotencyKey}:different`,
-        reason: "Different cancellation identity",
-      },
-    });
-    expect(conflict.status()).toBe(409);
-    expect(await conflict.json()).toMatchObject({
-      error: "idempotency-key-conflict",
-    });
-    expect(await readAgentCancellationFacts(agentRunId)).toEqual({
-      agentStatus: "cancelled",
-      childStatus: "cancelled",
-      receipts: 1,
-      cancellationEvents: 1,
-    });
-  } finally {
-    await restoreWorkflowCallerAndDeleteAgentFixture(agentRunId, workflowRunId);
-  }
-});
-
-test("Agent trace is Workspace-scoped and excludes sensitive payloads", async ({
-  page,
-}) => {
-  const initialized = await page.request.get(
-    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
-  );
-  expect(initialized.ok()).toBeTruthy();
-  const agentRunId = await createActiveAgentCancellationFixture(workspaceId);
-  try {
-    const response = await page.request.get(
-      `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=${agentRunId}`,
-    );
-    expect(response.ok()).toBeTruthy();
-    const trace = (await response.json()) as Record<string, unknown>;
-    expect(trace).toMatchObject({
-      schemaVersion: "agent-trace-v1",
-      traceId: agentRunId,
-      workspaceId,
-      run: { runId: agentRunId, status: "running" },
-      isolation: { state: "legacy-unpinned" },
-      agentEvents: [],
-      modelCalls: [],
-      toolCommands: [],
-      workflowRuns: [],
-      assets: [],
-      reservations: [],
-      ledgerEntries: [],
-    });
-    expect(collectObjectKeys(trace)).not.toEqual(
-      expect.arrayContaining([
-        "prompt",
-        "content",
-        "input",
-        "output",
-        "result",
-        "objectKey",
-        "authRef",
-        "credentialRefs",
-        "initiatedByEmail",
-      ]),
-    );
-
-    const forgedWorkspace = await page.request.get(
-      `/api/studio/agent-runs/trace?workspaceId=mws_forged_${Date.now()}&runId=${agentRunId}`,
-    );
-    expect(forgedWorkspace.status()).toBe(404);
-
-    const foreignRun = await page.request.get(
-      `/api/studio/agent-runs/trace?workspaceId=${workspaceId}&runId=arun_foreign_${Date.now()}`,
-    );
-    expect(foreignRun.status()).toBe(404);
-  } finally {
-    await deleteAgentDriverFixture(agentRunId);
-  }
-});
-
 test("insufficient credits reject a real image run before provider execution", async ({
   page,
 }) => {
@@ -2859,614 +2258,24 @@ type OperationGatewayTestResult = {
   snapshot: OperationGatewayTestSnapshot;
 };
 
-type AgentDriverFixture = {
-  runId: string;
-  attemptId: string;
-};
-
-async function createExpiredAgentDriverFixture(
-  currentWorkspaceId: string,
-  driverRunId: string | null = null,
-): Promise<AgentDriverFixture> {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const project = await client.query<{
-      projectId: string;
-      canvasId: string | null;
-    }>(
-      `
-        select
-          project.id as "projectId",
-          canvas.id as "canvasId"
-        from muses_project project
-        left join muses_creative_canvas canvas
-          on canvas.workspace_id = project.workspace_id
-         and canvas.project_id = project.id
-        where project.workspace_id = $1
-        order by project.created_at
-        limit 1
-      `,
-      [currentWorkspaceId],
-    );
-    const row = project.rows[0];
-    expect(row?.projectId).toBeTruthy();
-    const runId = `arun_${randomBytes(16).toString("hex")}`;
-    const attemptId = `adriver_fixture_${randomBytes(8).toString("hex")}`;
-    const now = new Date().toISOString();
-    const snapshot = {
-      schemaVersion: "0.1.0-draft",
-      runId,
-      session: {
-        schemaVersion: "0.1.0-draft",
-        sessionId: `asession_${randomBytes(12).toString("hex")}`,
-        workspaceId: currentWorkspaceId,
-        projectId: row!.projectId,
-        canvasId: row!.canvasId || undefined,
-        createdAt: now,
-        updatedAt: now,
-      },
-      profile: {
-        profileId: "a9-recovery-fixture",
-        version: "1.0.0",
-        modelRef: "test/no-model",
-        instructions: "This is a sanitized A9 recovery fixture.",
-        toolNames: [],
-        skillRefs: [],
-        mcpConnectionRefs: [],
-      },
-      status: "queued",
-      revision: 0,
-      turn: 0,
-      context: {
-        version: 1,
-        messages: [],
-        artifactRefs: [],
-        createdAt: now,
-      },
-      budget: {
-        limit: {
-          maxTurns: 1,
-          maxModelCalls: 1,
-          maxToolCalls: 1,
-          maxInputTokens: 1000,
-          maxOutputTokens: 1000,
-          maxCreditMicros: "0",
-          maxDurationMs: 900000,
-        },
-        usage: {
-          turns: 1,
-          modelCalls: 1,
-          toolCalls: 0,
-          inputTokens: 0,
-          outputTokens: 0,
-          creditMicros: "0",
-          startedAt: now,
-        },
-      },
-      permissions: [],
-      metadata: { fixture: "a9-driver-recovery" },
-      pendingMessages: [],
-      pendingToolCalls: [],
-      createdAt: now,
-      updatedAt: now,
-    };
-    await client.query(
-      `
-        insert into muses_agent_run (
-          id, workspace_id, project_id, canvas_id, session_id,
-          profile_id, profile_version, model_ref, status, revision,
-          snapshot, driver_status, driver_run_id, driver_attempt_id,
-          driver_lease_expires_at, driver_last_heartbeat_at,
-          created_at, updated_at
-        )
-        values (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-          $11, $12, $13, $14, now() - interval '1 minute',
-          now() - interval '2 minutes', $15, $15
-        )
-      `,
-      [
-        runId,
-        currentWorkspaceId,
-        row!.projectId,
-        row!.canvasId,
-        snapshot.session.sessionId,
-        snapshot.profile.profileId,
-        snapshot.profile.version,
-        snapshot.profile.modelRef,
-        snapshot.status,
-        snapshot.revision,
-        JSON.stringify(snapshot),
-        driverRunId ? "running" : "starting",
-        driverRunId,
-        attemptId,
-        now,
-      ],
-    );
-    return { runId, attemptId };
-  } finally {
-    await client.end();
-  }
-}
-
-async function expectRecoveredAgentDriver(page: Page, runId: string) {
-  await expect
-    .poll(
-      async () => {
-        const response = await page.request.get(
-          `/api/studio/agent-runs?workspaceId=${workspaceId}&runId=${runId}`,
-        );
-        const body = (await response.json()) as {
-          run?: { status?: string };
-          driver?: { status?: string };
-        };
-        return {
-          run: body.run?.status,
-          driver: body.driver?.status,
-        };
-      },
-      { timeout: 60_000, intervals: [250, 500, 1000] },
-    )
-    .toEqual({ run: "failed", driver: "completed" });
-}
-
-async function readAgentDriverFixtureFacts(runId: string) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const result = await client.query<{
-      agentStatus: string;
-      driverStatus: string;
-      driverAttemptId: string | null;
-      driverRunId: string | null;
-      childWorkflowRuns: string;
-      generatedAssets: string;
-      creditReservations: string;
-      modelEvents: string;
-    }>(
-      `
-        select
-          agent.status as "agentStatus",
-          agent.driver_status as "driverStatus",
-          agent.driver_attempt_id as "driverAttemptId",
-          agent.driver_run_id as "driverRunId",
-          (select count(*) from muses_workflow_run
-            where caller_kind = 'agent' and caller_id = agent.id
-          ) as "childWorkflowRuns",
-          (select count(*) from muses_generated_asset where workflow_run_id in (
-            select sdk_run_id from muses_workflow_run
-            where caller_kind = 'agent' and caller_id = agent.id
-          )) as "generatedAssets",
-          (select count(*) from credit_reservation where submission_id in (
-            select id from muses_workflow_run
-            where caller_kind = 'agent' and caller_id = agent.id
-          )) as "creditReservations",
-          (select count(*) from muses_agent_event where run_id = agent.id and type = 'model.completed') as "modelEvents"
-        from muses_agent_run agent
-        where agent.id = $1
-      `,
-      [runId],
-    );
-    const row = result.rows[0];
-    return {
-      ...row,
-      childWorkflowRuns: Number(row?.childWorkflowRuns || 0),
-      generatedAssets: Number(row?.generatedAssets || 0),
-      creditReservations: Number(row?.creditReservations || 0),
-      modelEvents: Number(row?.modelEvents || 0),
-    };
-  } finally {
-    await client.end();
-  }
-}
-
-async function deleteAgentDriverFixture(runId: string) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    await client.query("delete from muses_agent_run where id = $1", [runId]);
-  } finally {
-    await client.end();
-  }
-}
-
-async function createActiveAgentCancellationFixture(
-  currentWorkspaceId: string,
-) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const target = (
-      await client.query<{ projectId: string; canvasId: string | null }>(
-        `
-          select project.id as "projectId", canvas.id as "canvasId"
-          from muses_project project
-          left join muses_creative_canvas canvas
-            on canvas.workspace_id = project.workspace_id
-           and canvas.project_id = project.id
-          where project.workspace_id = $1
-          order by project.created_at
-          limit 1
-        `,
-        [currentWorkspaceId],
-      )
-    ).rows[0];
-    expect(target?.projectId).toBeTruthy();
-    const runId = `arun_cancel_${randomBytes(16).toString("hex")}`;
-    const now = new Date().toISOString();
-    const snapshot = {
-      schemaVersion: "0.1.0-draft",
-      runId,
-      session: {
-        schemaVersion: "0.1.0-draft",
-        sessionId: `asession_cancel_${randomBytes(12).toString("hex")}`,
-        workspaceId: currentWorkspaceId,
-        projectId: target!.projectId,
-        canvasId: target!.canvasId || undefined,
-        createdAt: now,
-        updatedAt: now,
-      },
-      profile: {
-        profileId: "a9-cancellation-fixture",
-        version: "1.0.0",
-        modelRef: "test/no-model",
-        instructions: "Sanitized linked cancellation fixture.",
-        toolNames: [],
-        skillRefs: [],
-        mcpConnectionRefs: [],
-      },
-      status: "running",
-      revision: 0,
-      turn: 0,
-      context: {
-        version: 1,
-        messages: [],
-        artifactRefs: [],
-        createdAt: now,
-      },
-      budget: {
-        limit: {
-          maxTurns: 1,
-          maxModelCalls: 1,
-          maxToolCalls: 1,
-          maxInputTokens: 1000,
-          maxOutputTokens: 1000,
-          maxCreditMicros: "0",
-          maxDurationMs: 900000,
-        },
-        usage: {
-          turns: 0,
-          modelCalls: 0,
-          toolCalls: 0,
-          inputTokens: 0,
-          outputTokens: 0,
-          creditMicros: "0",
-          startedAt: now,
-        },
-      },
-      permissions: [],
-      metadata: { fixture: "a9-linked-cancellation" },
-      pendingMessages: [],
-      pendingToolCalls: [],
-      createdAt: now,
-      updatedAt: now,
-    };
-    await client.query(
-      `
-        insert into muses_agent_run (
-          id, workspace_id, project_id, canvas_id, session_id,
-          profile_id, profile_version, model_ref, status, revision,
-          snapshot, driver_status, created_at, updated_at
-        )
-        values ($1, $2, $3, $4, $5, $6, $7, $8, 'running', 0, $9, 'unclaimed', $10, $10)
-      `,
-      [
-        runId,
-        currentWorkspaceId,
-        target!.projectId,
-        target!.canvasId,
-        snapshot.session.sessionId,
-        snapshot.profile.profileId,
-        snapshot.profile.version,
-        snapshot.profile.modelRef,
-        JSON.stringify(snapshot),
-        now,
-      ],
-    );
-    return runId;
-  } finally {
-    await client.end();
-  }
-}
-
-async function linkWorkflowRunToAgent(
-  workflowRunId: string,
-  agentRunId: string,
-) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const updated = await client.query(
-      `
-        update muses_workflow_run
-        set caller_kind = 'agent', caller_id = $2
-        where sdk_run_id = $1
-      `,
-      [workflowRunId, agentRunId],
-    );
-    expect(updated.rowCount).toBe(1);
-  } finally {
-    await client.end();
-  }
-}
-
-async function readAgentCancellationFacts(agentRunId: string) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const row = (
-      await client.query<{
-        agentStatus: string;
-        childStatus: string;
-        receipts: string;
-        cancellationEvents: string;
-      }>(
-        `
-          select
-            agent.status as "agentStatus",
-            child.status as "childStatus",
-            (select count(*) from muses_agent_cancel_receipt
-              where agent_run_id = agent.id) as receipts,
-            (select count(*) from muses_agent_event
-              where run_id = agent.id and type = 'run.cancelled') as "cancellationEvents"
-          from muses_agent_run agent
-          join muses_workflow_run child
-            on child.caller_kind = 'agent' and child.caller_id = agent.id
-          where agent.id = $1
-        `,
-        [agentRunId],
-      )
-    ).rows[0];
-    return {
-      agentStatus: row?.agentStatus,
-      childStatus: row?.childStatus,
-      receipts: Number(row?.receipts || 0),
-      cancellationEvents: Number(row?.cancellationEvents || 0),
-    };
-  } finally {
-    await client.end();
-  }
-}
-
-async function countAgentModelCalls(agentRunId: string) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const result = await client.query<{ count: string }>(
-      "select count(*)::text as count from muses_agent_model_call where run_id = $1",
-      [agentRunId],
-    );
-    return Number(result.rows[0]?.count || 0);
-  } finally {
-    await client.end();
-  }
-}
-
-async function readAgentDelegationContinuationFacts(
-  rootRunId: string,
-  delegationRunId: string,
-) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const row = (
-      await client.query<{
-        receiptCount: string;
-        receiptStatus: string | null;
-        messageCommitted: boolean;
-        rootModelCalls: string;
-        imageReservations: string;
-        imageLedgerEntries: string;
-      }>(
-        `
-          select
-            count(continuation.delegation_run_id)::text as "receiptCount",
-            max(continuation.status) as "receiptStatus",
-            coalesce(bool_or(continuation.message_committed_at is not null), false)
-              as "messageCommitted",
-            (select count(*)::text from muses_agent_model_call model_call
-              where model_call.run_id = $1) as "rootModelCalls",
-            (select count(*)::text
-              from credit_reservation reservation
-              join muses_workflow_run workflow
-                on workflow.id = reservation.submission_id
-              where workflow.caller_kind = 'agent'
-                and workflow.caller_id in (
-                  select task ->> 'childRunId'
-                  from muses_agent_delegation_run delegation,
-                    jsonb_array_elements(
-                      delegation.record #> '{snapshot,tasks}'
-                    ) task
-                  where delegation.id = $2
-                    and task ? 'childRunId'
-                )) as "imageReservations",
-            (select count(*)::text
-              from credit_ledger_entry ledger
-              where ledger.reservation_id in (
-                select reservation.id
-                from credit_reservation reservation
-                join muses_workflow_run workflow
-                  on workflow.id = reservation.submission_id
-                where workflow.caller_kind = 'agent'
-                  and workflow.caller_id in (
-                    select task ->> 'childRunId'
-                    from muses_agent_delegation_run delegation,
-                      jsonb_array_elements(
-                        delegation.record #> '{snapshot,tasks}'
-                      ) task
-                    where delegation.id = $2
-                      and task ? 'childRunId'
-                  )
-              )) as "imageLedgerEntries"
-          from muses_agent_delegation_continuation continuation
-          where continuation.delegation_run_id = $2
-        `,
-        [rootRunId, delegationRunId],
-      )
-    ).rows[0];
-    return {
-      receiptCount: Number(row?.receiptCount || 0),
-      receiptStatus: row?.receiptStatus || null,
-      messageCommitted: Boolean(row?.messageCommitted),
-      rootModelCalls: Number(row?.rootModelCalls || 0),
-      imageReservations: Number(row?.imageReservations || 0),
-      imageLedgerEntries: Number(row?.imageLedgerEntries || 0),
-    };
-  } finally {
-    await client.end();
-  }
-}
-
-async function readAgentDelegationCancellationFacts(
-  rootRunId: string,
-  delegationRunId: string,
-) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    const row = (
-      await client.query<{
-        rootStatus: string;
-        rootTurn: string;
-        delegationStatus: string;
-        driverStatus: string;
-        continuationStatus: string | null;
-        continuationFailureCode: string | null;
-        cancelledChildren: string;
-        activeChildren: string;
-        generatedAssets: string;
-        envelopeStatus: string | null;
-        rootModelCalls: string;
-      }>(
-        `
-          select
-            root.status as "rootStatus",
-            (root.snapshot ->> 'turn') as "rootTurn",
-            delegation.status as "delegationStatus",
-            delegation.driver_status as "driverStatus",
-            continuation.status as "continuationStatus",
-            continuation.failure_code as "continuationFailureCode",
-            (select count(*)::text
-              from muses_agent_run child
-              where child.id in (
-                select task ->> 'childRunId'
-                from jsonb_array_elements(
-                  delegation.record #> '{snapshot,tasks}'
-                ) task
-                where task ? 'childRunId'
-              ) and child.status = 'cancelled') as "cancelledChildren",
-            (select count(*)::text
-              from muses_agent_run child
-              where child.id in (
-                select task ->> 'childRunId'
-                from jsonb_array_elements(
-                  delegation.record #> '{snapshot,tasks}'
-                ) task
-                where task ? 'childRunId'
-              ) and child.status in (
-                'queued', 'running', 'waiting-approval', 'cancelling'
-              )) as "activeChildren",
-            (select count(*)::text
-              from muses_generated_asset asset
-              where asset.workflow_run_id in (
-                select workflow.sdk_run_id
-                from muses_workflow_run workflow
-                where workflow.caller_kind = 'agent'
-                  and workflow.caller_id in (
-                    select task ->> 'childRunId'
-                    from jsonb_array_elements(
-                      delegation.record #> '{snapshot,tasks}'
-                    ) task
-                    where task ? 'childRunId'
-                  )
-              )) as "generatedAssets",
-            (select reservation.status
-              from muses_agent_delegation_budget_reservation reservation
-              where reservation.delegation_run_id = delegation.id
-                and reservation.scope = 'envelope') as "envelopeStatus",
-            (select count(*)::text from muses_agent_model_call model_call
-              where model_call.run_id = root.id) as "rootModelCalls"
-          from muses_agent_delegation_run delegation
-          join muses_agent_run root on root.id = $1
-          left join muses_agent_delegation_continuation continuation
-            on continuation.delegation_run_id = delegation.id
-          where delegation.id = $2
-        `,
-        [rootRunId, delegationRunId],
-      )
-    ).rows[0];
-    return {
-      rootStatus: row?.rootStatus,
-      rootTurn: Number(row?.rootTurn || 0),
-      delegationStatus: row?.delegationStatus,
-      driverStatus: row?.driverStatus,
-      continuationStatus: row?.continuationStatus || null,
-      continuationFailureCode: row?.continuationFailureCode || null,
-      cancelledChildren: Number(row?.cancelledChildren || 0),
-      activeChildren: Number(row?.activeChildren || 0),
-      generatedAssets: Number(row?.generatedAssets || 0),
-      envelopeStatus: row?.envelopeStatus || null,
-      rootModelCalls: Number(row?.rootModelCalls || 0),
-    };
-  } finally {
-    await client.end();
-  }
-}
-
-async function restoreWorkflowCallerAndDeleteAgentFixture(
-  agentRunId: string,
-  workflowRunId: string | null,
-) {
-  const client = new Client({ connectionString: getDatabaseUrl() });
-  await client.connect();
-  try {
-    if (workflowRunId) {
-      await client.query(
-        `
-          update muses_workflow_run
-          set caller_kind = 'user', caller_id = submitted_by_user_id
-          where sdk_run_id = $1 and caller_id = $2
-        `,
-        [workflowRunId, agentRunId],
-      );
-    }
-    await client.query("delete from muses_agent_run where id = $1", [
-      agentRunId,
-    ]);
-  } finally {
-    await client.end();
-  }
-}
-
 function studioLastRunStorageKey(id: string, harness: boolean) {
   return `muses.platform-core-alpha.last-durable-run.${id}${harness ? ".harness" : ""}`;
 }
 
-async function resetStudioUser() {
+async function resetStudioUser(email = studioEmail) {
   const client = new Client({ connectionString: getDatabaseUrl() });
   await client.connect();
   try {
     const user = await client.query<{ id: string }>(
       'select id from "user" where lower(email) = lower($1) limit 1',
-      [studioEmail],
+      [email],
     );
     const userId = user.rows[0]?.id;
     if (!userId) return;
     await client.query('delete from "session" where "userId" = $1', [userId]);
     await client.query('delete from "account" where "userId" = $1', [userId]);
     await client.query("delete from verification where identifier like $1", [
-      `%${studioEmail}%`,
+      `%${email}%`,
     ]);
     await client.query('delete from "user" where id = $1', [userId]);
   } finally {
@@ -3474,13 +2283,13 @@ async function resetStudioUser() {
   }
 }
 
-async function verifyStudioUser() {
+async function verifyStudioUser(email = studioEmail) {
   const client = new Client({ connectionString: getDatabaseUrl() });
   await client.connect();
   try {
     const verified = await client.query(
       'update "user" set "emailVerified" = true, "updatedAt" = now() where lower(email) = lower($1)',
-      [studioEmail],
+      [email],
     );
     expect(verified.rowCount).toBe(1);
   } finally {
@@ -3745,19 +2554,6 @@ async function readWorkflowInvocationAudit(runId: string) {
 function createIsolatedAuthIp(workerIndex: number) {
   const entropy = randomBytes(2).readUInt16BE(0);
   return `198.18.${(entropy >> 8) ^ workerIndex}.${entropy & 0xff}`;
-}
-
-function collectObjectKeys(value: unknown, keys: string[] = []) {
-  if (!value || typeof value !== "object") return keys;
-  if (Array.isArray(value)) {
-    for (const item of value) collectObjectKeys(item, keys);
-    return keys;
-  }
-  for (const [key, item] of Object.entries(value)) {
-    keys.push(key);
-    collectObjectKeys(item, keys);
-  }
-  return keys;
 }
 
 function getDatabaseUrl() {

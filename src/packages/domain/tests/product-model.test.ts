@@ -377,7 +377,12 @@ function createOperationCommand(
     projectId: "project_launch",
     target: input.target,
     expectedRevision: input.expectedRevision,
-    actor: { kind: "agent", agentRunId: "arun_test" },
+    actor: {
+      kind: "agent",
+      agentRunId: "arun_test",
+      runtime: "standalone",
+      initiatedByUserId: "user_test",
+    },
     issuedAt: "2026-07-29T00:00:00.000Z",
     payload: input.payload,
   };

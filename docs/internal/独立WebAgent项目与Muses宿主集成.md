@@ -43,6 +43,8 @@ Agent 与 Workflow 是可组合但不互相拥有的两个产品：
 
 - Agent 通过宿主工具查询、编辑、校验、发布和调用工作流。
 - Workflow 通过应用组合层的 `agent.run` 执行端口启动一个版本化 Agent Profile。
+
+当前双向组合已经落地：Muses `agent-run` 节点通过短时 Host JWT 调用独立 Headless AgentRun API，使用 Workflow Run + node id 作为幂等边界；独立 Agent 则通过版本化 Host Capability 协议发现并调用 Canvas 与 Workflow 能力。2026-08-03 的 `alpha.7` 生产拓扑 E2E 在隔离 PostgreSQL World 上验证了 Workflow→Agent 的完成、幂等、Usage 投影和双向取消，以及 Agent→Host 的画布检查、工作流调用/等待、结果放置和最终复查。该实现证明公开协议组合，但真实供应商长任务、目标部署沙盒和非零计费对账仍需生产证据。
 - Agent Runtime 不导入 Workflow Runtime；Workflow Runtime 不导入 Agent Harness。
 - 双向引用只保存稳定身份、输入输出、Run 血缘和 correlation id。
 - Muses Host 负责身份、权限、积分、画布和平台资产，不修改 Agent 内部状态机。
@@ -117,18 +119,35 @@ SolutionDefinition
 
 平台 MusesAgent 和专业画布中的 Agent 节点都启动同一个 Agent Runtime。两者只在 Profile、Host tools、权限、预算、沙盒和调用身份上不同。官方 Solution 可以在管理员工作区编辑、评测、发布、灰度和回滚；用户 Fork 时必须移除私有密钥、管理员工具和无权访问的 MCP。
 
+当前 Profile 目录包含 `general-purpose@0.1.0` 与 `muses-platform@0.1.0`。画布 Agent 节点通过 `workflow.agent-run.config.set` 选择已发布 Profile，并冻结 Schema、权限、预算和输出模式；Domain reducer、Compiler 与服务端目录共同拒绝任意 Profile。`muses-platform` 使用以下 Host 能力：
+
+- `canvas.inspect`、`canvas.item.put`；
+- `workflow.list`、`workflow.inspect`、`workflow.invoke`、`workflow.run.inspect`、`workflow.run.wait`；其中 `wait` 在 Muses 服务端执行有界等待，避免 Agent 用模型回合轮询长任务；
+- `workflow.draft.create`、`workflow.draft.command`、`workflow.validate`、`workflow.publish`；
+- `image.generate` 只是可选媒体能力，不是默认 Agent 阶段。
+
+Host 调用对时间戳、method、path 和 body 做 HMAC 签名，同时携带 Workspace、原始用户主体、Project 与 Canvas scope。Muses 校验签名重放窗口、活动成员、角色与项目权威状态后才进入 Operation Gateway；Viewer 只能读取。Agent 不配置 Host URL/secret 时，这两个动态工具完全不出现，仍可独立完成通用任务。
+
+截至 2026-08-02，独立 Agent 已拥有自己的 `muses_agent` 产品数据 schema、独立 `muses_agent_world` Eve Workflow World、Host JWT、线程所有权、Headless AgentRun API、可恢复事件流和 iframe 嵌入协议。Eve 上下文压缩以 82% 阈值启用；一个 AgentRun 独占一个 durable session，其 `/workspace` 跨 turn 保留。Muses 不再保存或压缩 Agent 上下文，也不再执行本地模型循环。
+
+截至 2026-08-03，Muses 已消费不可变 `v0.1.0-alpha.7` 的 `@muses/agent-contracts`、`@muses/agent-client` 与 `@muses/agent-host` 发布包。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
+
+同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@muses/agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
+
+Muses 旧 `muses_agent_*` 表、migration 和交付证据只作为历史升级与审计事实保留。当前 Drizzle Runtime 不导出这些表，生产源码不读写它们；旧 `/api/studio/agent-runs`、model loop、state store、trace、delegation scheduler/driver、`@muses/agent-core` 和 harness adapter 已退役。Muses 当前只保留 Host Capability、Profile 目录、权限/积分、Workflow `agent-run` 适配和 UI 嵌入边界。
+
 ## 7. 强制依赖方向
 
 ```text
-agent-contracts <- agent-runtime <- harness adapters
+agent-contracts <- agent-service <- Eve harness
        ^                ^                 ^
        |                |                 |
- agent-client       agent-web         agent-service
+ agent-client       agent-web       headless AgentRun API
        ^                                  ^
        \------------ host-sdk ------------/
                          ^
                          |
-                  muses-agent-host
+                  Muses Agent Host
                          |
              canvas / media / workflow tools
 ```
@@ -149,3 +168,5 @@ agent-contracts <- agent-runtime <- harness adapters
 8. 安全、负载、故障注入、计费幂等、可观测性、灰度、回滚和自托管文档通过生产 Gate。
 
 首图、PPT 或短剧成功不能替代以上验收。
+
+Muses Workflow SDK 4.x 的默认本地和 Docker 拓扑使用独立 PostgreSQL 数据库 `muses_workflow_world`（宿主端口 `5433`），业务 `DATABASE_URL` 仍指向 `oworker_saas`（`5432`）。Eve 继续使用自己的 World。Graphile `muses_` 前缀只是第二道隔离边界，不能替代物理数据库隔离。

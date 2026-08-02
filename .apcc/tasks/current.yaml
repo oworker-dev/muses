@@ -1223,8 +1223,8 @@ items:
     statusChangedAt: 2026-07-30T16:39:16.247Z
   - id: enforce-agent-package-boundaries
     name: 实施 Agent 包依赖边界检查
-    summary: 禁止通用 Agent 包导入 Canvas、Workflow、Studio、PPT、Image 和 Next.js 产品实现。
-    status: pending
+    summary: 新增 scripts/check-agent-boundaries.mjs 与根脚本 check:agent-boundaries，扫描 @muses/agent-core 禁止依赖 Muses domain、Canvas/Studio、Next、Workflow/Eve；检查通过。独立 muses-agent 继续保持宿主无反向依赖。
+    status: done
     planRef: agent-independence-contract
     parentTaskId: null
     countedForProgress: true
@@ -1232,8 +1232,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:00.028Z
-    updatedAt: 2026-07-30T18:01:00.028Z
-    statusChangedAt: 2026-07-30T18:01:00.028Z
+    updatedAt: 2026-08-01T03:55:51.290Z
+    statusChangedAt: 2026-08-01T03:55:51.290Z
   - id: build-standalone-agent-distribution
     name: 交付独立 Agent Web 应用、服务端与嵌入 SDK
     summary: 已在 /root/projects/muses-agent 以 Eve 0.27.8、Node 24 和 Next.js Web channel 建立独立脚手架；当前推进多会话 Web 产品、恢复、取消与独立部署验收。
@@ -1262,8 +1262,8 @@ items:
     statusChangedAt: 2026-07-30T18:01:01.129Z
   - id: verify-agent-production-slo
     name: 完成安全、负载、故障、Eval 与 SLO Gate
-    summary: 真实供应商与故障注入覆盖并发、恢复、幂等、隔离、滥用、灰度和回滚。
-    status: pending
+    summary: Node 24 类型检查、Agent 84/84 单测、真实 PostgreSQL 扩展 HTTP 生命周期、Provider HTTP/SSE 故障注入矩阵、Eve 双次上下文压缩无漂移、Docker 固定 Eval 6/6（43/43 gates）、Eve 与 Next 生产构建通过。408/429/5xx 由 Eve 唯一受限重试，硬超时与部分断流可同 session 显式续跑；压缩保留事实/todo/sandbox 并重置读前写安全状态。仍缺并发 AgentRun 压力、真实外部 Provider 长上下文 E2E、目标部署 SLO 与计费对账证据，未达到 Codex 级生产完成。
+    status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
     countedForProgress: true
@@ -1271,8 +1271,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.340Z
-    updatedAt: 2026-07-30T18:01:01.340Z
-    statusChangedAt: 2026-07-30T18:01:01.340Z
+    updatedAt: 2026-08-02T09:08:37.978Z
+    statusChangedAt: 2026-08-01T15:56:16.306Z
   - id: implement-eve-default-adapter
     name: 实现 Eve 默认 Harness Adapter
     summary: 让 Eve 通过 Muses Agent Contracts、Tool、Store、Policy、Sandbox 与 Event 端口运行。
@@ -1301,8 +1301,8 @@ items:
     statusChangedAt: 2026-07-30T18:22:32.901Z
   - id: define-agent-run-node-contract
     name: 定义 agent.run 工作流节点契约
-    summary: 节点只引用版本化 Profile、输入输出、权限、预算和 Deployment，不内嵌 Agent 实现。
-    status: pending
+    summary: 已冻结 agent.run 0.1.0-draft：版本化 Profile、message:text、result:text，Eve 细节不进入 DSL；End 发布输出同时冻结稳定 id、显示 name、类型和必填性。独立用户已通过专业画布 UI 完成建图、变量绑定、发布和真实运行。
+    status: done
     planRef: workflow-agent-composition
     parentTaskId: null
     countedForProgress: true
@@ -1310,12 +1310,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.657Z
-    updatedAt: 2026-07-30T18:01:01.657Z
-    statusChangedAt: 2026-07-30T18:01:01.657Z
+    updatedAt: 2026-08-02T17:59:52.829Z
+    statusChangedAt: 2026-08-01T03:54:00.451Z
   - id: implement-workflow-agent-bridge
     name: 实现 Workflow 到 Agent Runtime 适配
-    summary: 由应用组合层桥接独立引擎，支持等待、取消、恢复、子 Run 血缘和费用。
-    status: pending
+    summary: Workflow agent-run 节点通过 Host JWT 与幂等键调用独立 Headless AgentRun API，成功、失败、取消和 usage 已投影。
+    status: done
     planRef: workflow-agent-composition
     parentTaskId: null
     countedForProgress: true
@@ -1323,12 +1323,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.761Z
-    updatedAt: 2026-07-30T18:01:01.761Z
-    statusChangedAt: 2026-07-30T18:01:01.761Z
+    updatedAt: 2026-08-02T02:32:55.419Z
+    statusChangedAt: 2026-08-02T02:32:55.419Z
   - id: expose-workflow-authoring-tools
     name: 为 Agent 提供工作流构建发布工具
-    summary: 交付 catalog、inspect、draft、validate、publish、invoke 工具，所有写入经服务端权限和修订校验。
-    status: pending
+    summary: Muses Host 已交付 workflow.list/inspect/draft/validate/publish/invoke/run.inspect/run.wait；所有写入经 Workspace/Project 权限、revision、Host HMAC 与幂等边界。平台 Agent 已真实发现能力、调用含 agent-run 节点的已发布 Workflow、服务端等待完成、放置结果并复查画布，7 steps 返回 MUSES_HOST_E2E_COMPLETED。
+    status: done
     planRef: workflow-agent-composition
     parentTaskId: null
     countedForProgress: true
@@ -1336,12 +1336,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.863Z
-    updatedAt: 2026-07-30T18:01:01.863Z
-    statusChangedAt: 2026-07-30T18:01:01.863Z
+    updatedAt: 2026-08-02T15:59:33.466Z
+    statusChangedAt: 2026-08-02T15:59:33.466Z
   - id: revalidate-eve-compatibility
     name: 重新验证 Eve 运行兼容性
-    summary: 按已安装版本验证 Node、Workflow 协议、流、消息顺序、权限和 per-Run 沙盒。
-    status: pending
+    summary: 按 Eve 0.27.8 随包文档在 Node 24 与独立 Workflow 5 Postgres World 复验 Session waiting/continuation、Host JWT ownership、Provider 受限重试、上下文压缩、Docker sandbox、Headless AgentRun、取消、OTel Span Link 与构建；Muses Workflow 4.x World 保持物理隔离。
+    status: done
     planRef: eve-default-harness
     parentTaskId: null
     countedForProgress: true
@@ -1349,12 +1349,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.986Z
-    updatedAt: 2026-07-30T18:01:01.986Z
-    statusChangedAt: 2026-07-30T18:01:01.986Z
+    updatedAt: 2026-08-02T15:59:33.825Z
+    statusChangedAt: 2026-08-02T15:59:33.825Z
   - id: unify-agent-observability-usage
     name: 统一 Agent、Workflow、模型、工具和费用观测
-    summary: 使用 OpenTelemetry、Workflow World 与 Muses Usage/Billing，记录缓存 Token 并避免重复事实。
-    status: pending
+    summary: 独立 Agent Web 与 Eve Runtime 已统一接入 @vercel/otel；同步 HTTP 传播 W3C context，耐久 Workflow 队列以 Span Link 保留因果关系。独立 Postgres World 实测导出 205 个 spans，AgentRun/correlation/Profile/session 关联字段齐全，私密 prompt 探针未导出。仍需在部署 Collector 下串联 Muses/Workflow/Host/模型/工具/费用并完成仪表盘、留存与计费对账证据。
+    status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
     countedForProgress: true
@@ -1362,12 +1362,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.084Z
-    updatedAt: 2026-07-30T18:01:02.084Z
-    statusChangedAt: 2026-07-30T18:01:02.084Z
+    updatedAt: 2026-08-02T04:51:00.800Z
+    statusChangedAt: 2026-08-01T15:56:16.561Z
   - id: publish-open-agent-kit
     name: 发布开放可自托管 Agent Kit
     summary: 提供包、CLI、服务、示例、迁移、运维和集成文档，使第三方项目可直接嵌入。
-    status: pending
+    status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
     countedForProgress: true
@@ -1375,8 +1375,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.189Z
-    updatedAt: 2026-07-30T18:01:02.189Z
-    statusChangedAt: 2026-07-30T18:01:02.189Z
+    updatedAt: 2026-08-02T12:56:11.913Z
+    statusChangedAt: 2026-08-02T12:56:11.913Z
   - id: implement-solution-definition
     name: 交付 SolutionDefinition 与平台功能绑定
     summary: 让 PPT 等平台入口引用已发布 Profile 与 Workflow，而不是隐藏业务代码。
@@ -1393,7 +1393,7 @@ items:
   - id: establish-agent-conformance-suite
     name: 建立跨宿主 Agent Conformance Suite
     summary: 用同一测试验证独立 CLI/API、平台 MusesAgent 和工作流 Agent 节点。
-    status: pending
+    status: in_progress
     planRef: agent-independence-contract
     parentTaskId: null
     countedForProgress: true
@@ -1401,12 +1401,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.419Z
-    updatedAt: 2026-07-30T18:01:02.419Z
-    statusChangedAt: 2026-07-30T18:01:02.419Z
+    updatedAt: 2026-08-02T12:56:12.482Z
+    statusChangedAt: 2026-08-02T12:56:12.482Z
   - id: verify-standalone-agent-outcomes
     name: 验证独立 Web Agent 自主任务与用户体验
     summary: 在不加载任何 Muses/Canvas 工具的独立 Web 产品中，以文件、终端、Web、Skill、MCP 和自定义工具任务证明 Codex 级体验。
-    status: pending
+    status: in_progress
     planRef: standalone-agent-engine
     parentTaskId: null
     countedForProgress: true
@@ -1414,8 +1414,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.530Z
-    updatedAt: 2026-07-30T18:06:05.376Z
-    statusChangedAt: 2026-07-30T18:01:02.530Z
+    updatedAt: 2026-08-02T12:56:12.976Z
+    statusChangedAt: 2026-08-02T12:56:12.976Z
   - id: admin-agent-authoring-publishing
     name: 交付管理员编辑、评测、发布、灰度与回滚
     summary: 管理员在统一画布和控制面维护平台行为，无需修改产品入口代码。
@@ -1431,8 +1431,8 @@ items:
     statusChangedAt: 2026-07-30T18:01:02.621Z
   - id: extract-agent-contracts-package
     name: 拆分稳定 Agent Contracts
-    summary: 将 Session、Run、Event、Tool、Profile、Usage 与控制协议从运行实现中分离。
-    status: pending
+    summary: 提取可发布的 AgentRun、AgentSession、Embed 与 Host Capability 公共契约，建立稳定 exports 和版本策略。
+    status: in_progress
     planRef: standalone-agent-engine
     parentTaskId: null
     countedForProgress: true
@@ -1440,8 +1440,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.710Z
-    updatedAt: 2026-07-30T18:01:02.710Z
-    statusChangedAt: 2026-07-30T18:01:02.710Z
+    updatedAt: 2026-08-02T11:04:59.387Z
+    statusChangedAt: 2026-08-02T11:04:59.387Z
   - id: persist-agent-profile-catalog
     name: 交付版本化 Agent Profile 控制面
     summary: 持久化草稿、不可变版本、Deployment、模型策略、Instructions、Skills、MCP、工具、预算和输出 Schema。
@@ -1496,8 +1496,8 @@ items:
     statusChangedAt: 2026-07-30T18:01:03.134Z
   - id: freeze-agent-workflow-separation
     name: 冻结 Agent 与 Workflow 课题分离架构
-    summary: 明确为两个独立项目：/root/projects/muses-agent 交付 Web-first 通用 Agent，/root/projects/saas 交付 Muses Host 与独立 Workflow Engine；两者只通过稳定 SDK、工具与 Run 身份组合。
-    status: in_progress
+    summary: Agent 与 Workflow 已按独立产品、独立数据与独立 Workflow World 冻结；Muses 旧本地 Runtime 已退役。
+    status: done
     planRef: agent-independence-contract
     parentTaskId: null
     countedForProgress: true
@@ -1505,8 +1505,8 @@ items:
     pinned: true
     pinnedReason: 当前先冻结长期正确的独立性边界，再开始代码重构。
     createdAt: 2026-07-30T18:01:03.239Z
-    updatedAt: 2026-07-30T18:22:31.603Z
-    statusChangedAt: 2026-07-30T18:01:03.239Z
+    updatedAt: 2026-08-02T02:32:54.884Z
+    statusChangedAt: 2026-08-02T02:32:54.884Z
   - id: deliver-resumable-agent-streaming
     name: 交付可恢复实时流与错误续跑体验
     summary: 基于 Eve SessionState、可回放事件流和 continuation token 实现多线程持久化、刷新恢复、取消、失败后同线程继续。
@@ -1535,8 +1535,8 @@ items:
     statusChangedAt: 2026-07-30T18:22:32.147Z
   - id: deliver-production-skills-mcp
     name: 交付生产 Skill 与 MCP 生命周期
-    summary: 覆盖安装、版本、校验和、授权、OAuth、网络出口、审批、审计和撤销。
-    status: pending
+    summary: 已完成部署级 Skill 版本固定、Profile 最大授权、租户 enable/revoke、AgentRun 快照、每次 Run/续跑吊销复核、PostgreSQL 安装与脱敏审计、agent.extensions.manage 管理 API，并通过真实 Host JWT/PostgreSQL HTTP 生命周期。当前仅发布真实 software-task@1.0.0 Skill；首个真实 MCP 仍需 endpoint allowlist、OAuth/凭证、审批、吊销与对抗 Eval，故总任务保持进行中。
+    status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
     countedForProgress: true
@@ -1544,12 +1544,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:03.576Z
-    updatedAt: 2026-07-30T18:01:03.576Z
-    statusChangedAt: 2026-07-30T18:01:03.576Z
+    updatedAt: 2026-08-02T07:52:23.874Z
+    statusChangedAt: 2026-08-01T15:56:16.878Z
   - id: deliver-physical-run-sandbox
     name: 交付 per-AgentRun 物理计算沙盒
-    summary: 隔离文件、进程、网络、资源、密钥和销毁生命周期，SubAgent 默认独立沙盒。
-    status: pending
+    summary: 独立 Agent 已通过真实 Docker durable-session 隔离验证，并交付数据库授权回收链：Web/Host 先终止 Eve session，再写 agent_sandbox_deletions；reaper 只 claim 已授权 tombstone，删除前重验证，成功完成记账，失败可重试。运行中容器仅允许 exact session + include-running。Node 24 类型检查、61 单测、真实 PostgreSQL + Docker reaper 验收、Eve/Next 生产构建、Muses check/build 和生产依赖审计均通过。生产 Gate 仍缺调度与审计留存、资源/超时 SLO、产品删除记录导出和目标托管后端对抗测试。
+    status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
     countedForProgress: true
@@ -1557,12 +1557,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:03.766Z
-    updatedAt: 2026-07-30T18:01:03.766Z
-    statusChangedAt: 2026-07-30T18:01:03.766Z
+    updatedAt: 2026-08-02T06:04:00.255Z
+    statusChangedAt: 2026-08-01T15:56:17.193Z
   - id: verify-muses-host-parity
     name: 验证独立 Web 与 Muses Host 体验一致性
-    summary: 同一 Run/Event/Tool 协议在独立产品和 Studio 中保持语义一致，宿主只增加能力和主题，不改变 Agent 内核。
-    status: pending
+    summary: 独立 Web 与 Muses embed 共享 AgentWorkspace、会话、模型/推理控制、usage、刷新恢复和错误协议。
+    status: done
     planRef: codex-agent-experience
     parentTaskId: null
     countedForProgress: true
@@ -1570,12 +1570,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:06:31.778Z
-    updatedAt: 2026-07-30T18:06:31.778Z
-    statusChangedAt: 2026-07-30T18:06:31.778Z
+    updatedAt: 2026-08-02T02:32:56.789Z
+    statusChangedAt: 2026-08-02T02:32:56.789Z
   - id: package-agent-web-embed
     name: 封装 Agent Web 嵌入组件与 Host SDK
-    summary: 把独立 Agent 工作台、会话存储、事件投影、配置和 Host slots 设计为受控可嵌入模块，Muses 不复制 Agent UI。
-    status: in_progress
+    summary: 已形成三种互不锁定的 Web 集成路径：可选 iframe、可复用 @muses/agent-ui 原生 React 组件、自建 UI + @muses/agent-client/eve-session；Host Capability SDK 与签名注册表同步完成。Muses 无需复制 Agent UI，公开分发与不可变版本迁移由独立发布任务继续。
+    status: done
     planRef: codex-agent-experience
     parentTaskId: null
     countedForProgress: true
@@ -1583,12 +1583,12 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:06:31.911Z
-    updatedAt: 2026-07-30T18:22:32.652Z
-    statusChangedAt: 2026-07-30T18:22:32.652Z
+    updatedAt: 2026-08-02T11:53:02.489Z
+    statusChangedAt: 2026-08-02T11:53:02.489Z
   - id: integrate-muses-agent-host
     name: 将 Muses 实现为第一个 Agent Host
-    summary: 通过 Host SDK 注入身份、Workspace、模型目录、积分、画布、资产、媒体和 Workflow 工具。
-    status: pending
+    summary: Muses 使用独立 Agent iframe、Host JWT、Host tools 和 Headless client，不再复制 Agent UI/Runtime。
+    status: done
     planRef: codex-agent-experience
     parentTaskId: null
     countedForProgress: true
@@ -1596,5 +1596,278 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:06:32.045Z
-    updatedAt: 2026-07-30T18:06:32.045Z
-    statusChangedAt: 2026-07-30T18:06:32.045Z
+    updatedAt: 2026-08-02T02:32:56.237Z
+    statusChangedAt: 2026-08-02T02:32:56.237Z
+  - id: productionize-agent-service-persistence-auth
+    name: 交付 Agent Service 生产持久化与宿主认证
+    summary: Agent 服务已交付 PostgreSQL session ownership、线程索引、Host JWT、Headless AgentRun 和 durable sandbox deletion authorization；新增 Web session deletion route，先终止 Eve 后写 tombstone。生产部署仍需真实身份/删除审计、provider billing、collector retention 和目标拓扑验证。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-31T09:27:20.539Z
+    updatedAt: 2026-08-02T06:04:00.151Z
+    statusChangedAt: 2026-08-01T03:53:51.129Z
+  - id: retire-muses-legacy-agent-runtime
+    name: 迁移并清理 Muses 旧通用 Agent 运行时
+    summary: 旧 Studio Agent API、模型循环、状态、trace、delegation driver/core packages 已删除；历史 migration/data 仅作兼容审计。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-31T09:27:29.985Z
+    updatedAt: 2026-08-02T02:32:55.155Z
+    statusChangedAt: 2026-08-02T02:32:55.155Z
+  - id: verify-agent-host-jwt-e2e
+    name: 验证 Agent Host JWT 真实链路
+    summary: 真实 PostgreSQL World Gate 已通过：无凭证 401、缺租户 403、有效 Host JWT 完成模型回合；session.started hook 原子登记 tenant+principal 所有权，跨租户及同租户不同主体读取均返回 403。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: productionize-agent-service-persistence-auth
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-31T09:45:34.886Z
+    updatedAt: 2026-07-31T10:00:40.053Z
+    statusChangedAt: 2026-07-31T10:00:40.053Z
+  - id: persist-agent-thread-index
+    name: 持久化 Agent 线程索引与所有权
+    summary: 已交付独立 Agent PostgreSQL migration、tenant+principal+storageKey 线程集合、ETag/If-Match revision、409 冲突、HTTP Web 注入适配器与可见写入失败提示；真实数据库读写/隔离/冲突、9 个单测及 3 个浏览器回归通过。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: productionize-agent-service-persistence-auth
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-31T09:45:35.138Z
+    updatedAt: 2026-07-31T10:05:20.143Z
+    statusChangedAt: 2026-07-31T10:05:20.143Z
+  - id: expose-headless-agent-run-api
+    name: 交付 Headless AgentRun API
+    summary: 已交付框架无关 Headless AgentRun API：POST/GET/events/DELETE，Host JWT 租户+主体隔离、幂等 replay/conflict、submission-ambiguous、父子 lineage 深度 8、Eve 事件投影、Usage/成本、cursor 和 cooperative cancellation。TypeScript、18 项单测、生产构建、PostgreSQL migration 与真实 Eve/Postgres conformance 通过。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: productionize-agent-service-persistence-auth
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-07-31T09:45:35.390Z
+    updatedAt: 2026-08-01T03:53:44.065Z
+    statusChangedAt: 2026-08-01T03:53:44.065Z
+  - id: configure-eve-production-sandbox
+    name: 配置独立 Agent 生产沙盒与能力基线
+    summary: 生产 doctor 已强制显式选择 docker|microsandbox|vercel；Docker 默认 deny-all，要求 EVE_SANDBOX_RETENTION_HOURS 与 EVE_SANDBOX_REAPER_MAX_REMOVALS。已交付 operator reaper、Eve session ownership、数据库 agent_sandbox_deletions tombstone、短 lease claim、完成/失败重试状态和 Web DELETE session 顺序：先 Eve reset，再授权物理删除。真实 PostgreSQL + Docker 验证证明 stopped/exact-running 只删除已授权资源，未授权、保护、跨 ownership 资源保持。仍需目标部署 daemon hardening、资源配额、reaper 调度、持久审计导出和托管后端证据。
+    status: in_progress
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: true
+    pinnedReason: 独立 Agent 生产 Gate 的首个阻断项。
+    createdAt: 2026-08-01T15:08:36.250Z
+    updatedAt: 2026-08-02T06:04:00.453Z
+    statusChangedAt: 2026-08-01T15:08:36.250Z
+  - id: deliver-agent-tool-and-eval-loop
+    name: 交付通用工具闭环与自主任务 Eval
+    summary: 独立 Agent 保留 Eve 原生文件、Shell、Web、Skill 与子 Agent 执行器，新增高风险 Bash 审批策略；Docker-backed 固定 Eval 已通过 Skill、文件读写、Shell、checkpoint、失败恢复、HITL、取消和跨轮沙盒连续性，共 5/5 eval、25/25 gates。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-01T15:08:36.512Z
+    updatedAt: 2026-08-02T07:44:33.591Z
+    statusChangedAt: 2026-08-02T07:44:33.591Z
+  - id: publish-agent-host-capability-protocol
+    name: 发布 Agent Host 能力协议与 Muses 画布工具适配
+    summary: 独立 Agent 已通过版本化发现/调用协议使用 Muses Canvas 与 Workflow Host 能力，签名与作用域验证通过。
+    status: done
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-01T15:08:36.795Z
+    updatedAt: 2026-08-02T02:32:55.716Z
+    statusChangedAt: 2026-08-02T02:32:55.716Z
+  - id: make-agent-node-profile-driven
+    name: 将画布 Agent 节点改为 Profile/Schema 驱动
+    summary: agent-run 节点已冻结发布 Profile、Schema、权限、预算和输出模式，Domain/Compiler/服务端目录共同校验。
+    status: done
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-01T15:08:37.071Z
+    updatedAt: 2026-08-02T02:32:55.977Z
+    statusChangedAt: 2026-08-02T02:32:55.977Z
+  - id: verify-muses-platform-agent-canvas-workflow
+    name: 验证 Muses 平台 Agent 驱动画布工作流闭环
+    summary: 双向真实闭环已通过：平台 Agent 使用 Host Capability 检查画布、调用/等待工作流、放置结果并复查；专业画布用户也可通过 UI 创建 Start→agent.run→End(result:text)、发布冻结定义并由独立 Agent 完成运行。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-01T15:08:37.337Z
+    updatedAt: 2026-08-02T17:59:53.111Z
+    statusChangedAt: 2026-08-02T02:32:56.500Z
+  - id: verify-extension-management-http-boundary
+    name: 验证扩展管理 HTTP 授权与数据库生命周期
+    summary: 已交付可测试的扩展管理 HTTP 边界并通过真实签名 Host JWT 与 PostgreSQL 验收：无凭证 401、缺 agent.extensions.manage scope 403、有效管理 token 200；tenant A 吊销不影响 tenant B，重新启用恢复，Route 限制 8 KiB/严格字段/vault 引用且不回显凭证或内部异常。Node 24 类型检查、75/75 单测、5/5 固定 Eval（25/25 gates）、Eve 与 Next 生产构建均通过。随机临时 schema 已清理。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: deliver-production-skills-mcp
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T07:44:33.823Z
+    updatedAt: 2026-08-02T07:52:23.649Z
+    statusChangedAt: 2026-08-02T07:52:23.649Z
+  - id: verify-provider-failure-recovery
+    name: 验证真实 Provider 故障与续跑恢复
+    summary: 已通过真实 Eve HTTP/SSE 故障注入矩阵：408、429、500 均由 Eve 作为唯一重试权威并恰好第 3 次成功，AI SDK 不放大请求；Provider HTTP 硬超时和已输出后的断流均产生 step.failed/turn.failed/session.waiting，不产生 session.failed，同一 continuation 续跑成功。新增 120 秒默认可配置硬超时、部分流防自动重放中间件、83/83 单测，并通过 Docker 固定 Eval 5/5（25/25 gates）及 Eve/Next 生产构建。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: verify-agent-production-slo
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T07:52:35.736Z
+    updatedAt: 2026-08-02T08:58:00.518Z
+    statusChangedAt: 2026-08-02T08:58:00.518Z
+  - id: verify-standalone-agent-compaction
+    name: 验证独立 Agent 长上下文压缩质量
+    summary: 已基于 Eve 原生 compaction 完成确定性真实多轮 Eval：在同一 durable session 内触发 2 次 compaction.requested/completed，第二次 checkpoint 增量更新第一次摘要；精确事实 CERULEAN-47/ORBIT-73/BETA-91、active todo 与 sandbox 文件均无漂移。压缩会重置 read-before-write 证据，直接覆盖被拒绝，重新 read 后写入成功。新增 test-only 4096 context window override 且 production doctor 显式拒绝；Node 24 类型检查、84/84 单测、固定 Eval 6/6（43/43 gates）、Eve 与 Next 生产构建通过。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: verify-agent-production-slo
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T08:59:21.012Z
+    updatedAt: 2026-08-02T09:08:37.739Z
+    statusChangedAt: 2026-08-02T09:08:37.739Z
+  - id: extract-agent-client-sdk
+    name: 提取 Headless Agent Client SDK
+    summary: 交付可安装的 AgentRun Client，包含动态短期 Token、幂等、事件游标、取消与结构化错误。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: extract-agent-contracts-package
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:04:59.634Z
+    updatedAt: 2026-08-02T11:15:18.943Z
+    statusChangedAt: 2026-08-02T11:15:18.943Z
+  - id: migrate-muses-agent-client-sdk
+    name: 迁移 Muses 到正式 Agent Client SDK
+    summary: Muses 已迁移到不可变 v0.1.0-alpha.7 的 contracts/client/host SDK；旧本地 Agent Runtime、重复 HTTP 契约和 driver 已删除。Workflow→Agent 完成/幂等/Usage/取消、Agent→Host 画布工作流闭环，以及专业画布 UI 创建 Start→agent.run→End 命名输出并真实运行均已通过。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: extract-agent-contracts-package
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:04:59.872Z
+    updatedAt: 2026-08-02T17:59:52.549Z
+    statusChangedAt: 2026-08-02T17:59:52.549Z
+  - id: verify-agent-sdk-package-conformance
+    name: 验证 Agent SDK 包与协议一致性
+    summary: 验证构建产物、package exports、HTTP 行为、跨宿主消费与兼容入口。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: extract-agent-contracts-package
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:05:00.109Z
+    updatedAt: 2026-08-02T11:15:19.177Z
+    statusChangedAt: 2026-08-02T11:15:19.177Z
+  - id: extract-agent-session-sdk
+    name: 提取交互式 AgentSession SDK
+    summary: 在不暴露 Eve 内部类的前提下冻结线程、游标、流、续跑、审批、取消与恢复接口，并提供 Eve 默认适配。
+    status: done
+    planRef: standalone-agent-engine
+    parentTaskId: extract-agent-contracts-package
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:15:19.415Z
+    updatedAt: 2026-08-02T11:21:26.588Z
+    statusChangedAt: 2026-08-02T11:21:26.588Z
+  - id: extract-agent-host-sdk
+    name: 提取 Agent Host Capability SDK
+    summary: 已交付版本化宿主能力签名/验证、动态签名客户端和通用注册表；Agent 运行时已改为消费 @muses/agent-host/client，Node 24 单测、包构建与空白消费者安装验证通过。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: package-agent-web-embed
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:21:26.838Z
+    updatedAt: 2026-08-02T11:33:38.282Z
+    statusChangedAt: 2026-08-02T11:33:38.282Z
+  - id: extract-agent-ui-sdk
+    name: 提取原生 Agent UI SDK
+    summary: 已交付 @muses/agent-ui@0.1.0-alpha.1：AgentWorkspace、线程持久化、状态投影、独立 AI Elements 子路径和预编译主题样式；模型目录/默认值由宿主注入，独立首页与 /embed 均反向消费该包。四个 tarball 已在空白消费者安装导入，非 iframe 自建 React UI 示例已验证动态 token、流、恢复、审批与取消，Node 24 单测/类型/Eve/Next 构建和桌面/小尺寸 E2E 通过。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: package-agent-web-embed
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T11:21:27.080Z
+    updatedAt: 2026-08-02T11:53:02.250Z
+    statusChangedAt: 2026-08-02T11:53:02.250Z
+  - id: harden-agent-release-operations
+    name: 加固 Agent CI、发布来源与生产运维
+    summary: 交付 Node 24 CI、构建与包安装验证、发布来源证明、安全策略、自托管部署及数据留存运行手册；不跨越许可证和正式公共发布决策。
+    status: in_progress
+    planRef: agent-production-gate
+    parentTaskId: publish-open-agent-kit
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T15:16:02.220Z
+    updatedAt: 2026-08-02T15:16:02.220Z
+    statusChangedAt: 2026-08-02T15:16:02.220Z
+  - id: detect-workflow-world-queue-contamination
+    name: 检测 Workflow World 队列版本污染
+    summary: 只读 doctor 已检测并隔离旧业务库中的 spec 5/Eve 队列污染；Muses spec 3 已在物理独立 World 验证。默认 env 与 Docker 现使用独立 muses_workflow_world（宿主 5433）和 workflow-db 数据卷，muses_ 前缀仅作为第二隔离边界。
+    status: done
+    planRef: workflow-agent-composition
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T15:16:02.495Z
+    updatedAt: 2026-08-02T17:59:53.391Z
+    statusChangedAt: 2026-08-02T15:59:33.188Z

@@ -47,7 +47,7 @@ export function VariableBindingPicker({
         (variable) => ({
           ...variable,
           nodeTitle: localizedNodeTitle(workflow, variable.nodeId, t),
-          portLabel: t(`ports.${variable.portId}`),
+          portLabel: localizedPortLabel(variable.portId, variable.portLabel, t),
         })
       ),
     [nodeId, port.id, t, workflow]
@@ -60,7 +60,7 @@ export function VariableBindingPicker({
           formatVariableReference(variable.reference) === currentValue
       )
     : undefined
-  const portLabel = t(`ports.${port.id}`)
+  const portLabel = localizedPortLabel(port.id, port.label, t)
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const filtered = variables.filter((variable) =>
     [
@@ -204,6 +204,14 @@ export function VariableBindingPicker({
   )
 }
 
+function localizedPortLabel(
+  portId: string,
+  fallback: string,
+  t: ReturnType<typeof useTranslations<"Studio">>
+) {
+  return t.has(`ports.${portId}`) ? t(`ports.${portId}`) : fallback
+}
+
 function localizedNodeTitle(
   workflow: WorkflowDocumentDraft,
   nodeId: string,
@@ -217,6 +225,7 @@ function localizedNodeTitle(
     "image-result": "imageResult",
     selector: "selector",
     "design-document": "designDocument",
+    "agent-run": "agentRun",
     end: "end",
   }[node.kind]
   if (node.data.kind === "image-result") {

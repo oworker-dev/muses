@@ -1,4 +1,5 @@
 export * from "./deterministic-image";
+export * from "./agent-profile";
 export * from "./creative-canvas";
 export * from "./fixture";
 export * from "./image-size";

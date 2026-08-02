@@ -47,6 +47,16 @@ import {
   finalizeUnreservedWorkflowSubmission,
   type WorkflowCreditContext,
 } from "@/lib/credit-ledger"
+import {
+  createMusesAgentHostClient,
+  type MusesAgentRunSnapshot,
+} from "@/lib/muses-agent-host"
+import {
+  clampWorkflowAgentBudget,
+  getWorkflowAgentProfile,
+  hostCapabilitiesForWorkflowAgent,
+} from "@/lib/agent-profile-catalog"
+import { requireAgentJsonObject } from "@/lib/agent-json-boundary"
 
 export const MUSES_RUNTIME_STREAM_NAMESPACE = "muses:runtime"
 export const MUSES_SERVER_INTERPRETER_HARNESS =
@@ -60,6 +70,7 @@ export const MUSES_SELECTOR_TIMEOUT_MS = 7 * 24 * 60 * 60 * 1000
 
 export type WorkflowInterpreterHarnessOptions = {
   readonly projectId?: string
+  readonly agentActorUserId?: string
   readonly retryOfRunId?: string
   readonly submissionId?: string
   readonly creditContext?: WorkflowCreditContext
@@ -155,7 +166,14 @@ type WorkflowRuntimeEventPayload =
       readonly adapter?:
         | typeof MUSES_SERVER_INTERPRETER_HARNESS
         | typeof MUSES_OPENAI_IMAGE_ADAPTER
+        | "muses-agent-headless"
       readonly usage?: WorkflowRuntimeUsageProjection
+    }
+  | {
+      readonly type: "node.agent.started"
+      readonly nodeId: string
+      readonly nodeKind: "agent-run"
+      readonly agentRunId: string
     }
   | {
       readonly type: "node.waiting"
@@ -195,6 +213,16 @@ export type WorkflowRuntimeUsageProjection = {
   readonly creditMicros: string
   readonly imageCount: number
   readonly providerUsage?: unknown
+  readonly agentRunId?: string
+  readonly agentEventCount?: number
+  readonly agentUsage?: {
+    readonly inputTokens: number
+    readonly outputTokens: number
+    readonly cacheReadTokens: number
+    readonly cacheWriteTokens: number
+    readonly costUsd: number
+    readonly steps: number
+  }
 }
 
 export type WorkflowSelectorHookMetadata = {
@@ -295,8 +323,18 @@ export async function workflowDefinitionInterpreter(
           execution =
             preparation.value.node.kind === "image-generator" &&
             preparation.value.node.config.capabilityId === "image.generate.v1"
-              ? await executeRealImageNodeStep(request)
-              : await executeSupportedNodeStep(request)
+              ? await executeRealImageNodeStep(
+                  request as Parameters<typeof executeRealImageNodeStep>[0]
+                )
+              : preparation.value.node.kind === "agent-run"
+                ? await executeAgentRunNode({
+                    ...request,
+                    node: preparation.value.node,
+                    actorUserId: options.agentActorUserId,
+                  })
+                : await executeSupportedNodeStep(
+                    request as Parameters<typeof executeSupportedNodeStep>[0]
+                  )
         } catch (error) {
           const permanent = isFatalWorkflowError(error)
           const realImageNode =
@@ -530,6 +568,7 @@ type WorkflowNodeExecutionSuccess = {
   readonly adapter:
     | typeof MUSES_SERVER_INTERPRETER_HARNESS
     | typeof MUSES_OPENAI_IMAGE_ADAPTER
+    | "muses-agent-headless"
   readonly usage?: WorkflowRuntimeUsageProjection
 }
 
@@ -545,10 +584,7 @@ async function executeSupportedNodeStep(request: {
   runId: string
   definition: WorkflowDefinitionRef
   projectId?: string
-  node: Extract<
-    WorkflowDefinition["nodes"][number],
-    { kind: "image-generator" | "design-document" }
-  >
+  node: Extract<WorkflowDefinition["nodes"][number], { kind: "image-generator" | "design-document" }>
   inputs: Readonly<Record<string, WorkflowRuntimeValue>>
   creditContext?: WorkflowCreditContext
   failureFault?: NonNullable<WorkflowInterpreterHarnessOptions["failureFault"]>
@@ -639,6 +675,214 @@ async function executeSupportedNodeStep(request: {
   }
 }
 executeSupportedNodeStep.maxRetries = MUSES_SUPPORTED_NODE_MAX_RETRIES
+
+async function executeAgentRunNode(request: {
+  runId: string
+  definition: WorkflowDefinitionRef
+  projectId?: string
+  node: Extract<WorkflowDefinition["nodes"][number], { kind: "agent-run" }>
+  inputs: Readonly<Record<string, WorkflowRuntimeValue>>
+  actorUserId?: string
+}): Promise<WorkflowNodeExecutionResult> {
+  const message = request.inputs.message
+  if (!message || message.valueType !== "text" || !message.value.trim()) {
+    throw new FatalError("Agent run requires a non-empty message.")
+  }
+  if (!request.actorUserId?.trim()) {
+    throw new FatalError("Agent run requires an authenticated host principal.")
+  }
+
+  const idempotencyKey = `workflow-agent-run:${request.runId}:${request.node.id}`
+  let started: MusesAgentRunSnapshot
+  try {
+    started = await startAgentRunStep({
+      actorUserId: request.actorUserId,
+      definition: request.definition,
+      projectId: request.projectId,
+      idempotencyKey,
+      message: message.value,
+      node: request.node,
+      runId: request.runId,
+    })
+  } catch (error) {
+    return {
+      ok: false,
+      failure: {
+        code: "agent-run-submit-failed",
+        category: "permanent",
+        message: error instanceof Error ? error.message : "The AgentRun could not be submitted.",
+        retryable: false,
+        nodeId: request.node.id,
+        nodeKind: request.node.kind,
+      },
+    }
+  }
+
+  await emitRuntimeEventStep(request.runId, {
+    type: "node.agent.started",
+    nodeId: request.node.id,
+    nodeKind: request.node.kind,
+    agentRunId: started.runId,
+  })
+
+  let snapshot = started
+  // Workflows replay from their event log. A bounded poll count is stable across
+  // replays, unlike a wall-clock deadline that can be reset by a resumed worker.
+  const maxPolls = 450 // 15 minutes at the two-second durable poll interval.
+  let polls = 0
+  while (snapshot.status !== "completed" && snapshot.status !== "failed" && snapshot.status !== "cancelled") {
+    if (polls >= maxPolls) {
+      await cancelAgentRunStep({
+        actorUserId: request.actorUserId,
+        runId: snapshot.runId,
+        workspaceId: request.definition.workspaceId,
+        projectId: request.projectId,
+      }).catch(() => undefined)
+      return {
+        ok: false,
+        failure: {
+          code: "agent-run-timeout",
+          category: "timeout",
+          message: "The AgentRun exceeded the 15 minute workflow node timeout.",
+          retryable: true,
+          nodeId: request.node.id,
+          nodeKind: request.node.kind,
+        },
+      }
+    }
+    await sleep("2s")
+    polls += 1
+    snapshot = await inspectAgentRunStep({
+      actorUserId: request.actorUserId,
+      runId: snapshot.runId,
+      workspaceId: request.definition.workspaceId,
+      projectId: request.projectId,
+    })
+  }
+
+  if (snapshot.status !== "completed" || !snapshot.result) {
+    return {
+      ok: false,
+      failure: {
+        code: snapshot.failure?.code || "agent-run-failed",
+        category: "permanent",
+        message: snapshot.failure?.message || "The AgentRun did not complete.",
+        retryable: Boolean(snapshot.failure?.retryable),
+        nodeId: request.node.id,
+        nodeKind: request.node.kind,
+      },
+    }
+  }
+  const value = snapshot.result.kind === "text"
+    ? String(snapshot.result.value)
+    : JSON.stringify(snapshot.result.value)
+  return {
+    ok: true,
+    adapter: "muses-agent-headless",
+    outputs: { result: { valueType: "text", value } },
+    usage: {
+      creditMicros: "0",
+      imageCount: 0,
+      agentRunId: snapshot.runId,
+      ...(typeof snapshot.eventCount === "number"
+        ? { agentEventCount: snapshot.eventCount }
+        : {}),
+      agentUsage: snapshot.usage,
+    },
+  }
+}
+
+async function startAgentRunStep(request: {
+  actorUserId: string
+  definition: WorkflowDefinitionRef
+  projectId?: string
+  idempotencyKey: string
+  message: string
+  node: Extract<WorkflowDefinition["nodes"][number], { kind: "agent-run" }>
+  runId: string
+}): Promise<MusesAgentRunSnapshot> {
+  "use step"
+
+  const profile = getWorkflowAgentProfile(
+    request.node.config.profileId,
+    request.node.config.profileVersion,
+  )
+  if (!profile) {
+    throw new FatalError(
+      `Agent profile ${request.node.config.profileId}@${request.node.config.profileVersion} is not published.`,
+    )
+  }
+  const requiredPermissions = request.node.config.requiredPermissions ?? profile.requiredPermissions
+  const profilePermissions = new Set(profile.requiredPermissions)
+  if (requiredPermissions.some((permission) => !profilePermissions.has(permission))) {
+    throw new FatalError("The Agent node requests a permission outside its published Profile.")
+  }
+  const budget = clampWorkflowAgentBudget(profile, request.node.config.budget)
+  const hostCapabilities = hostCapabilitiesForWorkflowAgent(profile, requiredPermissions)
+
+  const client = createMusesAgentHostClient({
+    userId: request.actorUserId,
+    workspaceId: request.definition.workspaceId,
+    actorType: "service",
+    ...(request.projectId ? { projectId: request.projectId } : {}),
+  })
+  const response = await client.start({
+    idempotencyKey: request.idempotencyKey,
+    message: request.message,
+    profile: {
+      profileId: profile.profileId,
+      version: profile.profileVersion,
+    },
+    policy: {
+      hostCapabilities,
+      limits: budget,
+    },
+    ...(request.node.config.outputMode === "json" && request.node.config.outputSchema
+      ? { outputSchema: requireAgentJsonObject(request.node.config.outputSchema) }
+      : {}),
+    metadata: {
+      workflowRunId: request.runId,
+      workflowDefinitionId: request.definition.definitionId,
+      workflowNodeId: request.node.id,
+    },
+  })
+  return response.run
+}
+startAgentRunStep.maxRetries = 0
+
+async function inspectAgentRunStep(request: {
+  actorUserId: string
+  runId: string
+  workspaceId: string
+  projectId?: string
+}): Promise<MusesAgentRunSnapshot> {
+  "use step"
+
+  return createMusesAgentHostClient({
+    userId: request.actorUserId,
+    workspaceId: request.workspaceId,
+    actorType: "service",
+    ...(request.projectId ? { projectId: request.projectId } : {}),
+  }).inspect(request.runId)
+}
+inspectAgentRunStep.maxRetries = 0
+
+async function cancelAgentRunStep(request: {
+  actorUserId: string
+  runId: string
+  workspaceId: string
+  projectId?: string
+}) {
+  "use step"
+
+  return createMusesAgentHostClient({
+    userId: request.actorUserId,
+    workspaceId: request.workspaceId,
+    actorType: "service",
+    ...(request.projectId ? { projectId: request.projectId } : {}),
+  }).cancel(request.runId)
+}
+cancelAgentRunStep.maxRetries = 0
 
 async function executeRealImageNodeStep(
   request: Parameters<typeof executeSupportedNodeStep>[0]

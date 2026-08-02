@@ -1,808 +1,242 @@
 "use client"
 
+import { AlertCircleIcon, LoaderCircleIcon, RotateCwIcon } from "lucide-react"
+import { useLocale, useTranslations } from "next-intl"
+import { useTheme } from "next-themes"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
 import {
-  BanIcon,
-  CheckIcon,
-  CircleXIcon,
-  CircleStopIcon,
-  LoaderCircleIcon,
-  ListChecksIcon,
-  SendIcon,
-  SparklesIcon,
-} from "lucide-react"
-import { useTranslations } from "next-intl"
+  AGENT_EMBED_CONTRACT_VERSION,
+  parseAgentEmbedEvent,
+  type AgentEmbedConfigureMessage,
+} from "@muses/agent-contracts/embed"
 import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react"
+  getWorkflowAgentProfile,
+  hostCapabilitiesForWorkflowAgent,
+} from "@/lib/agent-profile-catalog"
 
-import type {
-  AgentEvent,
-  AgentMessage,
-  AgentRunSnapshot,
-} from "@muses/agent-core"
-import type { WorkflowRuntimeImageAsset } from "@muses/domain"
-
-import type { AgentDelegationActivityProjection } from "@/lib/agent-delegation-activity"
-import { createClientId } from "@/lib/client-id"
-import { agentStages } from "@/lib/studio-agent-stage-projection"
-import { cn } from "@/lib/utils"
-
-type AgentRunResponse = {
-  run: AgentRunSnapshot
-  events?: AgentEvent[]
-  driver?: { status?: string; runId?: string | null }
-  accepted?: boolean
-  error?: string
-  message?: string
-  cancellation?: {
-    idempotentReplay: boolean
-    summary: { reviewRequired?: boolean }
-  }
-  delegation?: AgentDelegationActivityProjection
-  delegationCancellation?: {
-    delegationRunId: string
-    status: string
-    idempotentReplay: boolean
-  }
+type HostTokenResponse = {
+  readonly accessToken?: string
+  readonly embedUrl?: string
+  readonly expiresAt?: string
+  readonly message?: string
+  readonly serviceUrl?: string
+  readonly scope?: { readonly projectId: string; readonly canvasId: string }
 }
 
-type ImageToolOutput = {
-  workflowRunId?: string
-  assets?: WorkflowRuntimeImageAsset[]
-}
+type Bootstrap = Required<
+  Pick<HostTokenResponse, "accessToken" | "embedUrl" | "expiresAt" | "serviceUrl" | "scope">
+>
 
-const subscribeToHydration = () => () => undefined
+const PROFILE = getWorkflowAgentProfile("muses-platform", "0.1.0")!
 
 export function StudioAgentPanel({
   workspaceId,
   projectId,
-  onCanvasChanged,
+  canvasId,
+  onHostChanged,
 }: {
-  workspaceId: string
-  projectId: string
-  onCanvasChanged?: () => void | Promise<void>
+  readonly workspaceId: string
+  readonly projectId: string
+  readonly canvasId: string
+  readonly onHostChanged?: () => void | Promise<void>
 }) {
   const t = useTranslations("Studio.agent")
-  const storageKey = `muses.agent.last-run.${workspaceId}.${projectId}`
-  const [prompt, setPrompt] = useState("")
-  const [run, setRun] = useState<AgentRunSnapshot | null>(null)
-  const [events, setEvents] = useState<AgentEvent[]>([])
-  const [delegation, setDelegation] =
-    useState<AgentDelegationActivityProjection | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const interactive = useSyncExternalStore(
-    subscribeToHydration,
-    () => true,
-    () => false
-  )
+  const locale = useLocale() === "zh-CN" ? "zh-CN" : "en"
+  const { resolvedTheme } = useTheme()
+  const iframeRef = useRef<HTMLIFrameElement>(null)
+  const readyRef = useRef(false)
+  const [bootstrap, setBootstrap] = useState<Bootstrap>()
+  const [configuredRequestId, setConfiguredRequestId] = useState<string>()
+  const [error, setError] = useState<string>()
+  const [loading, setLoading] = useState(true)
 
-  const readRun = useCallback(
-    async (runId: string) => {
-      const query = new URLSearchParams({ workspaceId, runId })
-      const response = await fetch(`/api/studio/agent-runs?${query}`)
-      const result = (await response.json()) as AgentRunResponse
-      if (!response.ok) throw new Error(result.message || t("requestFailed"))
-      setRun(result.run)
-      setEvents(result.events || [])
-      setDelegation(result.delegation || null)
-      if (isTerminal(result.run.status) && !result.delegation?.active) {
-        void onCanvasChanged?.()
-      }
-      return result.run
-    },
-    [onCanvasChanged, t, workspaceId]
-  )
+  const loadToken = useCallback(async () => {
+    setError(undefined)
+    const query = new URLSearchParams({ workspaceId, projectId, canvasId })
+    const response = await fetch(`/api/studio/agent-host-token?${query}`, {
+      cache: "no-store",
+    })
+    const body = (await response.json().catch(() => ({}))) as HostTokenResponse
+    if (
+      !response.ok ||
+      !body.accessToken ||
+      !body.embedUrl ||
+      !body.expiresAt ||
+      !body.serviceUrl ||
+      !body.scope
+    ) {
+      throw new Error(body.message || t("requestFailed"))
+    }
+    const next = body as Bootstrap
+    setBootstrap(next)
+    setLoading(false)
+    return next
+  }, [canvasId, projectId, t, workspaceId])
 
   useEffect(() => {
-    const runId = window.localStorage.getItem(storageKey)
-    if (!runId) return
-    const timer = window.setTimeout(() => {
-      void readRun(runId).catch(() =>
-        window.localStorage.removeItem(storageKey)
-      )
-    }, 0)
-    return () => window.clearTimeout(timer)
-  }, [readRun, storageKey])
+    let disposed = false
+    let refreshTimer: number | undefined
+    const refresh = async () => {
+      try {
+        const next = await loadToken()
+        if (disposed) return
+        const refreshIn = Math.max(
+          15_000,
+          Date.parse(next.expiresAt) - Date.now() - 60_000,
+        )
+        refreshTimer = window.setTimeout(refresh, refreshIn)
+      } catch (reason) {
+        if (!disposed) {
+          setLoading(false)
+          setError(reason instanceof Error ? reason.message : t("requestFailed"))
+        }
+      }
+    }
+    void refresh()
+    return () => {
+      disposed = true
+      if (refreshTimer) window.clearTimeout(refreshTimer)
+    }
+  }, [loadToken, t])
+
+  const configuration = useMemo<AgentEmbedConfigureMessage | undefined>(() => {
+    if (!bootstrap) return undefined
+    return {
+      type: "agent.embed.configure",
+      contractVersion: AGENT_EMBED_CONTRACT_VERSION,
+      requestId: crypto.randomUUID(),
+      accessToken: bootstrap.accessToken,
+      expiresAt: bootstrap.expiresAt,
+      serviceUrl: bootstrap.serviceUrl,
+      storageKey: `muses:${workspaceId}:${projectId}:threads:v1`,
+      profile: { id: PROFILE.profileId, version: PROFILE.profileVersion },
+      runPolicy: {
+        hostCapabilities: hostCapabilitiesForWorkflowAgent(PROFILE),
+        limits: PROFILE.budget,
+      },
+      clientContext: {
+        host: "muses",
+        workspaceId,
+        projectId: bootstrap.scope.projectId,
+        canvasId: bootstrap.scope.canvasId,
+      },
+      locale,
+      theme:
+        resolvedTheme === "dark"
+          ? "dark"
+          : resolvedTheme === "light"
+            ? "light"
+            : "system",
+    }
+  }, [bootstrap, locale, projectId, resolvedTheme, workspaceId])
+
+  const sendConfiguration = useCallback(() => {
+    if (!configuration || !bootstrap || !readyRef.current) return
+    iframeRef.current?.contentWindow?.postMessage(
+      configuration,
+      new URL(bootstrap.embedUrl).origin,
+    )
+  }, [bootstrap, configuration])
 
   useEffect(() => {
-    if (!run || (isSettled(run.status) && !delegation?.active)) return
-    const timer = window.setInterval(() => {
-      void readRun(run.runId).catch((reason: unknown) => {
-        setError(reason instanceof Error ? reason.message : t("requestFailed"))
-      })
-    }, 1200)
-    return () => window.clearInterval(timer)
-  }, [delegation?.active, readRun, run, t])
+    sendConfiguration()
+  }, [sendConfiguration])
 
-  const submit = useCallback(async () => {
-    const content = prompt.trim()
-    if (!content || submitting) return
-    setSubmitting(true)
-    setError(null)
-    try {
-      const response = await fetch("/api/studio/agent-runs", {
-        method: run ? "PATCH" : "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(
-          run
-            ? {
-                action: isSettled(run.status) ? "follow-up" : "steer",
-                workspaceId,
-                runId: run.runId,
-                message: content,
-              }
-            : {
-                workspaceId,
-                projectId,
-                prompt: content,
-                idempotencyKey: createClientId(),
-              }
-        ),
-      })
-      const result = (await response.json()) as AgentRunResponse
-      if (!response.ok || !result.run) {
-        throw new Error(result.message || t("requestFailed"))
+  useEffect(() => {
+    const receive = (event: MessageEvent<unknown>) => {
+      if (!bootstrap || event.source !== iframeRef.current?.contentWindow) return
+      if (event.origin !== new URL(bootstrap.embedUrl).origin) return
+      const message = parseAgentEmbedEvent(event.data)
+      if (!message) return
+      if (message.type === "agent.embed.ready") {
+        readyRef.current = true
+        sendConfiguration()
+        return
       }
-      setRun(result.run)
-      setEvents([])
-      setDelegation(null)
-      setPrompt("")
-      window.localStorage.setItem(storageKey, result.run.runId)
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("requestFailed"))
-    } finally {
-      setSubmitting(false)
+      if (message.type === "agent.embed.configured") {
+        setConfiguredRequestId(message.requestId)
+        setError(undefined)
+        return
+      }
+      if (message.type === "agent.embed.error") {
+        setError(message.message)
+        return
+      }
+      if (
+        message.type === "agent.embed.host-capability-completed" &&
+        (message.capability.startsWith("canvas.") ||
+          message.capability.startsWith("workflow.") ||
+          message.capability === "image.generate")
+      ) {
+        void onHostChanged?.()
+      }
     }
-  }, [projectId, prompt, run, storageKey, submitting, t, workspaceId])
-
-  const cancel = useCallback(async () => {
-    if (!run || submitting) return
-    setSubmitting(true)
-    setError(null)
-    try {
-      const response = await fetch("/api/studio/agent-runs", {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          action: "cancel",
-          workspaceId,
-          runId: run.runId,
-          idempotencyKey: `${run.runId}:studio-cancel:v1`,
-          reason: "Cancelled from Muses Studio.",
-        }),
-      })
-      const result = (await response.json()) as AgentRunResponse
-      if (!response.ok || !result.run) {
-        throw new Error(result.message || t("requestFailed"))
-      }
-      setRun(result.run)
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : t("requestFailed"))
-    } finally {
-      setSubmitting(false)
-    }
-  }, [run, submitting, t, workspaceId])
-
-  const decideApproval = useCallback(
-    async (decision: "approved" | "denied") => {
-      if (!run?.pendingApproval || submitting) return
-      setSubmitting(true)
-      setError(null)
-      try {
-        const response = await fetch("/api/studio/agent-runs", {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            action: "approve",
-            workspaceId,
-            runId: run.runId,
-            approvalId: run.pendingApproval.approvalId,
-            decision,
-            reason:
-              decision === "approved"
-                ? "Approved from Muses Studio."
-                : "Denied from Muses Studio.",
-          }),
-        })
-        const result = (await response.json()) as AgentRunResponse
-        if (!response.ok || !result.run) {
-          throw new Error(result.message || t("requestFailed"))
-        }
-        setRun(result.run)
-      } catch (reason) {
-        setError(reason instanceof Error ? reason.message : t("requestFailed"))
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [run, submitting, t, workspaceId]
-  )
-
-  const decideDelegatedApproval = useCallback(
-    async (
-      approval: AgentDelegationActivityProjection["approvals"][number],
-      decision: "approved" | "denied"
-    ) => {
-      if (!run || submitting) return
-      setSubmitting(true)
-      setError(null)
-      try {
-        const response = await fetch("/api/studio/agent-runs", {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            action: "approve",
-            workspaceId,
-            runId: approval.runId,
-            approvalId: approval.approvalId,
-            decision,
-            reason:
-              decision === "approved"
-                ? "Approved delegated work from Muses Studio."
-                : "Denied delegated work from Muses Studio.",
-          }),
-        })
-        const result = (await response.json()) as AgentRunResponse
-        if (!response.ok || !result.run) {
-          throw new Error(result.message || t("requestFailed"))
-        }
-        await readRun(run.runId)
-      } catch (reason) {
-        setError(reason instanceof Error ? reason.message : t("requestFailed"))
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [readRun, run, submitting, t, workspaceId]
-  )
-
-  const cancelDelegation = useCallback(
-    async (delegationRunId: string) => {
-      if (!run || submitting) return
-      setSubmitting(true)
-      setError(null)
-      try {
-        const response = await fetch("/api/studio/agent-runs", {
-          method: "PATCH",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            action: "cancel-delegation",
-            workspaceId,
-            runId: run.runId,
-            delegationRunId,
-            idempotencyKey: `${run.runId}:${delegationRunId}:studio-cancel:v1`,
-            reason: "Cancelled specialist work from Muses Studio.",
-          }),
-        })
-        const result = (await response.json()) as AgentRunResponse
-        if (!response.ok || !result.run) {
-          throw new Error(result.message || t("requestFailed"))
-        }
-        await readRun(run.runId)
-      } catch (reason) {
-        setError(reason instanceof Error ? reason.message : t("requestFailed"))
-      } finally {
-        setSubmitting(false)
-      }
-    },
-    [readRun, run, submitting, t, workspaceId]
-  )
-
-  const latestAssistant = useMemo(
-    () =>
-      [...(run?.context.messages || [])]
-        .reverse()
-        .find(
-          (message) => message.role === "assistant" && message.content.trim()
-        ),
-    [run]
-  )
-  const imageOutput = useMemo(
-    () => findLatestImageOutput(run?.context.messages || []),
-    [run]
-  )
-  const stages = agentStages(run, events)
-  const running = Boolean(run && !isTerminal(run.status))
-  const delegationBusy = Boolean(delegation?.active)
-  const delegatedTaskCount =
-    delegation?.runs.reduce((count, item) => count + item.tasks.length, 0) || 0
-  const delegatedArtifactCount =
-    delegation?.runs.reduce(
-      (count, item) =>
-        count +
-        item.tasks.reduce(
-          (taskCount, task) => taskCount + task.artifactRefs.length,
-          0
-        ),
-      0
-    ) || 0
+    window.addEventListener("message", receive)
+    return () => window.removeEventListener("message", receive)
+  }, [bootstrap, onHostChanged, sendConfiguration])
 
   return (
     <aside
       data-testid="studio-agent-panel"
-      className="flex h-full w-[400px] shrink-0 flex-col overflow-hidden border-l border-border bg-background"
+      className="relative flex h-full w-[480px] shrink-0 flex-col overflow-hidden border-l border-border bg-background"
     >
-      <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="grid size-7 shrink-0 place-items-center rounded-md bg-foreground text-background">
-            <SparklesIcon className="size-3.5" />
+      {bootstrap ? (
+        <iframe
+          ref={iframeRef}
+          src={bootstrap.embedUrl}
+          title={t("title")}
+          className="h-full w-full border-0 bg-background"
+          onLoad={() => {
+            readyRef.current = false
+            setConfiguredRequestId(undefined)
+          }}
+          sandbox="allow-forms allow-same-origin allow-scripts"
+        />
+      ) : null}
+      {loading ? (
+        <div className="absolute inset-0 grid place-items-center bg-background text-sm text-muted-foreground">
+          <span className="flex items-center gap-2">
+            <LoaderCircleIcon className="size-4 animate-spin" />
+            {t("connecting")}
           </span>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-foreground">
-              {t("title")}
-            </div>
-            <div className="truncate text-[12px] text-muted-foreground">
-              {delegation?.approvals.length
-                ? t("waiting")
-                : delegationBusy
-                  ? t("delegation.running")
-                  : run
-                    ? statusLabel(run.status, t)
-                    : t("ready")}
-            </div>
-          </div>
-        </div>
-        {running ? (
-          <button
-            type="button"
-            onClick={() => void cancel()}
-            disabled={submitting}
-            className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-            aria-label={t("cancel")}
-            title={t("cancel")}
-          >
-            <CircleStopIcon className="size-3.5" />
-          </button>
-        ) : null}
-      </div>
-
-      {run ? (
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <div className="grid grid-cols-3 gap-1.5">
-            {stages.map((stage) => (
-              <div
-                key={stage.key}
-                data-testid={`studio-agent-stage-${stage.key}`}
-                data-state={stage.state}
-                className={cn(
-                  "flex min-h-12 items-center gap-1.5 rounded-md border px-2 py-1.5",
-                  stage.state === "done"
-                    ? "border-emerald-500/25 bg-emerald-500/5"
-                    : stage.state === "failed"
-                      ? "border-destructive/25 bg-destructive/5"
-                      : stage.state === "active"
-                        ? "border-foreground/20 bg-muted"
-                        : "border-border bg-background"
-                )}
-              >
-                {stage.state === "done" ? (
-                  <CheckIcon className="size-3 shrink-0 text-emerald-600" />
-                ) : stage.state === "failed" ? (
-                  <CircleXIcon className="size-3 shrink-0 text-destructive" />
-                ) : stage.state === "active" ? (
-                  <LoaderCircleIcon className="size-3 shrink-0 animate-spin" />
-                ) : (
-                  <span className="size-3 shrink-0 rounded-full border border-border" />
-                )}
-                <span className="text-[12px] font-medium text-foreground">
-                  {t(`stages.${stage.key}`)}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {run.plan ? (
-            <details
-              className="mt-2.5 rounded-md border border-border bg-muted/20"
-              data-testid="studio-agent-plan"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-2.5 py-2 text-[12px] font-medium text-foreground">
-                <span className="flex items-center gap-1.5">
-                  <ListChecksIcon className="size-3.5 text-muted-foreground" />
-                  {t("plan")}
-                </span>
-                <span className="text-muted-foreground">
-                  {t("planProgress", {
-                    completed: run.plan.steps.filter(
-                      ({ status }) => status === "completed"
-                    ).length,
-                    total: run.plan.steps.length,
-                  })}
-                </span>
-              </summary>
-              <div className="border-t border-border px-2.5 py-2">
-                <p className="line-clamp-2 text-[12px] leading-4 text-muted-foreground">
-                  {run.plan.goal}
-                </p>
-                <ol className="mt-1.5 grid gap-1.5">
-                  {run.plan.steps.map((step) => (
-                    <li
-                      key={step.id}
-                      className="flex min-h-5 items-center gap-2 text-[12px] text-foreground"
-                    >
-                      {step.status === "completed" ? (
-                        <CheckIcon className="size-3 shrink-0 text-emerald-600" />
-                      ) : step.status === "in-progress" &&
-                        !isTerminal(run.status) ? (
-                        <LoaderCircleIcon className="size-3 shrink-0 animate-spin" />
-                      ) : step.status === "in-progress" ? (
-                        <CircleXIcon className="size-3 shrink-0 text-destructive" />
-                      ) : (
-                        <span className="size-3 shrink-0 rounded-full border border-border" />
-                      )}
-                      <span>{planStepLabel(step.id, step.title, t)}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </details>
-          ) : null}
-
-          {delegation?.runs.length ? (
-            <section
-              className="mt-3 border-y border-border py-2.5"
-              data-testid="studio-agent-delegation"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-[13px] font-semibold text-foreground">
-                  {t("delegation.title")}
-                </p>
-                <span className="text-[12px] text-muted-foreground">
-                  {t("delegation.taskCount", { count: delegatedTaskCount })}
-                  {delegatedArtifactCount
-                    ? ` · ${t("delegation.artifactCount", { count: delegatedArtifactCount })}`
-                    : ""}
-                </span>
-              </div>
-              <ol className="mt-2 grid">
-                {delegation.runs.map((item) => (
-                  <li
-                    key={item.delegationRunId}
-                    className="border-t border-border py-2 first:border-t-0 first:pt-0 last:pb-0"
-                  >
-                    <div className="flex min-h-6 items-center justify-between gap-3">
-                      <span className="text-[13px] font-medium text-muted-foreground">
-                        {delegationStatusLabel(item.status, t)}
-                      </span>
-                      {isDelegationRunCancellable(item.status) ? (
-                        <button
-                          type="button"
-                          disabled={submitting}
-                          onClick={() =>
-                            void cancelDelegation(item.delegationRunId)
-                          }
-                          className="grid size-6 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-50"
-                          aria-label={t("delegation.cancel")}
-                          title={t("delegation.cancel")}
-                          data-testid="studio-agent-delegation-cancel"
-                        >
-                          <CircleStopIcon className="size-3" />
-                        </button>
-                      ) : null}
-                    </div>
-                    <ol className="grid gap-2">
-                      {item.tasks.map((task) => (
-                        <li
-                          key={`${item.delegationRunId}:${task.taskId}`}
-                          className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-0.5"
-                        >
-                          {task.status === "completed" ? (
-                            <CheckIcon className="mt-0.5 size-3 shrink-0 text-emerald-600" />
-                          ) : isDelegationTaskActive(task.status) ? (
-                            <LoaderCircleIcon className="mt-0.5 size-3 shrink-0 animate-spin" />
-                          ) : (
-                            <span className="mt-0.5 size-3 shrink-0 rounded-full border border-border" />
-                          )}
-                          <div className="min-w-0">
-                            <p className="line-clamp-2 text-[12px] leading-4 text-foreground">
-                              {task.objective}
-                            </p>
-                            <p className="text-[13px] leading-3 text-muted-foreground">
-                              {task.profile.profileId} ·{" "}
-                              {delegationStatusLabel(task.status, t)}
-                              {task.artifactRefs.length
-                                ? ` · ${t("delegation.artifactCount", { count: task.artifactRefs.length })}`
-                                : ""}
-                            </p>
-                          </div>
-                        </li>
-                      ))}
-                    </ol>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          ) : null}
-
-          {run.status === "waiting-approval" && run.pendingApproval ? (
-            <section
-              className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
-              data-testid="studio-agent-approval"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground">
-                    {t("approval.title")}
-                  </p>
-                  <p className="mt-0.5 text-[12px] leading-4 text-muted-foreground">
-                    {run.pendingApproval.reason}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[13px] text-foreground">
-                  {run.pendingApproval.toolCall.name}
-                </span>
-              </div>
-              <details className="mt-2 rounded border border-border bg-background/70">
-                <summary className="cursor-pointer list-none px-2 py-1.5 text-[12px] font-medium text-muted-foreground">
-                  {t("approval.input")}
-                </summary>
-                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[13px] leading-4 whitespace-pre-wrap text-foreground">
-                  {formatApprovalInput(run.pendingApproval.toolCall.input)}
-                </pre>
-              </details>
-              <div className="mt-2 flex justify-end gap-1.5">
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => void decideApproval("denied")}
-                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
-                >
-                  <BanIcon className="size-3" />
-                  {t("approval.deny")}
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => void decideApproval("approved")}
-                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
-                >
-                  <CheckIcon className="size-3" />
-                  {t("approval.approve")}
-                </button>
-              </div>
-            </section>
-          ) : null}
-
-          {delegation?.approvals.map((approval) => (
-            <section
-              key={approval.approvalId}
-              className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2.5"
-              data-testid="studio-agent-delegated-approval"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground">
-                    {t("delegation.approvalTitle")}
-                  </p>
-                  <p className="mt-0.5 text-[12px] leading-4 text-muted-foreground">
-                    {approval.reason}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded border border-amber-500/30 bg-background px-1.5 py-0.5 font-mono text-[13px] text-foreground">
-                  {approval.toolCall.name}
-                </span>
-              </div>
-              <details className="mt-2 rounded border border-border bg-background/70">
-                <summary className="cursor-pointer list-none px-2 py-1.5 text-[12px] font-medium text-muted-foreground">
-                  {t("approval.input")}
-                </summary>
-                <pre className="max-h-32 overflow-auto border-t border-border px-2 py-1.5 font-mono text-[13px] leading-4 whitespace-pre-wrap text-foreground">
-                  {formatApprovalInput(approval.toolCall.input)}
-                </pre>
-              </details>
-              <div className="mt-2 flex justify-end gap-1.5">
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() =>
-                    void decideDelegatedApproval(approval, "denied")
-                  }
-                  className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-2.5 text-[12px] font-medium text-foreground hover:bg-muted disabled:opacity-50"
-                >
-                  <BanIcon className="size-3" />
-                  {t("approval.deny")}
-                </button>
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() =>
-                    void decideDelegatedApproval(approval, "approved")
-                  }
-                  className="inline-flex h-7 items-center gap-1 rounded-md bg-foreground px-2.5 text-[12px] font-medium text-background hover:opacity-90 disabled:opacity-50"
-                >
-                  <CheckIcon className="size-3" />
-                  {t("approval.approve")}
-                </button>
-              </div>
-            </section>
-          ))}
-
-          {imageOutput?.assets?.length ? (
-            <div className="mt-3 grid gap-2">
-              {imageOutput.assets.map((asset) => (
-                <figure
-                  key={asset.id}
-                  className="overflow-hidden rounded-md border border-border bg-muted/30"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={asset.url}
-                    alt={asset.prompt}
-                    className="max-h-[360px] w-full object-contain"
-                  />
-                  <figcaption className="flex items-center justify-between gap-3 px-2.5 py-2 text-[12px] text-muted-foreground">
-                    <span className="truncate">{asset.prompt}</span>
-                    <span className="shrink-0">
-                      {asset.width} x {asset.height}
-                    </span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-          ) : null}
-
-          {latestAssistant ? (
-            <p className="mt-3 text-[13px] leading-4 whitespace-pre-wrap text-foreground">
-              {latestAssistant.content}
-            </p>
-          ) : null}
-          {run.failure ? (
-            <p className="mt-3 rounded-md border border-destructive/25 bg-destructive/5 px-2.5 py-2 text-[12px] leading-4 text-destructive">
-              {isModelProviderFailure(run.failure.code)
-                ? t("modelFailed")
-                : run.failure.message}
-            </p>
-          ) : null}
         </div>
       ) : null}
-
-      <form
-        className="border-t border-border bg-background p-2.5"
-        onSubmit={(event) => {
-          event.preventDefault()
-          void submit()
-        }}
-      >
-        <div className="flex items-end gap-2 rounded-md border border-input bg-background p-1.5 focus-within:ring-2 focus-within:ring-ring/30">
-          <textarea
-            value={prompt}
-            disabled={!interactive || delegationBusy}
-            onChange={(event) => setPrompt(event.target.value)}
-            placeholder={run ? t("followUpPlaceholder") : t("placeholder")}
-            rows={2}
-            className="max-h-32 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-1.5 py-1 text-sm leading-5 outline-none placeholder:text-muted-foreground"
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault()
-                void submit()
-              }
-            }}
-          />
-          <button
-            type="submit"
-            disabled={
-              !interactive || delegationBusy || !prompt.trim() || submitting
-            }
-            className="grid size-8 shrink-0 place-items-center rounded-md bg-foreground text-background hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label={t("send")}
-            title={t("send")}
-          >
-            {submitting ? (
-              <LoaderCircleIcon className="size-3.5 animate-spin" />
-            ) : (
-              <SendIcon className="size-3.5" />
-            )}
-          </button>
+      {bootstrap && !configuredRequestId && !error ? (
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-center bg-background/90 px-3 py-2 text-xs text-muted-foreground backdrop-blur">
+          <LoaderCircleIcon className="mr-2 size-3.5 animate-spin" />
+          {t("connecting")}
         </div>
-        {error ? (
-          <p className="mt-1.5 text-[12px] leading-4 text-destructive">
-            {error}
-          </p>
-        ) : null}
-      </form>
+      ) : null}
+      {error ? (
+        <div className="absolute inset-0 grid place-items-center bg-background/95 p-6 backdrop-blur-sm">
+          <div className="max-w-sm rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+            <div className="flex gap-2">
+              <AlertCircleIcon className="mt-0.5 size-4 shrink-0 text-destructive" />
+              <div>
+                <p className="font-medium text-foreground">{t("unavailable")}</p>
+                <p className="mt-1 break-words text-muted-foreground">{error}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-foreground hover:bg-muted"
+              onClick={() => {
+                setLoading(true)
+                void loadToken().catch((reason: unknown) => {
+                  setLoading(false)
+                  setError(
+                    reason instanceof Error ? reason.message : t("requestFailed"),
+                  )
+                })
+              }}
+            >
+              <RotateCwIcon className="size-3.5" />
+              {t("retry")}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </aside>
   )
-}
-
-function findLatestImageOutput(messages: readonly AgentMessage[]) {
-  for (const message of [...messages].reverse()) {
-    if (message.role !== "tool" || message.toolName !== "image.generate")
-      continue
-    try {
-      const output = JSON.parse(message.content) as ImageToolOutput
-      if (Array.isArray(output.assets)) return output
-    } catch {
-      continue
-    }
-  }
-  return null
-}
-
-function formatApprovalInput(input: Readonly<Record<string, unknown>>) {
-  const formatted = JSON.stringify(input, null, 2)
-  return formatted.length > 4_000
-    ? `${formatted.slice(0, 4_000)}\n…`
-    : formatted
-}
-
-function isModelProviderFailure(code: string) {
-  return code === "model-failed" || code === "model-provider-rejected"
-}
-
-function isSettled(status: AgentRunSnapshot["status"]) {
-  return (
-    status === "completed" ||
-    status === "failed" ||
-    status === "cancelled" ||
-    status === "waiting-approval" ||
-    status === "waiting-input"
-  )
-}
-
-function isTerminal(status: AgentRunSnapshot["status"]) {
-  return status === "completed" || status === "failed" || status === "cancelled"
-}
-
-function isDelegationTaskActive(status: string) {
-  return (
-    status === "ready" ||
-    status === "claimed" ||
-    status === "running" ||
-    status === "waiting-approval"
-  )
-}
-
-function isDelegationRunCancellable(status: string) {
-  return status === "queued" || status === "running"
-}
-
-function delegationStatusLabel(
-  status: string,
-  t: ReturnType<typeof useTranslations<"Studio.agent">>
-) {
-  if (status === "pending") return t("delegation.status.pending")
-  if (status === "ready") return t("delegation.status.ready")
-  if (status === "claimed") return t("delegation.status.claimed")
-  if (status === "running") return t("delegation.status.running")
-  if (status === "cancelling") return t("delegation.status.cancelling")
-  if (status === "waiting-approval") {
-    return t("delegation.status.waitingApproval")
-  }
-  if (status === "completed") return t("delegation.status.completed")
-  if (status === "completed-with-failures") {
-    return t("delegation.status.completedWithFailures")
-  }
-  if (status === "failed") return t("delegation.status.failed")
-  if (status === "cancelled") return t("delegation.status.cancelled")
-  if (status === "blocked") return t("delegation.status.blocked")
-  return status
-}
-
-function planStepLabel(
-  id: string,
-  fallback: string,
-  t: ReturnType<typeof useTranslations<"Studio.agent">>
-) {
-  if (id === "understand-request") return t("planSteps.understand")
-  if (id === "generate-image") return t("planSteps.generate")
-  if (id === "place-result") return t("planSteps.place")
-  return fallback
-}
-
-function statusLabel(
-  status: AgentRunSnapshot["status"],
-  t: ReturnType<typeof useTranslations<"Studio.agent">>
-) {
-  if (status === "completed") return t("completed")
-  if (status === "failed") return t("failed")
-  if (status === "cancelled") return t("cancelled")
-  if (status === "waiting-approval" || status === "waiting-input") {
-    return t("waiting")
-  }
-  return t("running")
 }

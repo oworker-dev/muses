@@ -27,6 +27,13 @@ nodes, candidate ids, and prior selections are deliberately excluded. The
 definition schema currently has its own version, `0.3.0-draft`, independent of
 the editable workspace schema.
 
+Each published End output freezes a stable `id`, user-facing `name`, value
+type, required flag, accepted types, and collection cardinality. Runtime result
+objects are keyed only by `id`; renaming the display label does not silently
+rename API fields. The Catalog output JSON Schema exposes `name` as the
+property `title`, so Agent, API, and admin consumers do not need the editable
+canvas document to render the contract.
+
 ## Runtime Port
 
 `WorkflowRuntimePort` exposes `startRun`, `getRun`, `cancelRun`, `resumeRun`,
@@ -127,6 +134,68 @@ MusesAgent reaches this same boundary through `workflow.list`,
 `workflow.inspect`, and `workflow.invoke`. These tools are registered in the
 normal Tool Registry and require `workflow.read` or `workflow.invoke`; they do
 not grant direct database or compiler access.
+
+## Agent run node
+
+`agent-run` is the first cross-project composition node. Its published
+definition contains only:
+
+- a published `profileId` and `profileVersion` (`general-purpose@0.1.0` or
+  `muses-platform@0.1.0` in the current catalog);
+- frozen input/output schemas, required permissions, budget, and output mode;
+- one required `message: text` input; and
+- one `result: text` output. Structured Agent results are serialized as JSON
+  text until a first-class JSON value type is proven by a user scenario.
+
+The Workflow SDK adapter calls the standalone `/api/agent/runs` API through the
+Muses Host JWT adapter. The Workflow run remains the durable owner of polling,
+while each HTTP side effect is an isolated zero-retry Step. The idempotency key
+is deterministic from the Workflow run and node identity, so replay cannot
+submit a second Agent turn. Eve session ids, continuation tokens, model
+provider details, and Agent database records never enter `WorkflowDefinition`
+or the UI DSL. A missing Host configuration, rejected submission, terminal
+failure, cancellation, or the fifteen-minute node deadline becomes a
+structured Workflow node failure.
+
+The node editor dispatches `workflow.agent-run.config.set`; the domain reducer,
+compiler, and server profile catalog all reject unknown profile references.
+The Host JWT carries Workspace and Project scope. When the selected profile is
+`muses-platform`, the independent Agent can discover the HMAC-authenticated
+Muses Host Capability bridge and use canvas/workflow tools. A
+`general-purpose` session has no Muses dependency and the dynamic Host tools are
+absent when the bridge is not configured.
+
+When a Workflow cancellation is accepted, the Muses cancellation endpoint first
+uses the immutable submitted-by principal and the recorded `node.agent.started`
+events to issue cooperative cancellation requests for active AgentRuns, then
+cancels the Workflow SDK Run. Agent cancellation is best-effort and idempotent;
+the Agent service remains authoritative for the eventual `cancelled` state and
+hosts can inspect that state through the Agent Run contract.
+
+On success the node event also carries the Agent service's stable `agentRunId`,
+event count, input/output/cache token counts, step count, and provider cost under
+the Agent usage projection. The user-safe `observability.nodes[].usage` keeps
+the same fields (`agentRunId`, `agentEventCount`, `inputTokens`,
+`outputTokens`, `cacheReadTokens`, `cacheWriteTokens`, and `costUsd`) so a host
+can correlate a Workflow node with the standalone Agent event stream without
+reading Eve or Agent tables. Muses credit reservation and settlement remain
+separate facts and are not silently inferred from provider USD cost.
+
+This bridge does not make Agent and Workflow one runtime. The standalone Agent
+owns session context, tools, approvals, sandbox, and Agent events; Muses owns
+Workflow definitions, publication, billing, and the Host identity that grants
+the node access.
+
+The Muses World accepts persisted Workflow spec `3`. The standalone Eve World
+uses a different runtime generation and must use a physically separate database.
+Local and Docker defaults use `oworker_saas` on port `5432` for product state
+and `muses_workflow_world` on port `5433` for Workflow World state. The
+`muses_` queue prefix remains a defense-in-depth boundary, not a substitute for
+database isolation.
+`pnpm run doctor:workflow-world` performs a read-only aggregate inspection for
+incompatible specs, unexpected Graphile task owners, and exhausted jobs. It is
+diagnostic only and never deletes Workflow or queue records; recovery follows
+`ops/workflow-world-recovery.md`.
 
 The default product definition is:
 

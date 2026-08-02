@@ -20,6 +20,7 @@ import {
   fallbackWorkflowRunObservability,
   readWorkflowRunObservability,
 } from "@/lib/workflow-run-observability"
+import { createMusesAgentHostClient } from "@/lib/muses-agent-host"
 import {
   attachWorkflowSdkRun,
   authorizeWorkflowRun,
@@ -51,6 +52,7 @@ import {
   type WorkflowInterpreterHarnessOptions,
   type WorkflowRuntimeEvent,
 } from "@/workflows/workflow-definition-interpreter"
+import { getActiveAgentRunIds } from "@/workflows/workflow-agent-run-state"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -448,6 +450,11 @@ export async function DELETE(request: Request) {
     }
 
     try {
+      await cancelActiveAgentRuns({
+        actorUserId: ownedRun.submittedByUserId,
+        agentRunIds: getActiveAgentRunIds(events),
+        workspaceId: cancellation.workspaceId,
+      })
       await run.cancel()
     } catch {
       await client.query("rollback")
@@ -496,6 +503,28 @@ export async function DELETE(request: Request) {
   } finally {
     client.release()
   }
+}
+
+async function cancelActiveAgentRuns(input: {
+  actorUserId: string
+  agentRunIds: readonly string[]
+  workspaceId: string
+}) {
+  if (input.agentRunIds.length === 0) return
+  let client: ReturnType<typeof createMusesAgentHostClient>
+  try {
+    client = createMusesAgentHostClient({
+      userId: input.actorUserId,
+      workspaceId: input.workspaceId,
+    })
+  } catch {
+    return
+  }
+  await Promise.all(
+    input.agentRunIds.map(async (agentRunId) => {
+      await client.cancel(agentRunId).catch(() => undefined)
+    })
+  )
 }
 
 type WorkflowRetryRequest = {

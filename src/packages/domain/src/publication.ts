@@ -5,8 +5,10 @@ import type {
   WorkflowNodeDraft,
 } from "./model";
 import {
+  createEndInputPorts,
   createStartOutputPorts,
   validateWorkflowInputVariables,
+  validateWorkflowOutputVariables,
 } from "./nodes";
 
 export type WorkflowPublicationIssueCode =
@@ -14,6 +16,7 @@ export type WorkflowPublicationIssueCode =
   | "end-count-invalid"
   | "start-variables-invalid"
   | "start-ports-out-of-sync"
+  | "end-outputs-invalid"
   | "dangling-edge"
   | "port-missing"
   | "type-mismatch"
@@ -81,6 +84,25 @@ export function validateWorkflowForPublication(
         code: "start-ports-out-of-sync",
         message: "Start output ports must be derived from its input variables.",
         nodeId: start.id,
+      });
+    }
+  }
+
+  for (const end of ends) {
+    const outputs = end.inputPorts.map((port) => ({
+      id: port.id,
+      name: port.label,
+      valueType: port.valueType,
+      required: Boolean(port.required),
+    }));
+    const outputIssue = validateWorkflowOutputVariables(outputs);
+    const expectedPorts = createEndInputPorts(outputs);
+    if (outputIssue || !portsMatch(expectedPorts, end.inputPorts)) {
+      issues.push({
+        code: "end-outputs-invalid",
+        message:
+          outputIssue || "End input ports must be valid named workflow outputs.",
+        nodeId: end.id,
       });
     }
   }
@@ -218,7 +240,11 @@ function portsMatch(expected: PortSpec[], actual: PortSpec[]) {
       candidate?.id === port.id &&
       candidate.label === port.label &&
       candidate.direction === port.direction &&
-      candidate.valueType === port.valueType
+      candidate.valueType === port.valueType &&
+      Boolean(candidate.required) === Boolean(port.required) &&
+      Boolean(candidate.allowsMultiple) === Boolean(port.allowsMultiple) &&
+      JSON.stringify(candidate.accepts || []) ===
+        JSON.stringify(port.accepts || [])
     );
   });
 }

@@ -8,9 +8,12 @@ import type {
   WorkflowEdgeDraft,
   WorkflowNodeDraft,
 } from "./model";
+import { isWorkflowAgentProfileRef } from "./agent-profile";
 import {
+  createEndInputPorts,
   createStartOutputPorts,
   validateWorkflowInputVariables,
+  validateWorkflowOutputVariables,
 } from "./nodes";
 import { wouldCreateExecutableCycle } from "./variables";
 
@@ -321,6 +324,44 @@ function applyWorkflowCommand(
       });
       break;
     }
+    case "workflow.end.outputs.set": {
+      const node = nodes.find((candidate) => candidate.id === payload.nodeId);
+      if (!node || node.data.kind !== "end") {
+        return reject(
+          workspace,
+          "node-not-found",
+          "The end node was not found.",
+        );
+      }
+      const issue = validateWorkflowOutputVariables(payload.outputs);
+      if (issue) return reject(workspace, "variables-invalid", issue);
+      const inputPorts = createEndInputPorts(payload.outputs);
+      const portsById = new Map(inputPorts.map((port) => [port.id, port]));
+      nodes = nodes.map((candidate) =>
+        candidate.id === payload.nodeId
+          ? { ...candidate, inputPorts }
+          : candidate,
+      );
+      edges = edges.filter((edge) => {
+        if (edge.targetNodeId !== payload.nodeId) return true;
+        const targetPort = portsById.get(edge.targetPortId);
+        if (!targetPort) return false;
+        if (edge.kind !== "dataflow") return true;
+        const source = nodes.find(
+          (candidate) => candidate.id === edge.sourceNodeId,
+        );
+        const sourcePort = source?.outputPorts.find(
+          (port) => port.id === edge.sourcePortId,
+        );
+        return Boolean(
+          sourcePort &&
+            (targetPort.accepts || [targetPort.valueType]).includes(
+              sourcePort.valueType,
+            ),
+        );
+      });
+      break;
+    }
     case "workflow.image-generator.config.set": {
       const node = nodes.find((candidate) => candidate.id === payload.nodeId);
       if (!node || node.data.kind !== "image-generator") {
@@ -388,6 +429,34 @@ function applyWorkflowCommand(
         }
         return [edge];
       });
+      break;
+    }
+    case "workflow.agent-run.config.set": {
+      const node = nodes.find((candidate) => candidate.id === payload.nodeId);
+      if (!node || node.data.kind !== "agent-run") {
+        return reject(
+          workspace,
+          "node-not-found",
+          "The Agent node was not found.",
+        );
+      }
+      if (
+        !isWorkflowAgentProfileRef({
+          profileId: payload.config.profileId,
+          profileVersion: payload.config.profileVersion,
+        })
+      ) {
+        return reject(
+          workspace,
+          "node-invalid",
+          "The selected Agent profile is not registered.",
+        );
+      }
+      nodes = nodes.map((candidate) =>
+        candidate.id === payload.nodeId && candidate.data.kind === "agent-run"
+          ? { ...candidate, data: { ...candidate.data, ...payload.config } }
+          : candidate,
+      );
       break;
     }
     case "workflow.capability.completed": {

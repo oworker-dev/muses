@@ -9,6 +9,7 @@ import {
   type WorkflowPublicationIssue,
   type WorkflowPublicationIssueCode,
 } from "./publication";
+import { isWorkflowAgentProfileRef } from "./agent-profile";
 import {
   WORKFLOW_DEFINITION_SCHEMA_VERSION,
   type WorkflowDefinition,
@@ -16,6 +17,7 @@ import {
   type WorkflowDefinitionInput,
   type WorkflowDefinitionInputPort,
   type WorkflowDefinitionNode,
+  type WorkflowDefinitionOutput,
   type WorkflowDefinitionOutputPort,
 } from "./workflow-definition";
 
@@ -143,7 +145,7 @@ export function compileWorkflowDefinition(
       entryNodeId: start.id,
       exitNodeId: end.id,
       inputs: cloneVariables(start.data.variables),
-      outputs: end.inputPorts.map(cloneInputPort),
+      outputs: end.inputPorts.map(cloneWorkflowOutput),
       nodes: orderedNodes,
       dataBindings,
       controlDependencies,
@@ -242,6 +244,32 @@ function compileNode(node: WorkflowNodeDraft): WorkflowDefinitionNode | null {
             config: { documentId: node.data.documentId },
           }
         : null;
+    case "agent-run":
+      return node.data.kind === "agent-run" &&
+        isWorkflowAgentProfileRef({
+          profileId: node.data.profileId,
+          profileVersion: node.data.profileVersion,
+        })
+        ? {
+            ...base,
+            kind: "agent-run",
+            config: {
+              profileId: node.data.profileId,
+              profileVersion: node.data.profileVersion,
+              outputMode: node.data.outputMode,
+              ...(node.data.inputSchema
+                ? { inputSchema: cloneJsonObject(node.data.inputSchema) }
+                : {}),
+              ...(node.data.outputSchema
+                ? { outputSchema: cloneJsonObject(node.data.outputSchema) }
+                : {}),
+              ...(node.data.requiredPermissions
+                ? { requiredPermissions: [...node.data.requiredPermissions] }
+                : {}),
+              ...(node.data.budget ? { budget: { ...node.data.budget } } : {}),
+            },
+          }
+        : null;
     case "end":
       return node.data.kind === "end"
         ? { ...base, kind: "end", config: {} }
@@ -251,6 +279,10 @@ function compileNode(node: WorkflowNodeDraft): WorkflowDefinitionNode | null {
     default:
       return null;
   }
+}
+
+function cloneJsonObject(value: Readonly<Record<string, unknown>>) {
+  return JSON.parse(JSON.stringify(value)) as Readonly<Record<string, unknown>>
 }
 
 function isFixedImageInput(node: WorkflowNodeDraft, portId: string) {
@@ -288,4 +320,8 @@ function cloneInputPort(port: PortSpec): WorkflowDefinitionInputPort {
 
 function cloneOutputPort(port: PortSpec): WorkflowDefinitionOutputPort {
   return { id: port.id, valueType: port.valueType };
+}
+
+function cloneWorkflowOutput(port: PortSpec): WorkflowDefinitionOutput {
+  return { ...cloneInputPort(port), name: port.label };
 }

@@ -14,6 +14,7 @@ import {
   fingerprintWorkflowSubmission,
 } from "@/lib/credit-ledger"
 import { ModelCatalogError } from "@/lib/model-catalog"
+import { isMusesAgentConfigured } from "@/lib/muses-agent-host"
 import {
   WorkflowCatalogStoreError,
   inspectWorkflowInvocationTarget,
@@ -57,6 +58,14 @@ export async function startPublishedWorkflowInvocation(input: {
     workspaceId: input.workspaceId,
     target: input.target,
   })
+  if (
+    inspection.definition.nodes.some((node) => node.kind === "agent-run") &&
+    !isMusesAgentConfigured()
+  ) {
+    // Reject before reserving credits. A missing standalone Agent host is a
+    // deployment/configuration issue, not a failed workflow execution.
+    return { state: "runtime-unavailable" }
+  }
   const deploymentId = inspection.deployment?.deploymentId
   const harnessOptions = input.harnessOptions || {}
   const requestFingerprint = fingerprintWorkflowSubmission({
@@ -103,6 +112,7 @@ export async function startPublishedWorkflowInvocation(input: {
       input.inputs,
       {
         ...harnessOptions,
+        agentActorUserId: input.submittedByUserId,
         projectId: inspection.projectId,
         submissionId: claim.submissionId,
         creditContext: claim.creditContext,

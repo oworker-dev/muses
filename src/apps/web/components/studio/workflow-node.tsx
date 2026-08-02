@@ -11,6 +11,7 @@ import {
   CircleXIcon,
   FlagIcon,
   ImageIcon,
+  BotIcon,
   Layers3Icon,
   LoaderCircleIcon,
   PlusIcon,
@@ -99,6 +100,11 @@ const kindMeta = {
     icon: Layers3Icon,
     copyKey: "designDocument",
     tone: "bg-rose-500 text-white",
+  },
+  "agent-run": {
+    icon: BotIcon,
+    copyKey: "agentRun",
+    tone: "bg-indigo-500 text-white",
   },
   end: {
     icon: FlagIcon,
@@ -506,6 +512,13 @@ function NodeBody({
           </div>
         </div>
       )
+    case "agent-run":
+      return (
+        <div className="grid grid-cols-2 gap-2 border-b border-border/70 p-3 text-[13px]">
+          <NodeMetric label={t("nodes.agentRun.profile")} value={`${node.data.profileId}@${node.data.profileVersion}`} />
+          <NodeMetric label={t("nodes.agentRun.output")} value={t(`types.${node.outputPorts[0]?.valueType || "text"}`)} />
+        </div>
+      )
     case "image-generator":
       return (
         <div className="grid grid-cols-2 gap-2 border-b border-border/70 p-3 text-[13px]">
@@ -579,10 +592,28 @@ function NodeBody({
     case "end":
       return (
         <div className="border-b border-border/70 px-3 py-3">
-          <NodeMetric
-            label={t("nodes.endResult")}
-            value={t(`types.${node.inputPorts[0]?.valueType || "image"}`)}
-          />
+          <p className="mb-1.5 text-[12px] font-medium text-muted-foreground">
+            {t("nodes.endResults")}
+          </p>
+          <div className="space-y-1.5">
+            {node.inputPorts.length > 0 ? (
+              node.inputPorts.map((port) => (
+                <div
+                  key={port.id}
+                  className="flex items-center justify-between gap-3 rounded-lg bg-muted/55 px-2.5 py-2 text-[13px]"
+                >
+                  <span className="truncate font-medium">
+                    {portDisplayLabel(port, t)}
+                  </span>
+                  <TypeBadge type={port.valueType} />
+                </div>
+              ))
+            ) : (
+              <p className="rounded-lg border border-dashed border-border px-2.5 py-2 text-[12px] text-muted-foreground">
+                {t("nodes.noEndResults")}
+              </p>
+            )}
+          </div>
         </div>
       )
     case "image-result":

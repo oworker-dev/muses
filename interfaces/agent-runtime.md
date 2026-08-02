@@ -1,106 +1,151 @@
 # Agent Runtime Interface
 
-This document describes the implemented Muses Agent Runtime boundary. It is a
-product contract, not a promise that every surface is already a public API.
+This document describes the current Muses integration with the independently
+deployable `muses-agent` product. It is a product contract, not a promise that
+every surface is already a stable public API.
 
 ## Authority layers
 
 | Layer | Current authority |
 | --- | --- |
-| `@muses/agent-core` | Framework-neutral Session, AgentRun, message, plan, approval, budget and event state machine |
-| Muses Scheduler and PostgreSQL | Delegation DAG, root/direct-parent/child lineage, task state, result validation, logical budget, continuation receipt and cancellation receipt |
-| Operation Gateway | Server-authoritative creative canvas mutations and Asset placement |
-| Workflow SDK | Durable driver execution, Step retry, sleep/wake and Workflow World execution evidence |
-| AI SDK/provider adapters | Model and tool protocol behind Muses receipts, limits and approval policy |
+| Standalone Agent service | AgentRun, Eve session, messages/events, context compaction, tools, Skills/MCP grants, cancellation, sandbox and usage |
+| Agent product PostgreSQL schema | AgentRun idempotency, tenant/principal ownership, thread collections and Agent product indexes |
+| Eve Workflow World | Durable Agent session state, queues, hooks, streams and execution evidence |
+| Muses Host | Better Auth identity, Workspace/Project authorization, Host capability policy, credits, model/provider control plane and audit |
+| Operation Gateway | Server-authoritative canvas, workflow-draft and Asset mutations |
+| Muses Workflow World | Published WorkflowDefinition execution, Step retry, hooks and Workflow run evidence |
 
-Workflow SDK, Eve and other harnesses are replaceable adapters. They do not
-own Workspace authorization, product state, budget, billing or audit facts.
+The Agent and Muses Workflow runtimes are independent products and use separate
+Workflow Worlds. Neither owns the other's state machine. Both can be replaced
+behind their versioned contracts without moving canvas, Asset, identity or
+billing authority out of Muses.
 
-## Framework-neutral runtime
+## Headless AgentRun service
 
-`AgentRuntimePort` currently supports `start`, `stream`, `steer`, `followUp`,
-`approve`, `cancel`, `resume`, `inspect`, `compact`, `updatePlan` and `close`.
-The same Headless Runtime is used by production adapters and deterministic
-evals; it has no React, Next.js, canvas or Workflow SDK dependency.
+Muses and durable Workflow steps call the standalone service through its
+host-neutral AgentRun API:
 
-Messages have stable ids. Replaying the same id, role, content, timestamp and
-metadata is idempotent whether the message is still pending or already in the
-bounded context. Reusing an id with a different payload fails with
-`message-id-conflict`.
+- `POST /api/agent/runs` starts an idempotent AgentRun;
+- `GET /api/agent/runs/:runId` returns the authorized run snapshot;
+- `GET /api/agent/runs/:runId/events?after=...` returns cursor-based events and
+  accumulated Input, Output, Cache Read, Cache Write and cost usage;
+- `DELETE /api/agent/runs/:runId` requests idempotent cancellation.
 
-## Authenticated Studio projection
+Every production call carries a short-lived Host JWT. The Agent service verifies
+issuer, audience, signature, expiry, tenant and principal, persists immutable
+session ownership, and hides cross-tenant or cross-principal runs as not found.
+The current caller contract requires `runtime: "standalone"`; there is no
+implicit `muses-local` fallback.
 
-The current HTTP projection is same-origin Studio infrastructure rather than a
-published third-party API:
+The service owns AgentRun request fingerprints and idempotency. A response lost
+after Eve accepted a session becomes `submission-ambiguous` and is not
+automatically resubmitted. Cancellation uses Eve's cooperative boundary and
+resets only an exclusive session that cannot settle within the grace period.
 
-- `POST /api/studio/agent-runs` starts one root AgentRun from a user prompt and
-  stable request idempotency key.
-- `GET /api/studio/agent-runs?workspaceId=...&runId=...&afterSequence=...`
-  returns the authorized public Run, cursor-based events, driver state and the
-  root delegation-tree projection.
-- `PATCH /api/studio/agent-runs` accepts `steer`, `follow-up`, `approve`,
-  `resume`, `cancel` and `cancel-delegation` actions.
+## Web and embedded projection
 
-Every request requires a verified Better Auth session and Workspace
-membership. Mutations reject the `viewer` role. AgentRun lookups and
-DelegationRun cancellation recheck exact Workspace, Project, Session and root
-Run scope; a cross-scope id is returned as not found.
+The standalone `/` workspace and Muses `/embed` iframe consume the same Agent
+workspace components and Eve session protocol. Muses mints a short-lived embed
+token after checking the signed-in Workspace member; the token is delivered by
+the versioned `postMessage` bootstrap protocol rather than in the iframe URL.
 
-## Delegation continuation
+One Web thread maps to one durable Eve session. `sessionId` addresses its event
+stream and `continuationToken` submits the next turn after `session.waiting`.
+Refresh recovery replays durable events; a failed or cancelled turn returns the
+session to an actionable state instead of leaving a permanent running marker.
 
-When a DelegationRun reaches `completed`, `completed-with-failures` or
-`failed`, the server projects only its identity, terminal status, task/Profile
-facts, authorized Artifact refs and failure codes. It appends that projection
-to the direct parent as one trusted `system` message and starts at most one
-additional bounded parent turn.
+## Context, sandbox and extensions
 
-One PostgreSQL continuation receipt per DelegationRun freezes the projection
-fingerprint and message identity. Claim leases, a separate message-committed
-milestone and terminal replay allow recovery without duplicate context,
-provider calls or charges. Child prompts, objectives, raw results, hidden
-history, reasoning and credentials are excluded from this projection.
+Context selection, durable history and compaction belong exclusively to the
+standalone Agent. Eve compaction is enabled at an 82% threshold, with explicit
+session input/output limits. Muses neither copies nor independently summarizes
+Agent history. A deterministic Eve multi-turn Eval now proves two real
+`compaction.requested` / `compaction.completed` cycles in one durable session:
+the second checkpoint updates the first, exact task facts and active todo state
+remain available, sandbox files persist, and Eve resets read-before-write
+evidence so a post-compaction write cannot rely on summarized-away reads. This
+evidence validates the Harness boundary without restoring Muses' deleted local
+context summarizer; quality under a live long-context Provider and target-load
+deployment remains part of the broader production SLO Gate.
 
-A user-cancelled DelegationRun creates a `skipped` continuation receipt. It
-does not call the parent model or create another parent model-call budget.
+Eve supplies one persistent `/workspace` sandbox per durable session. An
+AgentRun receives an exclusive session, so AgentRun and sandbox isolation align;
+subagents receive independent sandboxes. The authored policy applies bounded
+CPU/memory where supported and deny-all network egress. Local Docker persistence
+and cross-turn workspace recovery are verified. Production backend selection,
+adversarial cross-tenant isolation, retention/reclamation SLOs and credential
+brokering remain release gates.
 
-An accepted DelegationRun owns a Scheduler-frozen authority snapshot. A parent
-AgentRun becoming `completed` or `failed` does not abandon already accepted
-Child work; the result may still be projected back through the bounded
-continuation path. Explicit cancellation is the revocation boundary. This does
-not relax Workspace, Project, Session, root/direct-parent lineage, grant or
-budget validation.
+Versioned Agent Profiles resolve exact Skill, MCP and Host capability grants.
+A run may narrow but never expand its Profile grant; revoked or unknown
+extensions fail before Eve starts a session. The standalone Agent now owns a
+deployment catalog plus tenant-scoped enable/revoke state. A Host token carrying
+`agent.extensions.manage` can use the versioned extension API; mutations append
+an audit event. Credentials remain in the Host/Vercel vault and the Agent stores
+only opaque `vault://` or `vercel-connect://` references. Audit state records
+only whether credentials exist, never a reference or secret.
 
-## Independent cancellation
+The published `software-task@1.0.0` Skill has passed Eve-native Docker evals.
+The lifecycle schema supports MCP, but no MCP is published until a real endpoint,
+tool allowlist, principal-scoped auth, approval rule and adversarial eval are
+compiled. Revocation blocks the next AgentRun and is rechecked on session start
+and continuation; it cannot undo a side effect already committed.
 
-`cancel-delegation` addresses one active DelegationRun even when its parent
-AgentRun is already complete. It requires:
+## Host capabilities
 
-- `workspaceId`, root-scope `runId` and exact `delegationRunId`;
-- a stable `idempotencyKey`; and
-- a non-empty cancellation `reason`.
+The standalone Agent discovers and invokes Muses functionality only through the
+versioned Host Capability protocol. Muses currently supplies canvas inspection
+and placement, workflow list/inspect/invoke plus bounded server-side run waiting, workflow draft authoring,
+validation/publication and optional media capabilities. Requests are HMAC-signed
+with timestamp, method, path and body, and carry the exact tenant, principal,
+Project and Canvas scope. Muses revalidates membership, role and authoritative
+scope before entering the Operation Gateway.
 
-The Scheduler first persists `cancelling`, fences new work, cancels/reconciles
-active Child AgentRuns and releases or settles known budget facts. It then
-persists terminal `cancelled`. Only afterward does the adapter cancel an active
-Workflow SDK driver and persist driver state as `cancelled`; a missing SDK Run
-is persisted as `failed`. Audit identity is deterministic for idempotent API
-replay.
+Without Host configuration these tools do not exist and the Agent remains a
+general-purpose product. Image generation is therefore one optional host tool,
+not an Agent execution stage.
 
-`queued`, `running` and `cancelling` remain active projection states so Studio
-continues polling through cancellation. Replaying the same request returns the
-existing result; changing the reason under the same key is a conflict. A
-terminal DelegationRun is never rewritten.
+## Workflow composition
 
-## Current exclusions
+Muses `agent-run` nodes store a published Profile ref, schemas, narrowed policy,
+budget and output mode. A durable step starts the standalone AgentRun with
+`workflow run id + node id` idempotency, polls its public snapshot, records usage
+and returns its result. Cancellation propagates to active AgentRun ids.
 
-- No public service-account Agent API or externally supported SDK is published
-  yet.
-- Logical Run isolation and a compute-sandbox port exist, but provider-backed
-  microVM/container/browser isolation is not yet claimed.
-- Skill and MCP snapshots are frozen and least-authority checked, but arbitrary
-  production Skill/MCP installation and execution are not yet claimed.
-- A11 does not establish PPT readiness or whole-platform production readiness.
+The reverse direction uses Host capabilities: a Muses platform Agent can inspect,
+author, validate, publish and invoke WorkflowDefinitions. `workflow.run.wait`
+parks the Host request for a bounded interval so durable work does not consume a
+new LLM call for every status check. This proves bidirectional
+composition without importing Eve into the Muses process or importing Workflow
+SDK into the Agent's public contracts.
 
-Canonical design is in `docs/internal/Agent优先创作与工作流模型.md` and
-`docs/internal/Agent委托与调度协议.md`. A11 acceptance is in
-`delivery/agent-orchestration-a11-continuation.md`.
+## Legacy compatibility
+
+Migrations `0007` through `0016`, their evidence, and the historical
+`muses_agent_*` rows remain immutable for audit and upgrade compatibility. They
+are not exported by the current Drizzle runtime schema and no production source
+reads or writes them. Migration `0014` still reconstructs the old schema in an
+isolated test to verify its historical Asset project-scope backfill.
+
+Muses no longer exposes `/api/studio/agent-runs`, local model-loop, delegation,
+context, trace or driver implementations. New Agent behavior must be implemented
+in `muses-agent` and consumed through the public Agent/Host contracts.
+
+## Current release gates
+
+- Real-provider Web and headless recovery evidence beyond the deterministic
+  provider fixture.
+- Real credentialed MCP allowlist, OAuth/revocation and execution evidence; the
+  shared Skill/MCP catalog, tenant enable/revoke and audit control plane exists.
+- OpenTelemetry traces joining Agent, Eve World, Host capabilities, Muses
+  Workflow, model usage and credit reconciliation. The two Web services now
+  register one OTLP-compatible export path and propagate W3C trace context to
+  configured origins; deployed-collector and billing-reconciliation evidence
+  remain open.
+- Production sandbox backend isolation, cleanup, egress and SLO evidence.
+- Administrator model credential routing and non-zero price reconciliation E2E.
+- Versioned package extraction, conformance suite, self-hosting, upgrade and
+  rollback documentation.
+
+Canonical architecture is in
+`docs/internal/独立WebAgent项目与Muses宿主集成.md`.

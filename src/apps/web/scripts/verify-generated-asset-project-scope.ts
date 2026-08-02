@@ -81,6 +81,8 @@ async function applyMigrationsBeforeProjectScope() {
 }
 
 async function seedLegacyAssets() {
+  // This fixture reconstructs the pre-0014 schema to verify the immutable
+  // historical backfill. Muses no longer executes Agent runs from these tables.
   await fixture.query(
     `insert into muses_workspace (
        id, kind, name, personal_owner_user_id, created_by_user_id

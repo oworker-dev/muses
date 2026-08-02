@@ -121,36 +121,21 @@ export async function claimWorkflowSubmission(input: {
     }
 
     if (input.caller?.kind === "agent") {
-      const caller = (
-        await client.query<{ status: string }>(
+      const member = (
+        await client.query<{ allowed: boolean }>(
           `
-            select agent.status
-            from muses_agent_run agent
-            where agent.id = $1
-              and agent.workspace_id = $2
-              and exists (
-                select 1
-                from muses_workspace_member member
-                where member.workspace_id = agent.workspace_id
-                  and member.user_id = $3
-                  and member.status = 'active'
-                  and member.role <> 'viewer'
-              )
-              and not exists (
-                select 1
-                from muses_agent_cancel_receipt cancellation
-                where cancellation.workspace_id = agent.workspace_id
-                  and cancellation.agent_run_id = agent.id
-              )
+            select true as allowed
+            from muses_workspace_member member
+            where member.workspace_id = $1
+              and member.user_id = $2
+              and member.status = 'active'
+              and member.role <> 'viewer'
             for share
           `,
-          [input.caller.agentRunId, input.workspaceId, input.userId]
+          [input.workspaceId, input.userId]
         )
       ).rows[0]
-      if (
-        !caller ||
-        (caller.status !== "queued" && caller.status !== "running")
-      ) {
+      if (!member) {
         await client.query("rollback")
         return { state: "caller-inactive" }
       }
@@ -605,6 +590,7 @@ export async function authorizeWorkflowRun(
 ) {
   const result = await getPgPool().query<{
     submissionId: string
+    submittedByUserId: string
     reservationId: string | null
     reservationStatus: string | null
     estimatedMicros: string | null
@@ -614,6 +600,7 @@ export async function authorizeWorkflowRun(
     `
       select
         run.id as "submissionId",
+        run.submitted_by_user_id as "submittedByUserId",
         run.reservation_id as "reservationId",
         reservation.status as "reservationStatus",
         reservation.estimated_micros as "estimatedMicros",

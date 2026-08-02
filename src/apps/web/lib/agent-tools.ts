@@ -9,22 +9,12 @@ import {
   compileWorkflowDefinition,
   createInitialWorkspace,
   type CreativeCanvasItem,
+  type MusesCommandPayload,
   type OperationCommandEnvelope,
   type WorkflowInvocationTarget,
+  type WorkflowInvocationCaller,
   type WorkflowRuntimeImageAsset,
 } from "@muses/domain"
-import type {
-  AgentToolCall,
-  AgentToolCallResult,
-  AgentToolDefinition,
-  AgentToolExecutionContext,
-  AgentToolRegistryPort,
-} from "@muses/agent-core"
-
-import {
-  agentDelegateDefinitionForRun,
-  agentDelegationToolInputSchema,
-} from "@/lib/agent-delegation-entry"
 import {
   attachWorkflowSdkRun,
   claimWorkflowSubmission,
@@ -40,6 +30,7 @@ import {
 import {
   inspectWorkflowInvocationTarget,
   listWorkflowCatalog,
+  publishWorkflowDraft,
 } from "@/lib/workflow-catalog-store"
 import { startPublishedWorkflowInvocation } from "@/lib/workflow-invocation"
 import {
@@ -47,7 +38,44 @@ import {
   type WorkflowDefinitionInterpreterResult,
 } from "@/workflows/workflow-definition-interpreter"
 
-const canvasInspectDefinition: AgentToolDefinition = {
+export type AgentToolCall = {
+  readonly id: string
+  readonly name: string
+  readonly input: unknown
+}
+
+export type AgentToolCallResult = {
+  readonly toolCallId: string
+  readonly ok: boolean
+  readonly output?: unknown
+  readonly error?: {
+    readonly code: string
+    readonly message: string
+    readonly retryable: boolean
+  }
+}
+
+export type AgentToolDefinition = {
+  readonly name: string
+  readonly description: string
+  readonly inputSchema: Readonly<Record<string, unknown>>
+  readonly requiredPermissions: readonly string[]
+  readonly sideEffect: "none" | "project-write" | "external"
+}
+
+export type AgentToolExecutionContext = {
+  readonly workspaceId: string
+  readonly projectId: string
+  readonly canvasId: string
+  readonly sessionId: string
+  readonly runId: string
+  readonly permissions: readonly string[]
+  readonly metadata: Readonly<Record<string, unknown>>
+  readonly idempotencyKey: string
+  readonly abortSignal?: AbortSignal
+}
+
+export const canvasInspectDefinition: AgentToolDefinition = {
   name: "canvas.inspect",
   description:
     "Inspect the authoritative Muses creative canvas, its placed assets, and available professional workflows.",
@@ -60,7 +88,7 @@ const canvasInspectDefinition: AgentToolDefinition = {
   sideEffect: "none",
 }
 
-const canvasItemPutDefinition: AgentToolDefinition = {
+export const canvasItemPutDefinition: AgentToolDefinition = {
   name: "canvas.item.put",
   description:
     "Place or update an existing asset or artifact on the authoritative Muses creative canvas.",
@@ -91,7 +119,7 @@ const canvasItemPutDefinition: AgentToolDefinition = {
   sideEffect: "project-write",
 }
 
-const imageGenerateDefinition: AgentToolDefinition = {
+export const imageGenerateDefinition: AgentToolDefinition = {
   name: "image.generate",
   description:
     "Generate one real image through the configured Muses image workflow, bill it once, and place the resulting asset on the creative canvas.",
@@ -119,7 +147,7 @@ const imageGenerateDefinition: AgentToolDefinition = {
   sideEffect: "external",
 }
 
-const workflowListDefinition: AgentToolDefinition = {
+export const workflowListDefinition: AgentToolDefinition = {
   name: "workflow.list",
   description:
     "List the published workflow definitions and callable deployment aliases in the current Muses project.",
@@ -132,7 +160,7 @@ const workflowListDefinition: AgentToolDefinition = {
   sideEffect: "none",
 }
 
-const workflowInspectDefinition: AgentToolDefinition = {
+export const workflowInspectDefinition: AgentToolDefinition = {
   name: "workflow.inspect",
   description:
     "Inspect one exact published workflow version or active deployment, including its frozen nodes and input schema.",
@@ -141,7 +169,7 @@ const workflowInspectDefinition: AgentToolDefinition = {
   sideEffect: "none",
 }
 
-const workflowInvokeDefinition: AgentToolDefinition = {
+export const workflowInvokeDefinition: AgentToolDefinition = {
   name: "workflow.invoke",
   description:
     "Start one exact published Muses workflow version or active deployment through the shared authorization, billing, idempotency, and observability boundary.",
@@ -162,6 +190,114 @@ const workflowInvokeDefinition: AgentToolDefinition = {
     },
   },
   requiredPermissions: ["workflow.invoke"],
+  sideEffect: "external",
+}
+
+export const workflowRunInspectDefinition: AgentToolDefinition = {
+  name: "workflow.run.inspect",
+  description:
+    "Inspect one Workflow run started in the current Muses Workspace, including its durable runtime status and completed outputs.",
+  inputSchema: {
+    type: "object",
+    properties: { runId: { type: "string", minLength: 1, maxLength: 240 } },
+    required: ["runId"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.read"],
+  sideEffect: "none",
+}
+
+export const workflowRunWaitDefinition: AgentToolDefinition = {
+  name: "workflow.run.wait",
+  description:
+    "Wait server-side for one Workflow run in the current Muses Workspace to settle, without spending model calls on status polling. Returns the latest status when the bounded wait expires.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      runId: { type: "string", minLength: 1, maxLength: 240 },
+      timeoutMs: {
+        type: "integer",
+        minimum: 1_000,
+        maximum: 25_000,
+        default: 25_000,
+      },
+    },
+    required: ["runId"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.read"],
+  sideEffect: "none",
+}
+
+export const workflowDraftCreateDefinition: AgentToolDefinition = {
+  name: "workflow.draft.create",
+  description:
+    "Create an empty versioned WorkflowDefinition draft in the current Muses project. Use workflow.draft.command to add nodes and edges, then workflow.validate and workflow.publish.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      definitionId: { type: "string", minLength: 1, maxLength: 200 },
+      name: { type: "string", minLength: 1, maxLength: 200 },
+      description: { type: "string", maxLength: 2_000 },
+      x: { type: "number" },
+      y: { type: "number" },
+    },
+    required: ["definitionId", "name"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.write"],
+  sideEffect: "project-write",
+}
+
+export const workflowDraftCommandDefinition: AgentToolDefinition = {
+  name: "workflow.draft.command",
+  description:
+    "Apply one registered WorkflowDefinition command with an expected draft revision. Commands are server-validated and idempotent.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      definitionId: { type: "string", minLength: 1, maxLength: 200 },
+      expectedRevision: { type: "integer", minimum: 0 },
+      command: { type: "object" },
+    },
+    required: ["definitionId", "expectedRevision", "command"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.write"],
+  sideEffect: "project-write",
+}
+
+export const workflowValidateDefinition: AgentToolDefinition = {
+  name: "workflow.validate",
+  description:
+    "Compile and validate a WorkflowDefinition draft without publishing or running it.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      definitionId: { type: "string", minLength: 1, maxLength: 200 },
+    },
+    required: ["definitionId"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.read"],
+  sideEffect: "none",
+}
+
+export const workflowPublishDefinition: AgentToolDefinition = {
+  name: "workflow.publish",
+  description:
+    "Publish a validated WorkflowDefinition draft as an immutable version and deployment alias.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      definitionId: { type: "string", minLength: 1, maxLength: 200 },
+      expectedDraftRevision: { type: "integer", minimum: 0 },
+      deploymentAlias: { type: "string", minLength: 1, maxLength: 120 },
+    },
+    required: ["definitionId"],
+    additionalProperties: false,
+  },
+  requiredPermissions: ["workflow.publish"],
   sideEffect: "external",
 }
 
@@ -212,9 +348,61 @@ const runtimeScalarSchema = z.discriminatedUnion("valueType", [
 const workflowInvokeSchema = workflowTargetSchema.and(
   z.object({ inputs: z.record(z.string(), runtimeScalarSchema).default({}) })
 )
+const workflowRunInspectSchema = z.object({
+  runId: z.string().trim().min(1).max(240),
+})
+const workflowRunWaitSchema = workflowRunInspectSchema.extend({
+  timeoutMs: z.number().int().min(1_000).max(25_000).default(25_000),
+})
 
-export class MusesAgentToolRegistry implements AgentToolRegistryPort {
-  async list(run: Parameters<AgentToolRegistryPort["list"]>[0]) {
+const workflowDefinitionIdSchema = z.object({
+  definitionId: z.string().trim().min(1).max(200),
+})
+
+const workflowDraftCreateSchema = z.object({
+  definitionId: z.string().trim().min(1).max(200),
+  name: z.string().trim().min(1).max(200),
+  description: z.string().max(2_000).optional(),
+  x: z.number().finite().default(0),
+  y: z.number().finite().default(0),
+})
+
+const workflowCommandTypes = new Set([
+  "workflow.node.add",
+  "workflow.node.move",
+  "workflow.node.remove",
+  "workflow.edge.add",
+  "workflow.edge.remove",
+  "workflow.start.variables.set",
+  "workflow.end.outputs.set",
+  "workflow.image-generator.config.set",
+  "workflow.agent-run.config.set",
+  "workflow.capability.completed",
+  "workflow.result.select",
+  "design.background.set",
+  "design.text.update",
+  "design.element.move",
+])
+
+const workflowDraftCommandSchema = z.object({
+  definitionId: z.string().trim().min(1).max(200),
+  expectedRevision: z.number().int().min(0),
+  command: z
+    .object({ type: z.string().trim().min(1) })
+    .passthrough()
+    .refine((value) => workflowCommandTypes.has(value.type), {
+      message: "The WorkflowDefinition command type is not registered.",
+    }),
+})
+
+const workflowPublishSchema = z.object({
+  definitionId: z.string().trim().min(1).max(200),
+  expectedDraftRevision: z.number().int().min(0).optional(),
+  deploymentAlias: z.string().trim().min(1).max(120).optional(),
+})
+
+export class MusesAgentToolRegistry {
+  async list() {
     return [
       canvasInspectDefinition,
       canvasItemPutDefinition,
@@ -222,7 +410,12 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
       workflowListDefinition,
       workflowInspectDefinition,
       workflowInvokeDefinition,
-      agentDelegateDefinitionForRun(run),
+      workflowRunInspectDefinition,
+      workflowRunWaitDefinition,
+      workflowDraftCreateDefinition,
+      workflowDraftCommandDefinition,
+      workflowValidateDefinition,
+      workflowPublishDefinition,
     ]
   }
 
@@ -287,14 +480,38 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
             workflowInvokeSchema.parse(call.input)
           )
         )
-      case "agent.delegate": {
-        const request = agentDelegationToolInputSchema.parse(call.input)
-        const { submitProductionAgentDelegation } =
-          await import("@/lib/agent-delegation-entry-production")
+      case "workflow.run.inspect": {
+        const input = workflowRunInspectSchema.parse(call.input)
+        return toolSuccess(call, await inspectWorkflowRun(context, input.runId))
+      }
+      case "workflow.run.wait": {
+        const input = workflowRunWaitSchema.parse(call.input)
         return toolSuccess(
           call,
-          await submitProductionAgentDelegation({ context, request })
+          await waitForWorkflowRun(context, input.runId, input.timeoutMs)
         )
+      }
+      case "workflow.draft.create": {
+        const input = workflowDraftCreateSchema.parse(call.input)
+        return toolSuccess(call, await createWorkflowDraft(context, input))
+      }
+      case "workflow.draft.command": {
+        const input = workflowDraftCommandSchema.parse(call.input)
+        return toolSuccess(
+          call,
+          await applyWorkflowDraftCommand(context, input)
+        )
+      }
+      case "workflow.validate": {
+        const input = workflowDefinitionIdSchema.parse(call.input)
+        return toolSuccess(
+          call,
+          await validateWorkflowDraft(context, input.definitionId)
+        )
+      }
+      case "workflow.publish": {
+        const input = workflowPublishSchema.parse(call.input)
+        return toolSuccess(call, await publishWorkflow(context, input))
       }
       default:
         return {
@@ -310,6 +527,75 @@ export class MusesAgentToolRegistry implements AgentToolRegistryPort {
   }
 }
 
+async function inspectWorkflowRun(
+  context: AgentToolExecutionContext,
+  runId: string
+) {
+  const owned = await getPgPool().query<{
+    id: string
+    status: string
+    workflowDefinitionId: string | null
+    workflowDefinitionVersion: number | null
+    workflowDeploymentId: string | null
+  }>(
+    `
+      select id, status,
+        workflow_definition_id as "workflowDefinitionId",
+        workflow_definition_version as "workflowDefinitionVersion",
+        workflow_deployment_id as "workflowDeploymentId"
+      from muses_workflow_run
+      where workspace_id = $1 and sdk_run_id = $2
+      limit 1
+    `,
+    [context.workspaceId, runId]
+  )
+  const receipt = owned.rows[0]
+  if (!receipt)
+    throw new Error("The Workflow run was not found in this Workspace.")
+
+  const run = getRun<WorkflowDefinitionInterpreterResult>(runId)
+  if (!(await run.exists))
+    throw new Error("The durable Workflow run was not found.")
+  const status = await run.status
+  const result = status === "completed" ? await run.returnValue : undefined
+  return {
+    runId,
+    status,
+    submissionId: receipt.id,
+    definitionId: receipt.workflowDefinitionId,
+    definitionVersion: receipt.workflowDefinitionVersion,
+    deploymentId: receipt.workflowDeploymentId,
+    ...(result
+      ? {
+          completedNodeIds: result.completedNodeIds,
+          outputs: result.outputs,
+        }
+      : {}),
+  }
+}
+
+async function waitForWorkflowRun(
+  context: AgentToolExecutionContext,
+  runId: string,
+  timeoutMs: number
+) {
+  const deadline = Date.now() + timeoutMs
+  let snapshot = await inspectWorkflowRun(context, runId)
+  while (
+    !["completed", "failed", "cancelled"].includes(snapshot.status) &&
+    Date.now() < deadline
+  ) {
+    if (context.abortSignal?.aborted) {
+      throw new Error("The Workflow wait was cancelled by the caller.")
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.min(500, Math.max(1, deadline - Date.now())))
+    )
+    snapshot = await inspectWorkflowRun(context, runId)
+  }
+  return snapshot
+}
+
 async function invokePublishedWorkflow(
   context: AgentToolExecutionContext,
   input: z.infer<typeof workflowInvokeSchema>
@@ -317,7 +603,7 @@ async function invokePublishedWorkflow(
   const result = await startPublishedWorkflowInvocation({
     workspaceId: context.workspaceId,
     submittedByUserId: initiatedByUserId(context),
-    caller: { kind: "agent", agentRunId: context.runId },
+    caller: workflowAgentCaller(context),
     target: workflowTarget(context.workspaceId, input),
     inputs: input.inputs,
     idempotencyKey: `${context.idempotencyKey}:published-workflow`,
@@ -345,6 +631,157 @@ async function invokePublishedWorkflow(
       throw new Error("The AgentRun is no longer active.")
     case "runtime-unavailable":
       throw new Error("The workflow runtime is temporarily unavailable.")
+  }
+}
+
+async function createWorkflowDraft(
+  context: AgentToolExecutionContext,
+  input: z.infer<typeof workflowDraftCreateSchema>
+) {
+  const snapshot = await gatewaySnapshot(context)
+  const command: OperationCommandEnvelope = {
+    schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
+    commandId: stableId(
+      "agent-workflow-create",
+      `${context.idempotencyKey}:${input.definitionId}`
+    ),
+    idempotencyKey: `${context.idempotencyKey}:workflow:draft:create:${input.definitionId}`,
+    workspaceId: context.workspaceId,
+    projectId: context.projectId,
+    target: {
+      type: "professional-workspace",
+      id: snapshot.professionalWorkspace.professionalWorkspaceId,
+    },
+    expectedRevision: snapshot.professionalWorkspace.revision,
+    actor: operationAgentActor(context),
+    issuedAt: new Date().toISOString(),
+    payload: {
+      type: "professional.workflow.create",
+      definitionId: input.definitionId,
+      name: input.name,
+      ...(input.description === undefined
+        ? {}
+        : { description: input.description }),
+      position: { x: input.x, y: input.y },
+      collapsed: false,
+    },
+  }
+  const response = await executeOperationCommand({
+    command,
+    authorizedActor: command.actor,
+  })
+  if (!response.accepted) {
+    throw new Error(
+      response.message || "The Workflow draft could not be created."
+    )
+  }
+  const definition = response.snapshot.workflowDefinitions.find(
+    (candidate) => candidate.definitionId === input.definitionId
+  )
+  return {
+    definitionId: input.definitionId,
+    revision: definition?.revision ?? 0,
+    lifecycleStatus: definition?.lifecycleStatus ?? "draft",
+    snapshot: response.snapshot,
+    duplicate: response.duplicate,
+  }
+}
+
+async function applyWorkflowDraftCommand(
+  context: AgentToolExecutionContext,
+  input: z.infer<typeof workflowDraftCommandSchema>
+) {
+  const snapshot = await gatewaySnapshot(context)
+  const definition = snapshot.workflowDefinitions.find(
+    (candidate) => candidate.definitionId === input.definitionId
+  )
+  if (!definition)
+    throw new Error("The Workflow draft was not found in this project.")
+  const command: OperationCommandEnvelope = {
+    schemaVersion: OPERATION_COMMAND_SCHEMA_VERSION,
+    commandId: stableId(
+      "agent-workflow-command",
+      `${context.idempotencyKey}:${input.definitionId}:${input.expectedRevision}`
+    ),
+    idempotencyKey: `${context.idempotencyKey}:workflow:draft:command:${input.definitionId}:${input.expectedRevision}`,
+    workspaceId: context.workspaceId,
+    projectId: context.projectId,
+    target: { type: "workflow-definition", id: input.definitionId },
+    expectedRevision: input.expectedRevision,
+    actor: operationAgentActor(context),
+    issuedAt: new Date().toISOString(),
+    payload: {
+      type: "workflow.definition.command",
+      command: input.command as unknown as MusesCommandPayload,
+    },
+  }
+  const response = await executeOperationCommand({
+    command,
+    authorizedActor: command.actor,
+  })
+  if (!response.accepted) {
+    throw new Error(
+      response.message || "The Workflow draft rejected the command."
+    )
+  }
+  const next = response.snapshot.workflowDefinitions.find(
+    (candidate) => candidate.definitionId === input.definitionId
+  )
+  return {
+    definitionId: input.definitionId,
+    revision: next?.revision ?? response.resultingRevision,
+    snapshot: response.snapshot,
+    duplicate: response.duplicate,
+  }
+}
+
+async function validateWorkflowDraft(
+  context: AgentToolExecutionContext,
+  definitionId: string
+) {
+  const snapshot = await gatewaySnapshot(context)
+  const draft = snapshot.workflowDefinitions.find(
+    (candidate) => candidate.definitionId === definitionId
+  )
+  if (!draft)
+    throw new Error("The Workflow draft was not found in this project.")
+  const compilation = compileWorkflowDefinition(draft.document.workflow, {
+    workspaceId: context.workspaceId,
+    definitionId,
+    version: 0,
+  })
+  if (!compilation.ok) {
+    return {
+      valid: false,
+      definitionId,
+      revision: draft.revision,
+      issues: compilation.issues,
+    }
+  }
+  return {
+    valid: true,
+    definitionId,
+    revision: draft.revision,
+    definition: compilation.definition,
+  }
+}
+
+async function publishWorkflow(
+  context: AgentToolExecutionContext,
+  input: z.infer<typeof workflowPublishSchema>
+) {
+  const publication = await publishWorkflowDraft({
+    workspaceId: context.workspaceId,
+    definitionId: input.definitionId,
+    expectedDraftRevision: input.expectedDraftRevision,
+    publishedByUserId: initiatedByUserId(context),
+    deploymentAlias: input.deploymentAlias,
+  })
+  return {
+    definition: publication.definition,
+    deployment: publication.deployment,
+    draftRevision: publication.draftRevision,
+    published: publication.published,
   }
 }
 
@@ -482,7 +919,7 @@ async function generateImageAndPlace(
       inputs,
     }),
     definition: compilation.definition,
-    caller: { kind: "agent", agentRunId: context.runId },
+    caller: workflowAgentCaller(context),
   })
 
   let workflowRunId: string
@@ -581,7 +1018,7 @@ async function putCanvasItem(
       id: snapshot.creativeCanvas.canvasId,
     },
     expectedRevision: snapshot.creativeCanvas.revision,
-    actor: { kind: "agent", agentRunId: context.runId },
+    actor: operationAgentActor(context),
     issuedAt: new Date().toISOString(),
     payload: { type: "creative.item.put", item },
   }
@@ -616,6 +1053,27 @@ function initiatedByUserId(context: AgentToolExecutionContext) {
     throw new Error("AgentRun is missing its initiating user identity.")
   }
   return value
+}
+
+function workflowAgentCaller(
+  context: AgentToolExecutionContext
+): Extract<WorkflowInvocationCaller, { kind: "agent" }> {
+  return {
+    kind: "agent",
+    agentRunId: context.runId,
+    runtime: "standalone",
+  }
+}
+
+function operationAgentActor(
+  context: AgentToolExecutionContext
+): Extract<OperationCommandEnvelope["actor"], { kind: "agent" }> {
+  return {
+    kind: "agent",
+    agentRunId: context.runId,
+    runtime: "standalone",
+    initiatedByUserId: initiatedByUserId(context),
+  }
 }
 
 async function waitForAttachedWorkflowRun(

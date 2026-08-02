@@ -6,6 +6,8 @@ import {
   createCommand,
   createDeterministicImageRun,
   createHarnessWorkspace as createInitialWorkspace,
+  createEndInputPorts,
+  createNodeDraft,
   getWorkflowDefinitionRef,
   getWorkflowRuntimeValueType,
   type WorkflowDocumentDraft,
@@ -58,6 +60,7 @@ describe("WorkflowDefinition compiler", () => {
     expect(result.definition.outputs).toEqual([
       {
         id: "document",
+        name: "Document",
         valueType: "design-document",
         accepts: ["design-document"],
         required: true,
@@ -223,5 +226,67 @@ describe("WorkflowDefinition compiler", () => {
         revision: 3,
       }),
     ).toBe("design-document");
+  });
+
+  it("compiles agent.run as a host-neutral versioned node", () => {
+    const start = createNodeDraft("start", "start-1", { x: 0, y: 0 });
+    const agent = createNodeDraft("agent-run", "agent-1", { x: 320, y: 0 });
+    const end = createNodeDraft("end", "end-1", { x: 640, y: 0 });
+    end.inputPorts = createEndInputPorts([
+      {
+        id: "result",
+        name: "Result",
+        valueType: "text",
+        required: true,
+      },
+    ]);
+    const workflow: WorkflowDocumentDraft = {
+      id: "agent-workflow",
+      schemaVersion: "0.6.0-draft",
+      revision: 0,
+      nodes: [start, agent, end],
+      edges: [
+        {
+          id: "edge-start-agent",
+          sourceNodeId: start.id,
+          sourcePortId: "prompt",
+          targetNodeId: agent.id,
+          targetPortId: "message",
+          kind: "dataflow",
+        },
+        {
+          id: "edge-agent-end",
+          sourceNodeId: agent.id,
+          sourcePortId: "result",
+          targetNodeId: end.id,
+          targetPortId: "result",
+          kind: "dataflow",
+        },
+      ],
+    };
+    const result = compileWorkflowDefinition(workflow, compilationIdentity);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.definition.nodes).toContainEqual(
+      expect.objectContaining({
+        id: "agent-1",
+        kind: "agent-run",
+        config: {
+          profileId: "general-purpose",
+          profileVersion: "0.1.0",
+          outputMode: "text",
+        },
+      }),
+    );
+    expect(result.definition.outputs).toEqual([
+      {
+        id: "result",
+        name: "Result",
+        valueType: "text",
+        accepts: ["text"],
+        required: true,
+        allowsMultiple: false,
+      },
+    ]);
   });
 });

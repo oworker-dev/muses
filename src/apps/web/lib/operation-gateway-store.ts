@@ -784,37 +784,31 @@ async function requireActiveAgentActor(
   command: OperationCommandEnvelope
 ) {
   if (command.actor.kind !== "agent") return
-  const actor = (
-    await client.query<{ status: string }>(
-      `
-        select agent.status
-        from muses_agent_run agent
-        where agent.id = $1
-          and agent.workspace_id = $2
-          and agent.project_id = $3
-          and exists (
-            select 1
-            from muses_workspace_member member
-            where member.workspace_id = agent.workspace_id
-              and member.user_id = agent.snapshot #>> '{metadata,initiatedByUserId}'
-              and member.status = 'active'
-              and member.role <> 'viewer'
-          )
-          and not exists (
-            select 1
-            from muses_agent_cancel_receipt cancellation
-            where cancellation.workspace_id = agent.workspace_id
-              and cancellation.agent_run_id = agent.id
-          )
-        for share
-      `,
-      [command.actor.agentRunId, command.workspaceId, command.projectId]
-    )
-  ).rows[0]
-  if (!actor || (actor.status !== "queued" && actor.status !== "running")) {
+  const userId = command.actor.initiatedByUserId.trim()
+  if (!userId) {
     throw new OperationGatewayStoreError(
       "actor-not-authorized",
-      "The AgentRun is no longer active."
+      "The standalone AgentRun is missing its initiating user identity."
+    )
+  }
+  const member = (
+    await client.query<{ allowed: boolean }>(
+      `
+        select true as allowed
+        from muses_workspace_member member
+        where member.workspace_id = $1
+          and member.user_id = $2
+          and member.status = 'active'
+          and member.role <> 'viewer'
+        for share
+      `,
+      [command.workspaceId, userId]
+    )
+  ).rows[0]
+  if (!member) {
+    throw new OperationGatewayStoreError(
+      "actor-not-authorized",
+      "The standalone AgentRun principal cannot mutate this Workspace."
     )
   }
 }

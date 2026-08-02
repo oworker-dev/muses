@@ -661,6 +661,7 @@ function workflowOutputSchema(definition: WorkflowDefinition) {
       definition.outputs.map((output) => [
         output.id,
         {
+          title: output.name,
           type: "object",
           properties: { valueType: { const: output.valueType } },
         },

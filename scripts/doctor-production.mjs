@@ -1,4 +1,7 @@
+import { inspectWorkflowWorld } from "./lib/workflow-world-doctor.mjs";
+
 const strict = process.argv.includes("--strict") || process.env.NODE_ENV === "production";
+const inspectWorld = process.argv.includes("--inspect-workflow-world");
 const defaultAuthSecret = "oworker-saas-starter-dev-secret-change-before-production";
 
 const errors = [];
@@ -67,9 +70,54 @@ if (process.env.STRIPE_SECRET_KEY && !process.env.STRIPE_WEBHOOK_SECRET) {
   report("STRIPE_WEBHOOK_SECRET is missing. Live webhook verification should be enabled.", strict);
 }
 
-if (!process.env.OPENAI_API_KEY) {
+if (!process.env.OPENAI_API_KEY && !process.env.OPENAI_IMAGE_API_KEY) {
   report(
-    "OPENAI_API_KEY is missing. MusesAgent model calls will fail closed.",
+    "No bootstrap image Provider credential is configured. Create an Admin-managed image Provider Connection before running image workflows.",
+    false
+  );
+}
+
+for (const name of [
+  "MUSES_AGENT_SERVICE_URL",
+  "MUSES_AGENT_PUBLIC_URL",
+  "MUSES_AGENT_HOST_JWT_SECRET",
+  "MUSES_AGENT_HOST_JWT_ISSUER",
+  "MUSES_AGENT_HOST_JWT_AUDIENCE",
+  "MUSES_AGENT_HOST_TOOLS_SECRET",
+]) {
+  if (!process.env[name]) {
+    report(`${name} is missing. The standalone Agent Host integration is incomplete.`, strict);
+  }
+}
+
+for (const name of ["MUSES_AGENT_SERVICE_URL", "MUSES_AGENT_PUBLIC_URL"]) {
+  const value = process.env[name];
+  if (value && isLocalOrigin(value)) {
+    report(`${name} points at a local or non-HTTPS origin. Use the deployed HTTPS Agent origin.`, strict);
+  }
+}
+
+for (const name of ["MUSES_AGENT_HOST_JWT_SECRET", "MUSES_AGENT_HOST_TOOLS_SECRET"]) {
+  const value = process.env[name];
+  if (value && Buffer.byteLength(value) < 32) {
+    report(`${name} must contain at least 32 bytes.`, strict);
+  }
+}
+
+if (process.env.MUSES_AGENT_HOST_JWT_TTL_SECONDS) {
+  const ttl = Number(process.env.MUSES_AGENT_HOST_JWT_TTL_SECONDS);
+  if (!Number.isInteger(ttl) || ttl < 60 || ttl > 900) {
+    report("MUSES_AGENT_HOST_JWT_TTL_SECONDS must be an integer from 60 to 900.", strict);
+  }
+}
+
+if (
+  !process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT &&
+  !process.env.OTEL_EXPORTER_OTLP_ENDPOINT &&
+  !process.env.VERCEL_OTEL_ENDPOINTS
+) {
+  report(
+    "No OpenTelemetry exporter is configured. Agent, Workflow, Provider and Host traces cannot be joined.",
     strict
   );
 }
@@ -113,7 +161,7 @@ if (!process.env.MUSES_PROVIDER_ALLOWED_HOSTS) {
 }
 
 if (process.env.OPENAI_BASE_URL && !process.env.OPENAI_API_KEY) {
-  report("OPENAI_BASE_URL is set without OPENAI_API_KEY.", strict);
+  report("OPENAI_BASE_URL is set without its compatibility OPENAI_API_KEY.", strict);
 }
 
 if (process.env.OPENAI_IMAGE_BASE_URL && !process.env.OPENAI_IMAGE_API_KEY) {
@@ -125,9 +173,27 @@ if (process.env.OPENAI_IMAGE_BASE_URL && !process.env.OPENAI_IMAGE_API_KEY) {
 
 if (!process.env.OPENAI_IMAGE_API_KEY && process.env.OPENAI_API_KEY) {
   report(
-    "Image generation is using the shared OpenAI-compatible provider. Configure OPENAI_IMAGE_API_KEY and optionally OPENAI_IMAGE_BASE_URL when the Agent and image providers differ.",
+    "Image generation is using the shared compatibility Provider. Configure OPENAI_IMAGE_API_KEY and optionally OPENAI_IMAGE_BASE_URL when image and text credentials differ.",
     false
   );
+}
+
+if (inspectWorld) {
+  try {
+    const diagnostics = await inspectWorkflowWorld({
+      connectionString: process.env.WORKFLOW_POSTGRES_URL,
+      jobPrefix: process.env.WORKFLOW_POSTGRES_JOB_PREFIX,
+    });
+    for (const diagnostic of diagnostics) {
+      const message = `[${diagnostic.code}] ${diagnostic.message}`;
+      if (diagnostic.level === "error") errors.push(message);
+      else warnings.push(message);
+    }
+  } catch (error) {
+    errors.push(
+      `[workflow-world-inspection] ${error instanceof Error ? error.message : "Workflow World inspection failed."}`
+    );
+  }
 }
 
 if (errors.length > 0) {

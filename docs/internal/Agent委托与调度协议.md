@@ -11,7 +11,9 @@ description: Muses Agent Orchestration 的父子 Run、显式上下文、服务�
 
 协议服务 AI 设计平台，不把 Muses 扩展成通用 Coze/Dify 式 AI 应用开发平台。多 Agent 只用于将真实创作任务拆成可控、可追踪、可聚合的专业工作，例如需求梳理、视觉方向、素材研究、图像生成、版式设计和 QA。简单任务仍应由一个 AgentRun 或一个 Capability 完成。
 
-当前 `@muses/agent-core` 已实现 `0.1.0-draft` 委派类型、纯验证器、父子 Run 血缘、Run 级逻辑沙盒重验和框架无关 Scheduler 状态机；Web 侧已实现 PostgreSQL Store、事件、claim/lease、逻辑预算预留、生产 Profile/结果/Artifact 校验、独立 Child Agent Runtime、Workflow SDK 持久驱动、整树 Trace/Billing 血缘、受审批的 `agent.delegate` 产品入口和真实双 Specialist 生图。A11 进一步实现受信聚合结果回注、一次性父 Run 续跑和独立 DelegationRun 取消。生产 Skill/MCP 解析、物理计算沙盒和任意领域 Agent 仍不得被描述为已经可用。
+本文记录 2026-07-30 前旧 Muses 内置 Runtime 的 A10/A11 委派协议与验证证据，不再描述现行可执行实现。原 `@muses/agent-core`、PostgreSQL Scheduler、Child Runtime、Workflow driver 和 `agent.delegate` 已在独立 Agent 迁移后从 Muses 生产源码退役；历史 migration 与证据保持不可变。
+
+协议中仍长期有效的是父子 Run 血缘、显式上下文、权限只收窄、预算预留、DAG、取消和结构化结果原则。这些能力必须在独立 `muses-agent` 的 AgentRun/Profile/SubAgent 公开契约中重新实现并通过跨宿主 Conformance Suite，不能通过恢复 Muses 本地 Runtime 继续开发。当前生产 Skill/MCP 生命周期、SubAgent 调度、物理沙盒和全链路费用仍不得描述为已经可用。
 
 ## 2. 不固定组织层级
 

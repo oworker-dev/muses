@@ -29,6 +29,10 @@ export type WorkflowDefinitionOutputPort = {
   readonly valueType: PortValueType;
 };
 
+export type WorkflowDefinitionOutput = WorkflowDefinitionInputPort & {
+  readonly name: string;
+};
+
 type WorkflowDefinitionNodeBase<Kind extends string, Config> = {
   readonly id: string;
   readonly kind: Kind;
@@ -75,6 +79,26 @@ export type WorkflowDefinitionDesignDocumentNode = WorkflowDefinitionNodeBase<
   }
 >;
 
+export type WorkflowDefinitionAgentRunNode = WorkflowDefinitionNodeBase<
+  "agent-run",
+  {
+    readonly profileId: string;
+    readonly profileVersion: string;
+    readonly outputMode: "text" | "json";
+    readonly inputSchema?: Readonly<Record<string, unknown>>;
+    readonly outputSchema?: Readonly<Record<string, unknown>>;
+    readonly requiredPermissions?: readonly string[];
+    readonly budget?: {
+      readonly maxTurns?: number;
+      readonly maxModelCalls?: number;
+      readonly maxToolCalls?: number;
+      readonly maxInputTokens?: number;
+      readonly maxOutputTokens?: number;
+      readonly maxDurationMs?: number;
+    };
+  }
+>;
+
 export type WorkflowDefinitionEndNode = WorkflowDefinitionNodeBase<
   "end",
   Record<string, never>
@@ -85,6 +109,7 @@ export type WorkflowDefinitionNode =
   | WorkflowDefinitionImageGeneratorNode
   | WorkflowDefinitionSelectorNode
   | WorkflowDefinitionDesignDocumentNode
+  | WorkflowDefinitionAgentRunNode
   | WorkflowDefinitionEndNode;
 
 export type WorkflowDefinitionDataBinding = {
@@ -122,7 +147,7 @@ export type WorkflowDefinition = WorkflowDefinitionRef & {
   readonly entryNodeId: string;
   readonly exitNodeId: string;
   readonly inputs: readonly WorkflowDefinitionInput[];
-  readonly outputs: readonly WorkflowDefinitionInputPort[];
+  readonly outputs: readonly WorkflowDefinitionOutput[];
   readonly nodes: readonly WorkflowDefinitionNode[];
   readonly dataBindings: readonly WorkflowDefinitionDataBinding[];
   readonly controlDependencies: readonly WorkflowDefinitionControlDependency[];

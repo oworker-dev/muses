@@ -419,6 +419,56 @@ describe("Muses canvas domain", () => {
     ).toBe(false);
   });
 
+  it("derives named End outputs and removes incompatible stale bindings", () => {
+    const workspace = createInitialWorkspace();
+    const result = applyMusesCommand(
+      workspace,
+      createCommand(workspace, {
+        type: "workflow.end.outputs.set",
+        nodeId: "end-1",
+        outputs: [
+          {
+            id: "result",
+            name: "Agent result",
+            valueType: "text",
+            required: true,
+          },
+          {
+            id: "preview",
+            name: "Preview image",
+            valueType: "image",
+            required: false,
+          },
+        ],
+      }),
+    );
+
+    expect(result.accepted).toBe(true);
+    if (!result.accepted) return;
+    const end = result.workspace.workflow.nodes.find(
+      (node) => node.id === "end-1",
+    );
+    expect(end?.inputPorts).toEqual([
+      expect.objectContaining({
+        id: "result",
+        label: "Agent result",
+        valueType: "text",
+        required: true,
+      }),
+      expect.objectContaining({
+        id: "preview",
+        label: "Preview image",
+        valueType: "image",
+        required: false,
+      }),
+    ]);
+    expect(
+      result.workspace.workflow.edges.some(
+        (edge) => edge.targetNodeId === "end-1",
+      ),
+    ).toBe(false);
+  });
+
   it("validates a complete workflow for publication with a stable order", () => {
     const validation = validateWorkflowForPublication(
       createInitialWorkspace().workflow,

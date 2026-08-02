@@ -35,6 +35,7 @@ export type WorkflowNodeKind =
   | "image-result"
   | "selector"
   | "design-document"
+  | "agent-run"
   | "end";
 
 export type WorkflowInputVariableDefinition = {
@@ -43,6 +44,13 @@ export type WorkflowInputVariableDefinition = {
   valueType: WorkflowInputValueType;
   required: boolean;
   defaultValue?: string | number | boolean;
+};
+
+export type WorkflowOutputVariableDefinition = {
+  id: string;
+  name: string;
+  valueType: PortValueType;
+  required: boolean;
 };
 
 export type StartNodeData = {
@@ -108,6 +116,24 @@ export type DesignDocumentNodeData = {
   previewAssetId?: string;
 };
 
+export type AgentRunNodeData = {
+  kind: "agent-run";
+  profileId: string;
+  profileVersion: string;
+  outputMode: "text" | "json";
+  inputSchema?: Readonly<Record<string, unknown>>;
+  outputSchema?: Readonly<Record<string, unknown>>;
+  requiredPermissions?: readonly string[];
+  budget?: {
+    readonly maxTurns?: number;
+    readonly maxModelCalls?: number;
+    readonly maxToolCalls?: number;
+    readonly maxInputTokens?: number;
+    readonly maxOutputTokens?: number;
+    readonly maxDurationMs?: number;
+  };
+};
+
 export type EndNodeData = {
   kind: "end";
 };
@@ -118,6 +144,7 @@ export type WorkflowNodeData =
   | ImageResultNodeData
   | SelectorNodeData
   | DesignDocumentNodeData
+  | AgentRunNodeData
   | EndNodeData;
 
 export type WorkflowNodeDraft = {
@@ -242,11 +269,30 @@ export type MusesCommandPayload =
       variables: WorkflowInputVariableDefinition[];
     }
   | {
+      type: "workflow.end.outputs.set";
+      nodeId: string;
+      outputs: WorkflowOutputVariableDefinition[];
+    }
+  | {
       type: "workflow.image-generator.config.set";
       nodeId: string;
       config: Pick<
         ImageGeneratorNodeData,
         "modelRef" | "inputs" | "output" | "quality"
+      >;
+    }
+  | {
+      type: "workflow.agent-run.config.set";
+      nodeId: string;
+      config: Pick<
+        AgentRunNodeData,
+        | "profileId"
+        | "profileVersion"
+        | "outputMode"
+        | "inputSchema"
+        | "outputSchema"
+        | "requiredPermissions"
+        | "budget"
       >;
     }
   | {
@@ -318,6 +364,7 @@ export type CommandRejectionCode =
   | "node-not-found"
   | "node-protected"
   | "node-singleton-violation"
+  | "node-invalid"
   | "variables-invalid"
   | "edge-invalid"
   | "document-not-found"

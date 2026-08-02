@@ -1,12 +1,8 @@
 import type { Pool } from "pg"
 
-import type { AgentDelegationArtifactAuthorizationPort } from "@muses/agent-core"
-
 import { getPgPool } from "./database"
 
-export class PostgresGeneratedAssetAuthorization
-  implements AgentDelegationArtifactAuthorizationPort
-{
+export class PostgresGeneratedAssetAuthorization {
   constructor(private readonly pool: Pool = getPgPool()) {}
 
   async authorize(input: {

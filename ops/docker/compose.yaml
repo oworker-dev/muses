@@ -15,6 +15,22 @@ services:
     volumes:
       - oworker-saas-db:/var/lib/postgresql/data
 
+  workflow-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: muses_workflow_world
+      POSTGRES_USER: oworker
+      POSTGRES_PASSWORD: oworker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oworker -d muses_workflow_world"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "${OWORKER_WORKFLOW_DB_PORT:-5433}:5432"
+    volumes:
+      - muses-workflow-world-db:/var/lib/postgresql/data
+
   cache:
     image: valkey/valkey:8-alpine
     command: ["valkey-server", "--appendonly", "yes"]
@@ -100,6 +116,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      workflow-db:
+        condition: service_healthy
       api:
         condition: service_healthy
     environment:
@@ -108,7 +126,7 @@ services:
       HOSTNAME: 0.0.0.0
       DATABASE_URL: postgresql://oworker:oworker@db:5432/oworker_saas
       WORKFLOW_TARGET_WORLD: "@workflow/world-postgres"
-      WORKFLOW_POSTGRES_URL: postgresql://oworker:oworker@db:5432/oworker_saas
+      WORKFLOW_POSTGRES_URL: postgresql://oworker:oworker@workflow-db:5432/muses_workflow_world
       WORKFLOW_POSTGRES_JOB_PREFIX: muses_
       MUSES_WORKFLOW_HARNESS_ENABLED: ${MUSES_WORKFLOW_HARNESS_ENABLED:-false}
       MUSES_INITIAL_CREDIT_MICROS: ${MUSES_INITIAL_CREDIT_MICROS:-100000000}
@@ -151,5 +169,6 @@ services:
 
 volumes:
   oworker-saas-db:
+  muses-workflow-world-db:
   oworker-saas-cache:
   oworker-saas-storage:

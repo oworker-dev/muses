@@ -8,6 +8,7 @@ import type {
   WorkflowDefinitionRef,
   WorkflowDefinitionStartNode,
   WorkflowDefinitionDesignDocumentNode,
+  WorkflowDefinitionAgentRunNode,
 } from "./workflow-definition";
 import type {
   WorkflowRuntimeScalarValue,
@@ -51,7 +52,8 @@ export type WorkflowExecutionState = {
 
 export type WorkflowExecutableNode =
   | WorkflowDefinitionImageGeneratorNode
-  | WorkflowDefinitionDesignDocumentNode;
+  | WorkflowDefinitionDesignDocumentNode
+  | WorkflowDefinitionAgentRunNode;
 
 export type WorkflowNodeExecutionRequest = {
   readonly definition: WorkflowDefinitionRef;
@@ -188,6 +190,12 @@ export function prepareNextWorkflowNode(
       return success({ kind: "execute", node, inputs: resolved });
     }
     case "design-document": {
+      const inputs = resolveWorkflowNodeInputs(definition, state, node.id);
+      return inputs.ok
+        ? success({ kind: "execute", node, inputs: inputs.value })
+        : inputs;
+    }
+    case "agent-run": {
       const inputs = resolveWorkflowNodeInputs(definition, state, node.id);
       return inputs.ok
         ? success({ kind: "execute", node, inputs: inputs.value })

@@ -13,7 +13,12 @@ export const OPERATION_COMMAND_SCHEMA_VERSION = "0.1.0-draft";
 
 export type OperationActor =
   | { readonly kind: "user"; readonly userId: string }
-  | { readonly kind: "agent"; readonly agentRunId: string }
+  | {
+      readonly kind: "agent"
+      readonly agentRunId: string
+      readonly runtime: "standalone"
+      readonly initiatedByUserId: string
+    }
   | { readonly kind: "api"; readonly clientId: string };
 
 export type CreativeCanvasCommandPayload =

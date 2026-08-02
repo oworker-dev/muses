@@ -50,8 +50,10 @@ New paid image submissions resolve an enabled Offering binding before the
 Workflow SDK run starts and freeze only `providerConnectionId` into the
 server-owned execution snapshot. The Step opens that exact connection at call
 time. A missing, disabled, unhealthy, or undecryptable frozen connection fails
-closed; it does not switch providers after a possibly billable request. Agent
-LLM calls use the same capability-aware resolver. Existing
+closed; it does not switch providers after a possibly billable request. The
+standalone Agent does not yet consume this registry for text-model routing;
+that Host-to-Agent credential and entitlement adapter is an explicit production
+Gate. Existing
 `OPENAI_API_KEY`/`OPENAI_IMAGE_API_KEY` variables remain deployment bootstrap
 fallbacks only when no database route was selected.
 
