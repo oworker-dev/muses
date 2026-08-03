@@ -134,6 +134,8 @@ Host 调用对时间戳、method、path 和 body 做 HMAC 签名，同时携带 
 
 同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@muses/agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
 
+同日完成首图宿主验收：自然语言 AgentRun 先发现 `canvas.inspect` 与 `image.generate`，再调用真实图像 Provider，生成并持久化一个 PNG Asset，通过 Operation Gateway 放入 CreativeCanvas，随后重新读取画布。验收同时检查了 1,629,358 字节对象、Asset/Workflow/credit reservation/settle 收据、`1,000,000` credit micros 结算、Agent 输入/输出/cache token 以及新快照中的 Asset。Agent Host 同步调用默认等待上限固定为 120 秒；超过该边界的长媒体仍必须使用 durable accepted + wait，不把长超时伪装成最终方案。该工程证据已通过，但“用户无需讲解即可完成首图”的产品负责人验收仍保持未完成。
+
 Muses 旧 `muses_agent_*` 表、migration 和交付证据只作为历史升级与审计事实保留。当前 Drizzle Runtime 不导出这些表，生产源码不读写它们；旧 `/api/studio/agent-runs`、model loop、state store、trace、delegation scheduler/driver、`@muses/agent-core` 和 harness adapter 已退役。Muses 当前只保留 Host Capability、Profile 目录、权限/积分、Workflow `agent-run` 适配和 UI 嵌入边界。
 
 ## 7. 强制依赖方向

@@ -25,6 +25,7 @@
     "anss:agent-probe": "node scripts/anss-agent-probe.mjs",
     "check:platform-core": "pnpm --filter @muses/domain run check && pnpm --filter ./src/apps/web run test:unit",
     "verify:workflow-agent-bridge": "node scripts/verify-workflow-agent-bridge.mjs",
+    "verify:agent-first-image": "pnpm --filter ./src/apps/web run verify:agent-first-image",
     "db:migrate": "pnpm --filter ./src/apps/api run db:migrate && pnpm --filter ./src/apps/web run db:migrate",
     "typecheck": "pnpm --filter ./src/apps/web run typecheck && pnpm --filter ./src/apps/api run check && pnpm --filter ./src/apps/cli run check && pnpm --filter ./src/apps/mcp run check && pnpm --filter ./src/apps/worker run check",
     "check": "pnpm run health && pnpm run anss:check && pnpm run verify:agent-sdk-distribution && pnpm run check:platform-core && pnpm run test:workflow-world-doctor && pnpm run typecheck",

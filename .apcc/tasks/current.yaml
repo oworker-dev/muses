@@ -1913,7 +1913,7 @@ items:
   - id: deliver-agent-driven-first-image-loop
     name: 交付 Agent 驱动的真实首图闭环
     summary: 让登录用户从自然语言请求出发，由平台 Agent 选择图像能力并生成真实 Asset 放入创作画布，支持刷新恢复、继续修改、观测和积分结算。
-    status: in_progress
+    status: done
     planRef: first-image-value-gate
     parentTaskId: null
     countedForProgress: true
@@ -1921,5 +1921,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-03T13:47:49.825Z
-    updatedAt: 2026-08-03T14:00:14.798Z
-    statusChangedAt: 2026-08-03T14:00:14.798Z
+    updatedAt: 2026-08-03T14:35:22.506Z
+    statusChangedAt: 2026-08-03T14:35:22.506Z

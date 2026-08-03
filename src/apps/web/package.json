@@ -13,6 +13,7 @@
     "lint": "eslint",
     "test:unit": "vitest run",
     "verify:generated-asset-scope": "tsx scripts/verify-generated-asset-project-scope.ts",
+    "verify:agent-first-image": "tsx scripts/verify-agent-first-image.ts",
     "verify:provider-connections": "tsx scripts/verify-provider-credential-vault.ts",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
