@@ -1923,3 +1923,16 @@ items:
     createdAt: 2026-08-03T13:47:49.825Z
     updatedAt: 2026-08-03T14:35:22.506Z
     statusChangedAt: 2026-08-03T14:35:22.506Z
+  - id: repair-agent-embed-production-csp
+    name: 修复 Agent 嵌入生产 CSP 回归
+    summary: 已修复生产 Agent /embed 的 frame-ancestors none 回归：Agent 标准构建现在校验生成后的 Next 路由清单与精确 origin 白名单，Muses 右侧栏增加 15 秒连接超时和可恢复重试。Node 24 Agent verify:ci（99 单测、Provider 故障恢复、Eve/Next/SDK/示例构建）、Muses check/build 均通过；4730→3111 真实浏览器握手无错误，故障注入后提示与重试恢复通过。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T14:48:41.387Z
+    updatedAt: 2026-08-03T15:00:50.981Z
+    statusChangedAt: 2026-08-03T15:00:50.981Z

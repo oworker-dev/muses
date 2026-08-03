@@ -311,6 +311,7 @@
     "agent": {
       "title": "MusesAgent",
       "connecting": "Connecting to Agent",
+      "connectionTimeout": "The Agent embed did not finish connecting. Check the Agent service embed policy and try again.",
       "unavailable": "Agent unavailable",
       "retry": "Retry connection",
       "ready": "Ready",

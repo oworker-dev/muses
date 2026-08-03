@@ -130,6 +130,8 @@ export function StudioAgentPanel({
             : "system",
     }
   }, [bootstrap, locale, projectId, resolvedTheme, workspaceId])
+  const isConfigured =
+    Boolean(configuration) && configuredRequestId === configuration?.requestId
 
   const sendConfiguration = useCallback(() => {
     if (!configuration || !bootstrap || !readyRef.current) return
@@ -142,6 +144,14 @@ export function StudioAgentPanel({
   useEffect(() => {
     sendConfiguration()
   }, [sendConfiguration])
+
+  useEffect(() => {
+    if (!bootstrap || !configuration || isConfigured || error) return
+    const timer = window.setTimeout(() => {
+      setError(t("connectionTimeout"))
+    }, 15_000)
+    return () => window.clearTimeout(timer)
+  }, [bootstrap, configuration, error, isConfigured, t])
 
   useEffect(() => {
     const receive = (event: MessageEvent<unknown>) => {
@@ -202,7 +212,7 @@ export function StudioAgentPanel({
           </span>
         </div>
       ) : null}
-      {bootstrap && !configuredRequestId && !error ? (
+      {bootstrap && !isConfigured && !error ? (
         <div className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-center bg-background/90 px-3 py-2 text-xs text-muted-foreground backdrop-blur">
           <LoaderCircleIcon className="mr-2 size-3.5 animate-spin" />
           {t("connecting")}
@@ -223,6 +233,9 @@ export function StudioAgentPanel({
               className="mt-3 inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1.5 font-medium text-foreground hover:bg-muted"
               onClick={() => {
                 setLoading(true)
+                setBootstrap(undefined)
+                setConfiguredRequestId(undefined)
+                readyRef.current = false
                 void loadToken().catch((reason: unknown) => {
                   setLoading(false)
                   setError(

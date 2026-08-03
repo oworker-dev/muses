@@ -311,6 +311,7 @@
     "agent": {
       "title": "MusesAgent",
       "connecting": "正在连接 Agent",
+      "connectionTimeout": "Agent 嵌入未能完成连接，请检查 Agent 服务的嵌入策略后重试。",
       "unavailable": "Agent 暂不可用",
       "retry": "重新连接",
       "ready": "就绪",
