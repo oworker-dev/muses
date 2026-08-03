@@ -10,6 +10,9 @@ describe("workflow Agent profile policy", () => {
   const profile = getWorkflowAgentProfile("muses-platform", "0.1.0")!
 
   it("exposes only capabilities covered by the effective permissions", () => {
+    expect(hostCapabilitiesForWorkflowAgent(profile)).toContain(
+      "image.generate"
+    )
     expect(
       hostCapabilitiesForWorkflowAgent(profile, [
         "canvas.read",
@@ -26,6 +29,12 @@ describe("workflow Agent profile policy", () => {
     expect(hostCapabilitiesForWorkflowAgent(profile, ["canvas.write"])).toEqual(
       ["canvas.item.put"]
     )
+    expect(
+      hostCapabilitiesForWorkflowAgent(profile, [
+        "canvas.write",
+        "image.generate",
+      ])
+    ).toEqual(["canvas.item.put", "image.generate"])
   })
 
   it("clamps every requested budget dimension to the published Profile", () => {

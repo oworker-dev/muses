@@ -66,6 +66,7 @@ export const MUSES_WORKFLOW_AGENT_PROFILES = [
     requiredPermissions: [
       "canvas.read",
       "canvas.write",
+      "image.generate",
       "workflow.read",
       "workflow.write",
       "workflow.publish",

@@ -1897,3 +1897,29 @@ items:
     createdAt: 2026-08-03T09:20:06.976Z
     updatedAt: 2026-08-03T12:21:40.806Z
     statusChangedAt: 2026-08-03T12:21:40.806Z
+  - id: freeze-agent-alpha8-host-integration
+    name: 冻结 Agent alpha.8 宿主集成
+    summary: 将 Muses SDK 依赖对齐已发布 alpha.8 commit，冻结版本化宿主契约并以真实 Provider 验证 AgentRun、Workflow 与画布边界。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T13:47:49.515Z
+    updatedAt: 2026-08-03T14:00:14.554Z
+    statusChangedAt: 2026-08-03T14:00:14.554Z
+  - id: deliver-agent-driven-first-image-loop
+    name: 交付 Agent 驱动的真实首图闭环
+    summary: 让登录用户从自然语言请求出发，由平台 Agent 选择图像能力并生成真实 Asset 放入创作画布，支持刷新恢复、继续修改、观测和积分结算。
+    status: in_progress
+    planRef: first-image-value-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T13:47:49.825Z
+    updatedAt: 2026-08-03T14:00:14.798Z
+    statusChangedAt: 2026-08-03T14:00:14.798Z

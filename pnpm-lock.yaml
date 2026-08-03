@@ -68,14 +68,14 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@muses/agent-client':
-        specifier: github:oworker-dev/muses-agent#29741c1c6c5c32d2cfe6dccd990be9a12100fc51&path:/packages/agent-client
-        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-client(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts)
+        specifier: github:oworker-dev/muses-agent#f2f1e897686c7a16a589dc78f4ce9f4c2c513183&path:/packages/agent-client
+        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-client(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts)
       '@muses/agent-contracts':
-        specifier: github:oworker-dev/muses-agent#29741c1c6c5c32d2cfe6dccd990be9a12100fc51&path:/packages/agent-contracts
-        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts
+        specifier: github:oworker-dev/muses-agent#f2f1e897686c7a16a589dc78f4ce9f4c2c513183&path:/packages/agent-contracts
+        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts
       '@muses/agent-host':
-        specifier: github:oworker-dev/muses-agent#29741c1c6c5c32d2cfe6dccd990be9a12100fc51&path:/packages/agent-host
-        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-host(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts)
+        specifier: github:oworker-dev/muses-agent#f2f1e897686c7a16a589dc78f4ce9f4c2c513183&path:/packages/agent-host
+        version: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-host(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts)
       '@muses/domain':
         specifier: workspace:*
         version: link:../../packages/domain
@@ -1680,8 +1680,8 @@ packages:
     resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
     engines: {node: '>=18'}
 
-  '@muses/agent-client@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-client':
-    resolution: {path: /packages/agent-client, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51}
+  '@muses/agent-client@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-client':
+    resolution: {path: /packages/agent-client, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183}
     version: 0.1.0-alpha.8
     engines: {node: '>=20'}
     peerDependencies:
@@ -1691,13 +1691,13 @@ packages:
       eve:
         optional: true
 
-  '@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts':
-    resolution: {path: /packages/agent-contracts, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51}
+  '@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts':
+    resolution: {path: /packages/agent-contracts, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183}
     version: 0.1.0-alpha.8
     engines: {node: '>=20'}
 
-  '@muses/agent-host@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-host':
-    resolution: {path: /packages/agent-host, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51}
+  '@muses/agent-host@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-host':
+    resolution: {path: /packages/agent-host, tarball: https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183}
     version: 0.1.0-alpha.8
     engines: {node: '>=20'}
     peerDependencies:
@@ -9159,15 +9159,15 @@ snapshots:
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
 
-  '@muses/agent-client@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-client(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts)':
+  '@muses/agent-client@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-client(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts)':
     dependencies:
-      '@muses/agent-contracts': https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts
+      '@muses/agent-contracts': https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts
 
-  '@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts': {}
+  '@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts': {}
 
-  '@muses/agent-host@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-host(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts)':
+  '@muses/agent-host@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-host(@muses/agent-contracts@https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts)':
     dependencies:
-      '@muses/agent-contracts': https://codeload.github.com/oworker-dev/muses-agent/tar.gz/29741c1c6c5c32d2cfe6dccd990be9a12100fc51#path:/packages/agent-contracts
+      '@muses/agent-contracts': https://codeload.github.com/oworker-dev/muses-agent/tar.gz/f2f1e897686c7a16a589dc78f4ce9f4c2c513183#path:/packages/agent-contracts
 
   '@napi-rs/nice-android-arm-eabi@1.1.1':
     optional: true
@@ -12532,7 +12532,7 @@ snapshots:
       '@next/eslint-plugin-next': 16.2.6
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react: 7.37.5(eslint@9.39.4(jiti@2.7.0))
@@ -12555,7 +12555,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.3(supports-color@8.1.1)
@@ -12570,14 +12570,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.4(jiti@2.7.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -12592,7 +12592,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.4(jiti@2.7.0)
       eslint-import-resolver-node: 0.3.10
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0)))(eslint@9.39.4(jiti@2.7.0))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.59.4(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint-import-resolver-node@0.3.10)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.4(jiti@2.7.0))
       hasown: 2.0.3
       is-core-module: 2.16.2
       is-glob: 4.0.3
