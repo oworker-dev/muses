@@ -1936,3 +1936,16 @@ items:
     createdAt: 2026-08-03T14:48:41.387Z
     updatedAt: 2026-08-03T15:00:50.981Z
     statusChangedAt: 2026-08-03T15:00:50.981Z
+  - id: verify-concurrent-agent-run-load
+    name: 验证并发 AgentRun 负载与一致性
+    summary: 建立可重复的 Headless AgentRun 并发压力门禁，覆盖并发提交、完成延迟、事件游标、Usage、幂等重放与跨运行隔离；使用真实 Agent Web、Eve、PostgreSQL 和确定性 Provider。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: verify-agent-production-slo
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T15:02:05.585Z
+    updatedAt: 2026-08-03T21:39:24.187Z
+    statusChangedAt: 2026-08-03T21:39:24.187Z
