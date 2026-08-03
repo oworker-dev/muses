@@ -98,6 +98,22 @@ describe("WorkflowDefinition interpreter", () => {
     });
   });
 
+  it("rejects supplied inputs that are not declared by Start", () => {
+    const result = createWorkflowExecutionState(definition(), {
+      message: { valueType: "text", value: "Do not ignore this input" },
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      issue: {
+        code: "unknown-input",
+        message: 'Workflow input "message" is not declared by the Start node.',
+        nodeId: "start-1",
+        portId: "message",
+      },
+    });
+  });
+
   it("resolves data bindings and suspends at a human Selector", async () => {
     const workflow = definition();
     const result = await runWorkflowInterpreter(workflow, {}, executors);

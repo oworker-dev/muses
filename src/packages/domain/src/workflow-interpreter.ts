@@ -18,6 +18,7 @@ import type {
 
 export type WorkflowInterpreterIssueCode =
   | "missing-input"
+  | "unknown-input"
   | "input-cardinality-invalid"
   | "type-mismatch"
   | "unsupported-node"
@@ -121,6 +122,31 @@ export function createWorkflowExecutionState(
       code: "execution-order-invalid",
       message: "Workflow execution order must begin with the entry node.",
       nodeId: firstNodeId,
+    });
+  }
+  const entryNode = definition.nodes.find(
+    (candidate): candidate is WorkflowDefinitionStartNode =>
+      candidate.id === definition.entryNodeId && candidate.kind === "start",
+  );
+  if (!entryNode) {
+    return failure({
+      code: "execution-order-invalid",
+      message: "Workflow entry node must be a Start node.",
+      nodeId: definition.entryNodeId,
+    });
+  }
+  const declaredInputs = new Set(
+    entryNode.config.variables.map((variable) => variable.id),
+  );
+  const unknownInput = Object.keys(suppliedInputs).find(
+    (inputId) => !declaredInputs.has(inputId),
+  );
+  if (unknownInput) {
+    return failure({
+      code: "unknown-input",
+      message: `Workflow input "${unknownInput}" is not declared by the Start node.`,
+      nodeId: entryNode.id,
+      portId: unknownInput,
     });
   }
 

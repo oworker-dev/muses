@@ -1982,7 +1982,9 @@ test("professional canvas authors, publishes, and runs Start to Agent to named E
     );
   } finally {
     await context.close();
-    await resetStudioUser(authoringEmail);
+    if (process.env.MUSES_E2E_KEEP_AUTHORING_FIXTURE !== "1") {
+      await resetStudioUser(authoringEmail);
+    }
   }
 });
 

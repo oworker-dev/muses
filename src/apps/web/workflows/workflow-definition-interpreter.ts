@@ -57,6 +57,7 @@ import {
   hostCapabilitiesForWorkflowAgent,
 } from "@/lib/agent-profile-catalog"
 import { requireAgentJsonObject } from "@/lib/agent-json-boundary"
+import { recordWorkflowAgentRun } from "@/lib/workflow-agent-run-store"
 
 export const MUSES_RUNTIME_STREAM_NAMESPACE = "muses:runtime"
 export const MUSES_SERVER_INTERPRETER_HARNESS =
@@ -584,7 +585,10 @@ async function executeSupportedNodeStep(request: {
   runId: string
   definition: WorkflowDefinitionRef
   projectId?: string
-  node: Extract<WorkflowDefinition["nodes"][number], { kind: "image-generator" | "design-document" }>
+  node: Extract<
+    WorkflowDefinition["nodes"][number],
+    { kind: "image-generator" | "design-document" }
+  >
   inputs: Readonly<Record<string, WorkflowRuntimeValue>>
   creditContext?: WorkflowCreditContext
   failureFault?: NonNullable<WorkflowInterpreterHarnessOptions["failureFault"]>
@@ -710,7 +714,10 @@ async function executeAgentRunNode(request: {
       failure: {
         code: "agent-run-submit-failed",
         category: "permanent",
-        message: error instanceof Error ? error.message : "The AgentRun could not be submitted.",
+        message:
+          error instanceof Error
+            ? error.message
+            : "The AgentRun could not be submitted.",
         retryable: false,
         nodeId: request.node.id,
         nodeKind: request.node.kind,
@@ -730,7 +737,11 @@ async function executeAgentRunNode(request: {
   // replays, unlike a wall-clock deadline that can be reset by a resumed worker.
   const maxPolls = 450 // 15 minutes at the two-second durable poll interval.
   let polls = 0
-  while (snapshot.status !== "completed" && snapshot.status !== "failed" && snapshot.status !== "cancelled") {
+  while (
+    snapshot.status !== "completed" &&
+    snapshot.status !== "failed" &&
+    snapshot.status !== "cancelled"
+  ) {
     if (polls >= maxPolls) {
       await cancelAgentRunStep({
         actorUserId: request.actorUserId,
@@ -773,9 +784,10 @@ async function executeAgentRunNode(request: {
       },
     }
   }
-  const value = snapshot.result.kind === "text"
-    ? String(snapshot.result.value)
-    : JSON.stringify(snapshot.result.value)
+  const value =
+    snapshot.result.kind === "text"
+      ? String(snapshot.result.value)
+      : JSON.stringify(snapshot.result.value)
   return {
     ok: true,
     adapter: "muses-agent-headless",
@@ -805,20 +817,30 @@ async function startAgentRunStep(request: {
 
   const profile = getWorkflowAgentProfile(
     request.node.config.profileId,
-    request.node.config.profileVersion,
+    request.node.config.profileVersion
   )
   if (!profile) {
     throw new FatalError(
-      `Agent profile ${request.node.config.profileId}@${request.node.config.profileVersion} is not published.`,
+      `Agent profile ${request.node.config.profileId}@${request.node.config.profileVersion} is not published.`
     )
   }
-  const requiredPermissions = request.node.config.requiredPermissions ?? profile.requiredPermissions
+  const requiredPermissions =
+    request.node.config.requiredPermissions ?? profile.requiredPermissions
   const profilePermissions = new Set(profile.requiredPermissions)
-  if (requiredPermissions.some((permission) => !profilePermissions.has(permission))) {
-    throw new FatalError("The Agent node requests a permission outside its published Profile.")
+  if (
+    requiredPermissions.some(
+      (permission) => !profilePermissions.has(permission)
+    )
+  ) {
+    throw new FatalError(
+      "The Agent node requests a permission outside its published Profile."
+    )
   }
   const budget = clampWorkflowAgentBudget(profile, request.node.config.budget)
-  const hostCapabilities = hostCapabilitiesForWorkflowAgent(profile, requiredPermissions)
+  const hostCapabilities = hostCapabilitiesForWorkflowAgent(
+    profile,
+    requiredPermissions
+  )
 
   const client = createMusesAgentHostClient({
     userId: request.actorUserId,
@@ -837,8 +859,13 @@ async function startAgentRunStep(request: {
       hostCapabilities,
       limits: budget,
     },
-    ...(request.node.config.outputMode === "json" && request.node.config.outputSchema
-      ? { outputSchema: requireAgentJsonObject(request.node.config.outputSchema) }
+    ...(request.node.config.outputMode === "json" &&
+    request.node.config.outputSchema
+      ? {
+          outputSchema: requireAgentJsonObject(
+            request.node.config.outputSchema
+          ),
+        }
       : {}),
     metadata: {
       workflowRunId: request.runId,
@@ -846,9 +873,18 @@ async function startAgentRunStep(request: {
       workflowNodeId: request.node.id,
     },
   })
+  const mapping = await recordWorkflowAgentRun({
+    workspaceId: request.definition.workspaceId,
+    workflowRunId: request.runId,
+    workflowNodeId: request.node.id,
+    agentRunId: response.run.runId,
+  })
+  if (mapping.shouldCancelAgentRun) {
+    await client.cancel(response.run.runId)
+  }
   return response.run
 }
-startAgentRunStep.maxRetries = 0
+startAgentRunStep.maxRetries = 2
 
 async function inspectAgentRunStep(request: {
   actorUserId: string

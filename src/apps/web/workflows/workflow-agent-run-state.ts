@@ -16,3 +16,7 @@ export function getActiveAgentRunIds(events: readonly WorkflowRuntimeEvent[]) {
     .filter(([nodeId]) => !terminalNodes.has(nodeId))
     .map(([, agentRunId]) => agentRunId)
 }
+
+export function mergeAgentRunIds(...sources: readonly (readonly string[])[]) {
+  return [...new Set(sources.flat())]
+}

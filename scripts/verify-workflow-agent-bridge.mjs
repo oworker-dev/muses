@@ -10,6 +10,8 @@ const sessionCookie = required("MUSES_SESSION_COOKIE")
 const workspaceId = required("MUSES_WORKSPACE_ID")
 const projectId = required("MUSES_PROJECT_ID")
 const deploymentId = required("MUSES_DEPLOYMENT_ID")
+const agentNodeId = process.env.MUSES_AGENT_BRIDGE_NODE_ID?.trim() || "agent-run-1"
+const workflowInputId = process.env.MUSES_AGENT_BRIDGE_INPUT_ID?.trim() || "prompt"
 const message = process.env.MUSES_AGENT_BRIDGE_MESSAGE?.trim() || "Return the word BRIDGE_READY."
 const cancelMessage = process.env.MUSES_AGENT_BRIDGE_CANCEL_MESSAGE?.trim()
   || "SLOW Keep this turn active until it is cancelled."
@@ -18,7 +20,7 @@ const idempotencyKey = `workflow-agent-bridge:${Date.now()}`
 const request = {
   workspaceId,
   target: { kind: "deployment", workspaceId, deploymentId },
-  inputs: { message: { valueType: "text", value: message } },
+  inputs: { [workflowInputId]: { valueType: "text", value: message } },
   idempotencyKey,
 }
 
@@ -34,9 +36,9 @@ assert(completed.status === "completed", `Workflow ended as ${completed.status}:
 const result = completed.result?.outputs?.result
 assert(result?.valueType === "text" && typeof result.value === "string", "Agent output was not projected to the End node.")
 assert(result.value.length > 0, "Agent output was empty.")
-assert(completed.events.some((event) => event.type === "node.succeeded" && event.nodeId === "agent-run-1"), "The agent.run node did not succeed.")
+assert(completed.events.some((event) => event.type === "node.succeeded" && event.nodeId === agentNodeId), "The agent.run node did not succeed.")
 
-const agentNode = completed.observability?.nodes?.find((node) => node.nodeId === "agent-run-1")
+const agentNode = completed.observability?.nodes?.find((node) => node.nodeId === agentNodeId)
 assert(typeof agentNode?.usage?.agentRunId === "string", "AgentRun correlation was not projected into Workflow observability.")
 assertUsageProjection(completed, agentNode)
 
@@ -64,7 +66,7 @@ async function verifyCancellation() {
   const cancellationRequest = {
     ...request,
     idempotencyKey: cancellationKey,
-    inputs: { message: { valueType: "text", value: cancelMessage } },
+    inputs: { [workflowInputId]: { valueType: "text", value: cancelMessage } },
   }
   const started = await jsonRequest("POST", "/api/studio/workflow-runs", cancellationRequest, 202)
   const active = await pollRunUntil(

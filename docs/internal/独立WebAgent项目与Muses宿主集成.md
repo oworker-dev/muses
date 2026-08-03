@@ -130,7 +130,7 @@ Host 调用对时间戳、method、path 和 body 做 HMAC 签名，同时携带 
 
 截至 2026-08-02，独立 Agent 已拥有自己的 `muses_agent` 产品数据 schema、独立 `muses_agent_world` Eve Workflow World、Host JWT、线程所有权、Headless AgentRun API、可恢复事件流和 iframe 嵌入协议。Eve 上下文压缩以 82% 阈值启用；一个 AgentRun 独占一个 durable session，其 `/workspace` 跨 turn 保留。Muses 不再保存或压缩 Agent 上下文，也不再执行本地模型循环。
 
-截至 2026-08-03，Muses 已消费不可变 `v0.1.0-alpha.7` 的 `@muses/agent-contracts`、`@muses/agent-client` 与 `@muses/agent-host` 发布包。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
+截至 2026-08-03，Muses 已消费 `v0.1.0-alpha.8` 的 `@muses/agent-contracts`、`@muses/agent-client` 与 `@muses/agent-host`，并将三个 package path 固定到同一不可变 Git commit `29741c1c6c5c32d2cfe6dccd990be9a12100fc51`。Agent 仓库随 release commit 提交可审计构建产物，Muses 的冷安装不需要重新构建 SDK，也不会把 GitHub Release 的短期签名 URL 写入锁文件；日常检查会拒绝可移动引用、过期 JWT 地址或 package commit 分叉。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
 
 同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@muses/agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
 

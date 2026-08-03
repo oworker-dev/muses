@@ -52,7 +52,11 @@ import {
   type WorkflowInterpreterHarnessOptions,
   type WorkflowRuntimeEvent,
 } from "@/workflows/workflow-definition-interpreter"
-import { getActiveAgentRunIds } from "@/workflows/workflow-agent-run-state"
+import { listWorkflowAgentRunIds } from "@/lib/workflow-agent-run-store"
+import {
+  getActiveAgentRunIds,
+  mergeAgentRunIds,
+} from "@/workflows/workflow-agent-run-state"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -450,12 +454,25 @@ export async function DELETE(request: Request) {
     }
 
     try {
+      // Stop the parent scheduler before waiting for remote child cancellation.
+      // Otherwise its poll step can observe a cancelled AgentRun and finalize
+      // the Workflow as failed while this request is still settling children.
+      await run.cancel()
+      const persistedAgentRunIds = await listWorkflowAgentRunIds(
+        {
+          workspaceId: cancellation.workspaceId,
+          workflowRunId: cancellation.runId,
+        },
+        client
+      )
       await cancelActiveAgentRuns({
         actorUserId: ownedRun.submittedByUserId,
-        agentRunIds: getActiveAgentRunIds(events),
+        agentRunIds: mergeAgentRunIds(
+          persistedAgentRunIds,
+          getActiveAgentRunIds(events)
+        ),
         workspaceId: cancellation.workspaceId,
       })
-      await run.cancel()
     } catch {
       await client.query("rollback")
       transactionOpen = false
@@ -511,19 +528,13 @@ async function cancelActiveAgentRuns(input: {
   workspaceId: string
 }) {
   if (input.agentRunIds.length === 0) return
-  let client: ReturnType<typeof createMusesAgentHostClient>
-  try {
-    client = createMusesAgentHostClient({
-      userId: input.actorUserId,
-      workspaceId: input.workspaceId,
-    })
-  } catch {
-    return
-  }
+  const client = createMusesAgentHostClient({
+    actorType: "service",
+    userId: input.actorUserId,
+    workspaceId: input.workspaceId,
+  })
   await Promise.all(
-    input.agentRunIds.map(async (agentRunId) => {
-      await client.cancel(agentRunId).catch(() => undefined)
-    })
+    input.agentRunIds.map((agentRunId) => client.cancel(agentRunId))
   )
 }
 

@@ -1871,3 +1871,29 @@ items:
     createdAt: 2026-08-02T15:16:02.495Z
     updatedAt: 2026-08-02T17:59:53.391Z
     statusChangedAt: 2026-08-02T15:59:33.188Z
+  - id: stabilize-agent-sdk-distribution
+    name: 稳定 Agent SDK 可重复分发
+    summary: 消除 GitHub Release 短期签名 URL 对 pnpm 锁文件和 CI 冷安装的污染，以不可变来源完成 frozen-lockfile、构建与真实 GitHub Actions 门禁。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: harden-agent-release-operations
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-02T18:12:52.437Z
+    updatedAt: 2026-08-03T12:21:40.559Z
+    statusChangedAt: 2026-08-03T12:21:40.559Z
+  - id: stabilize-workflow-agent-cancellation
+    name: 稳定 Workflow 到 AgentRun 的持久取消联动
+    summary: 为每个 Workflow SDK run 与 AgentRun 建立 Muses 持久映射，使用事务级 advisory lock 串行化映射和父运行取消，验证子 AgentRun 不会在父工作流取消后继续完成。
+    status: done
+    planRef: workflow-agent-composition
+    parentTaskId: implement-workflow-agent-bridge
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T09:20:06.976Z
+    updatedAt: 2026-08-03T12:21:40.806Z
+    statusChangedAt: 2026-08-03T12:21:40.806Z

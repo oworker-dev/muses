@@ -360,6 +360,33 @@ export const musesWorkflowRun = pgTable(
   ],
 );
 
+export const musesWorkflowAgentRun = pgTable(
+  "muses_workflow_agent_run",
+  {
+    workspaceId: text("workspace_id").notNull(),
+    workflowRunId: text("workflow_run_id").notNull(),
+    workflowNodeId: text("workflow_node_id").notNull(),
+    agentRunId: text("agent_run_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({
+      columns: [table.workspaceId, table.workflowRunId, table.workflowNodeId],
+    }),
+    uniqueIndex("muses_workflow_agent_run_agent_idx").on(
+      table.workspaceId,
+      table.agentRunId,
+    ),
+    index("muses_workflow_agent_run_workflow_idx").on(
+      table.workspaceId,
+      table.workflowRunId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const musesGeneratedAsset = pgTable(
   "muses_generated_asset",
   {

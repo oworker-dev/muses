@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 
 import { requireAgentJsonObject } from "../lib/agent-json-boundary"
 import { type WorkflowRuntimeEvent } from "./workflow-definition-interpreter"
-import { getActiveAgentRunIds } from "./workflow-agent-run-state"
+import {
+  getActiveAgentRunIds,
+  mergeAgentRunIds,
+} from "./workflow-agent-run-state"
 
 type WorkflowRuntimeEventPayload = WorkflowRuntimeEvent extends infer Event
   ? Event extends WorkflowRuntimeEvent
@@ -13,9 +16,24 @@ type WorkflowRuntimeEventPayload = WorkflowRuntimeEvent extends infer Event
 describe("getActiveAgentRunIds", () => {
   it("returns started AgentRuns whose nodes are not terminal", () => {
     const events = [
-      runtimeEvent({ type: "node.agent.started", nodeId: "agent-a", nodeKind: "agent-run", agentRunId: "arun-a" }),
-      runtimeEvent({ type: "node.agent.started", nodeId: "agent-b", nodeKind: "agent-run", agentRunId: "arun-b" }),
-      runtimeEvent({ type: "node.succeeded", nodeId: "agent-a", nodeKind: "agent-run", outputs: {} }),
+      runtimeEvent({
+        type: "node.agent.started",
+        nodeId: "agent-a",
+        nodeKind: "agent-run",
+        agentRunId: "arun-a",
+      }),
+      runtimeEvent({
+        type: "node.agent.started",
+        nodeId: "agent-b",
+        nodeKind: "agent-run",
+        agentRunId: "arun-b",
+      }),
+      runtimeEvent({
+        type: "node.succeeded",
+        nodeId: "agent-a",
+        nodeKind: "agent-run",
+        outputs: {},
+      }),
     ]
 
     expect(getActiveAgentRunIds(events)).toEqual(["arun-b"])
@@ -23,7 +41,12 @@ describe("getActiveAgentRunIds", () => {
 
   it("excludes an AgentRun when its node caused the run failure", () => {
     const events = [
-      runtimeEvent({ type: "node.agent.started", nodeId: "agent-a", nodeKind: "agent-run", agentRunId: "arun-a" }),
+      runtimeEvent({
+        type: "node.agent.started",
+        nodeId: "agent-a",
+        nodeKind: "agent-run",
+        agentRunId: "arun-a",
+      }),
       runtimeEvent({
         type: "run.failed",
         failure: {
@@ -38,6 +61,15 @@ describe("getActiveAgentRunIds", () => {
     ]
 
     expect(getActiveAgentRunIds(events)).toEqual([])
+  })
+
+  it("unions persisted and runtime-event AgentRun ids without duplicates", () => {
+    expect(
+      mergeAgentRunIds(
+        ["arun-persisted", "arun-shared"],
+        ["arun-shared", "arun-event"]
+      )
+    ).toEqual(["arun-persisted", "arun-shared", "arun-event"])
   })
 })
 
@@ -67,14 +99,18 @@ describe("requireAgentJsonObject", () => {
     ["function", { transform: () => "invalid" }],
     ["non-plain object", { generatedAt: new Date() }],
   ])("rejects a %s", (_case, schema) => {
-    expect(() => requireAgentJsonObject(schema)).toThrowError(/Agent output schema/)
+    expect(() => requireAgentJsonObject(schema)).toThrowError(
+      /Agent output schema/
+    )
   })
 
   it("rejects circular references", () => {
     const schema: Record<string, unknown> = { type: "object" }
     schema.self = schema
 
-    expect(() => requireAgentJsonObject(schema)).toThrowError(/circular reference/)
+    expect(() => requireAgentJsonObject(schema)).toThrowError(
+      /circular reference/
+    )
   })
 
   it("rejects schemas above the bounded string budget", () => {
@@ -84,7 +120,9 @@ describe("requireAgentJsonObject", () => {
   })
 })
 
-function runtimeEvent(payload: WorkflowRuntimeEventPayload): WorkflowRuntimeEvent {
+function runtimeEvent(
+  payload: WorkflowRuntimeEventPayload
+): WorkflowRuntimeEvent {
   return {
     ...payload,
     at: "2026-08-01T00:00:00.000Z",
