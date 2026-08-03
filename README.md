@@ -260,10 +260,15 @@ Site administrators can manage capability-scoped model connections at `/admin/pr
 
 Admin-managed custom Provider URLs must use HTTPS in production and match an exact hostname in `MUSES_PROVIDER_ALLOWED_HOSTS` (comma-separated; `api.openai.com` is the default). This allowlist applies to stored runtime routes and health checks. Deployment-owned `OPENAI_BASE_URL` variables remain trusted operator configuration.
 
-Muses does not execute Agent text-model calls in-process. Those calls belong to
-the independently deployed `muses-agent` service and currently use that
-service's deployment credential; routing them from the Muses Provider control
-plane remains a production integration Gate. Image generation first uses an
+Muses does not execute Agent text-model loops in-process. The independently
+deployed `muses-agent` service calls the private OpenAI Responses-compatible
+Muses broker with `MUSES_AGENT_PROVIDER_BROKER_SECRET`; the broker resolves an
+Admin-managed `llm` Provider Connection by model allowlist and keeps its
+upstream credential server-side. Configure the Agent's `OPENAI_BASE_URL` as
+`https://<muses-origin>/api/internal/agent-provider/v1` (or the same-host
+loopback equivalent) and set its `OPENAI_API_KEY` to the broker secret. Real
+Provider E2E and AgentRun-correlated credit reconciliation remain production
+Gates. Image generation first uses an
 Offering-bound `image` connection, then the independent
 `OPENAI_IMAGE_API_KEY`/`OPENAI_IMAGE_BASE_URL`, and finally the shared
 compatibility Provider. An explicit image base URL always requires an explicit

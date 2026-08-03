@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   classifyProbeResponse,
+  normalizeProviderBaseUrl,
   resolveProviderRuntimeConnection,
 } from "./provider-connections"
 
@@ -35,5 +36,31 @@ describe("provider connection health classification", () => {
         connectionId: "provider_connection_frozen",
       })
     ).rejects.toMatchObject({ code: "vault-not-configured" })
+  })
+})
+
+describe("provider connection URL policy", () => {
+  it("allows loopback HTTP only outside production", () => {
+    vi.stubEnv("NODE_ENV", "development")
+    expect(normalizeProviderBaseUrl("http://127.0.0.1:4000/v1")).toBe(
+      "http://127.0.0.1:4000/v1"
+    )
+
+    vi.stubEnv("NODE_ENV", "production")
+    expect(() =>
+      normalizeProviderBaseUrl("http://127.0.0.1:4000/v1")
+    ).toThrow("Provider connections require HTTPS")
+  })
+
+  it("requires every production host to be explicitly allowed", () => {
+    vi.stubEnv("NODE_ENV", "production")
+    vi.stubEnv("MUSES_PROVIDER_ALLOWED_HOSTS", "provider.example")
+
+    expect(normalizeProviderBaseUrl("https://provider.example/v1")).toBe(
+      "https://provider.example/v1"
+    )
+    expect(() =>
+      normalizeProviderBaseUrl("https://127.0.0.1:4443/v1")
+    ).toThrow("MUSES_PROVIDER_ALLOWED_HOSTS")
   })
 })

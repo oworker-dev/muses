@@ -20,6 +20,27 @@ Workflow Worlds. Neither owns the other's state machine. Both can be replaced
 behind their versioned contracts without moving canvas, Asset, identity or
 billing authority out of Muses.
 
+## Model Provider broker
+
+Muses-hosted Agent model calls use the OpenAI Responses-compatible private
+endpoint `POST /api/internal/agent-provider/v1/responses`. The Agent runtime
+sets its `OPENAI_BASE_URL` to the route prefix and authenticates with the shared
+service secret `MUSES_AGENT_PROVIDER_BROKER_SECRET`. This secret is distinct
+from Host JWT, Host capability HMAC, and every upstream Provider credential.
+
+For each request Muses validates a bounded JSON body and model id, resolves an
+active `llm` Provider Connection by model allowlist, decrypts its credential in
+server memory, calls the fixed `{baseURL}/responses` endpoint, and passes
+through the response stream and safe diagnostic headers. It does not accept an
+arbitrary destination, forward caller authorization, log Provider payloads, or
+return credentials. Missing Vault, invalid service auth, absent model route,
+timeout and upstream transport failure all fail closed with structured errors.
+
+This is a credential-routing boundary, not yet the final billing boundary. A
+real Provider E2E, per-Workspace entitlement, AgentRun-correlated usage/credit
+settlement, service-secret rotation and target-deployment abuse controls remain
+release gates.
+
 ## Headless AgentRun service
 
 Muses and durable Workflow steps call the standalone service through its
@@ -143,7 +164,8 @@ in `muses-agent` and consumed through the public Agent/Host contracts.
   configured origins; deployed-collector and billing-reconciliation evidence
   remain open.
 - Production sandbox backend isolation, cleanup, egress and SLO evidence.
-- Administrator model credential routing and non-zero price reconciliation E2E.
+- Real administrator model credential routing plus AgentRun-correlated non-zero
+  price reconciliation E2E; the private streaming broker is implemented.
 - Versioned package extraction, conformance suite, self-hosting, upgrade and
   rollback documentation.
 

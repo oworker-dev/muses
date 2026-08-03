@@ -48,6 +48,9 @@ Agent 与 Workflow 是可组合但不互相拥有的两个产品：
 - Agent Runtime 不导入 Workflow Runtime；Workflow Runtime 不导入 Agent Harness。
 - 双向引用只保存稳定身份、输入输出、Run 血缘和 correlation id。
 - Muses Host 负责身份、权限、积分、画布和平台资产，不修改 Agent 内部状态机。
+- Muses Host 通过私有 Responses-compatible Broker 为 Agent 解析 LLM
+  Provider Connection；Agent 只持有独立 Broker 服务密钥，不持有管理员配置
+  的上游模型密钥。独立部署仍可绕过该 Host 能力使用自己的 Provider。
 
 ## 3. Agent 项目边界
 

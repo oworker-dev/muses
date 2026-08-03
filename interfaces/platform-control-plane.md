@@ -50,12 +50,21 @@ New paid image submissions resolve an enabled Offering binding before the
 Workflow SDK run starts and freeze only `providerConnectionId` into the
 server-owned execution snapshot. The Step opens that exact connection at call
 time. A missing, disabled, unhealthy, or undecryptable frozen connection fails
-closed; it does not switch providers after a possibly billable request. The
-standalone Agent does not yet consume this registry for text-model routing;
-that Host-to-Agent credential and entitlement adapter is an explicit production
-Gate. Existing
-`OPENAI_API_KEY`/`OPENAI_IMAGE_API_KEY` variables remain deployment bootstrap
-fallbacks only when no database route was selected.
+closed; it does not switch providers after a possibly billable request.
+
+The standalone Agent consumes this registry through the private, server-only
+Responses-compatible route
+`POST /api/internal/agent-provider/v1/responses`. It authenticates with a
+separate `MUSES_AGENT_PROVIDER_BROKER_SECRET`; Muses resolves an active `llm`
+connection whose model allowlist accepts the request, opens the credential only
+for the upstream call, and streams the upstream response without buffering it.
+The browser, Agent durable state, tools and sandbox never receive the upstream
+credential. The route is not a general URL proxy and fails closed when the
+Vault or a matching connection is unavailable. Per-Workspace entitlement,
+credit reservation and usage reconciliation remain a separate production Gate.
+Existing `OPENAI_API_KEY`/`OPENAI_IMAGE_API_KEY` variables remain deployment
+bootstrap fallbacks for in-process Muses media paths only when no database route
+was selected.
 
 Health checks use a non-generating model metadata request and persist a
 capability-specific status (`unknown`, `healthy`, `degraded`, or

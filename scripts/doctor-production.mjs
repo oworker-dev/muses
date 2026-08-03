@@ -84,6 +84,7 @@ for (const name of [
   "MUSES_AGENT_HOST_JWT_ISSUER",
   "MUSES_AGENT_HOST_JWT_AUDIENCE",
   "MUSES_AGENT_HOST_TOOLS_SECRET",
+  "MUSES_AGENT_PROVIDER_BROKER_SECRET",
 ]) {
   if (!process.env[name]) {
     report(`${name} is missing. The standalone Agent Host integration is incomplete.`, strict);
@@ -97,10 +98,21 @@ for (const name of ["MUSES_AGENT_SERVICE_URL", "MUSES_AGENT_PUBLIC_URL"]) {
   }
 }
 
-for (const name of ["MUSES_AGENT_HOST_JWT_SECRET", "MUSES_AGENT_HOST_TOOLS_SECRET"]) {
+for (const name of [
+  "MUSES_AGENT_HOST_JWT_SECRET",
+  "MUSES_AGENT_HOST_TOOLS_SECRET",
+  "MUSES_AGENT_PROVIDER_BROKER_SECRET",
+]) {
   const value = process.env[name];
   if (value && Buffer.byteLength(value) < 32) {
     report(`${name} must contain at least 32 bytes.`, strict);
+  }
+}
+
+if (process.env.MUSES_AGENT_PROVIDER_TIMEOUT_MS) {
+  const timeout = Number(process.env.MUSES_AGENT_PROVIDER_TIMEOUT_MS);
+  if (!Number.isInteger(timeout) || timeout < 1000 || timeout > 300000) {
+    report("MUSES_AGENT_PROVIDER_TIMEOUT_MS must be an integer from 1000 to 300000.", strict);
   }
 }
 

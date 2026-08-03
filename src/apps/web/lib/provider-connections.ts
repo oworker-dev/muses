@@ -236,7 +236,7 @@ export async function createProviderConnection(input: {
   const connectionId = prefixedId("provider_connection")
   const credentialId = prefixedId("provider_credential")
   const name = normalizedName(input.name)
-  const baseUrl = normalizeBaseUrl(input.baseUrl)
+  const baseUrl = normalizeProviderBaseUrl(input.baseUrl)
   const capabilities = normalizeCapabilities(input.capabilities)
   const modelAllowlist = normalizeModelAllowlist(input.modelAllowlist || [])
   const offeringIds = uniqueIds(input.offeringIds || [])
@@ -603,7 +603,7 @@ export async function resolveProviderRuntimeConnection(input: {
     providerId: row.providerId,
     providerSlug: row.providerSlug,
     apiKey,
-    ...(row.baseUrl ? { baseURL: normalizeBaseUrl(row.baseUrl)! } : {}),
+    ...(row.baseUrl ? { baseURL: normalizeProviderBaseUrl(row.baseUrl)! } : {}),
     source: "credential-vault",
   }
 }
@@ -760,7 +760,9 @@ async function probeProvider(input: {
       resultCode: "base_url_required",
     }
   }
-  const safeBaseUrl = input.baseUrl ? normalizeBaseUrl(input.baseUrl) : baseUrl
+  const safeBaseUrl = input.baseUrl
+    ? normalizeProviderBaseUrl(input.baseUrl)
+    : baseUrl
   const url = new URL(
     input.modelId ? `models/${encodeURIComponent(input.modelId)}` : "models",
     ensureTrailingSlash(safeBaseUrl!)
@@ -980,7 +982,7 @@ function normalizedName(value: string) {
   return name
 }
 
-function normalizeBaseUrl(value: string | undefined) {
+export function normalizeProviderBaseUrl(value: string | undefined) {
   const normalized = value?.trim()
   if (!normalized) return null
   let url: URL
@@ -1004,10 +1006,12 @@ function normalizeBaseUrl(value: string | undefined) {
       "The provider base URL must use HTTP or HTTPS."
     )
   }
+  const production = process.env.NODE_ENV === "production"
   const local = url.hostname === "localhost" || url.hostname === "127.0.0.1"
+  const localDevelopment = local && !production
   if (
     url.protocol !== "https:" &&
-    !(url.protocol === "http:" && local) &&
+    !(url.protocol === "http:" && localDevelopment) &&
     process.env.MUSES_ALLOW_INSECURE_PROVIDER_URLS !== "true"
   ) {
     throw new ProviderConnectionError(
@@ -1016,8 +1020,7 @@ function normalizeBaseUrl(value: string | undefined) {
     )
   }
   if (
-    process.env.NODE_ENV === "production" &&
-    !local &&
+    production &&
     !providerAllowedHosts().has(url.hostname.toLowerCase())
   ) {
     throw new ProviderConnectionError(
