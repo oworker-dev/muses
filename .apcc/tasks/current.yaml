@@ -1949,3 +1949,16 @@ items:
     createdAt: 2026-08-03T15:02:05.585Z
     updatedAt: 2026-08-03T21:39:24.187Z
     statusChangedAt: 2026-08-03T21:39:24.187Z
+  - id: enable-public-alpha-access
+    name: 开放 Muses Alpha 公网体验入口
+    summary: 让产品负责人通过公网 IP 访问 Muses Studio，并确保 Agent 嵌入地址、CSP、认证回调和基础健康检查使用可达入口。
+    status: done
+    planRef: first-image-value-gate
+    parentTaskId: deliver-first-image-minimum-loop
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-03T21:54:49.218Z
+    updatedAt: 2026-08-03T22:05:02.278Z
+    statusChangedAt: 2026-08-03T22:05:02.278Z
