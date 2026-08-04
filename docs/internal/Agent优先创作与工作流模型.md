@@ -112,7 +112,7 @@ Agent Core 不依赖 React、Next.js、XYFlow、PPT 或具体 Harness，必须�
 
 这只是内核独立性的最低要求，不是最终产品边界。Codex 级 Agent 必须进一步作为 Web-first 项目独立发布，拥有自己的服务端 Runtime、Web 会话体验、Client/Host SDK、扩展、沙盒、运维与 eval；CLI 是辅助入口。Muses 是第一个 Host，Canvas、Asset、Media 和 Workflow 都是可选宿主工具。完整产品与依赖规则见[独立 Web Agent 项目与 Muses 宿主集成](独立WebAgent项目与Muses宿主集成.md)。
 
-AI SDK 负责模型与工具协议；Workflow SDK 负责耐久步骤、等待、重试和恢复；Harness 负责 Agent loop、上下文和扩展装配；Muses Agent Core 负责稳定产品身份、权限、预算、控制和审计。
+AI SDK 负责模型与工具协议；Workflow SDK 负责耐久步骤、等待、重试和恢复；`open-agent` Harness 负责 Agent loop、上下文和扩展装配；Muses Host 负责稳定产品身份、权限、预算、模型控制和审计。
 
 ## 9. Skill、MCP 与沙盒
 
@@ -158,7 +158,7 @@ Agent 可以构建包含 Agent 节点的工作流，但 Runtime 必须限制最�
 
 ## 12. A7 当前工程状态
 
-截至 2026-07-29，A7 已用真实模型和真实图片通过第二个纵向切片：已登录用户可以在 Studio 用自然语言发起 `AgentRun`，Muses Agent Core 通过 AI SDK 完成模型工具循环，`image.generate` 复用模型目录、积分预留、Workflow SDK 图像解释器和对象存储，并只通过 Operation Gateway 把生成的 Asset 放入权威 `CreativeCanvas`。Studio 默认进入创作模式，专业模式保留为可切换投影；生成结果以可移动 Asset 卡片显示，拖动通过 `creative.item.put` 保存，刷新后位置、图片和 AgentRun 均可恢复。
+截至 2026-07-29，A7 的历史纵向切片已用真实模型和真实图片验证：已登录用户可以在 Studio 用自然语言发起 `AgentRun`，当时的 Muses Agent Core 通过 AI SDK 完成模型工具循环，`image.generate` 复用模型目录、积分预留、Workflow SDK 图像解释器和对象存储，并只通过 Operation Gateway 把生成的 Asset 放入权威 `CreativeCanvas`。该切片保留为迁移证据；现行 Agent loop 由独立 `open-agent` 提供，Muses 只通过 Host SDK 接入。
 
 AgentRun 现在持久化“理解需求 → 生成图片 → 放置结果”的最小 `ExecutionPlan`，计划步骤携带依赖、状态和 Asset evidence ref，并在 Agent 面板中默认折叠、按需展开。这证明了 ExecutionPlan 与 CreativeCanvas 是不同权威对象，而不是把专业工作流的 Input/Output 隐藏起来；当前计划仍是图像闭环的固定最小计划，不是通用可编辑规划器。
 

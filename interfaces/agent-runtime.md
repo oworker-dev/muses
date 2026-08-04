@@ -1,7 +1,7 @@
 # Agent Runtime Interface
 
 This document describes the current Muses integration with the independently
-deployable `muses-agent` product. It is a product contract, not a promise that
+deployable `open-agent` product. It is a product contract, not a promise that
 every surface is already a stable public API.
 
 ## Authority layers
@@ -150,7 +150,7 @@ isolated test to verify its historical Asset project-scope backfill.
 
 Muses no longer exposes `/api/studio/agent-runs`, local model-loop, delegation,
 context, trace or driver implementations. New Agent behavior must be implemented
-in `muses-agent` and consumed through the public Agent/Host contracts.
+in `open-agent` and consumed through the public Agent/Host contracts.
 
 ## Current release gates
 

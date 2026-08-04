@@ -11,7 +11,7 @@ Muses 不以“全部自研”证明先进，也不把某个 SDK 的对象模型
 
 - **创作与专业画布投影**：AI Elements + XYFlow 是交互图投影候选；创作模式投影 `CreativeCanvas`，专业模式投影独立 `WorkflowDefinition`，两者不共享根 Schema。
 - **耐久工作流执行**：Workflow SDK 是 `WorkflowRun` 的首选候选，不拥有探索画布。
-- **自主 Agent Runtime**：Muses Agent Core 是当前权威 Runtime；Pi Agent Core 是可选的轻量循环 Adapter；Eve 保留为隔离的耐久 Harness 候选，当前不进入产品运行时。
+- **自主 Agent Runtime**：独立 `open-agent` 是当前权威 Web Agent Runtime，以 Eve 作为默认 Harness；Muses 只通过公开 Host SDK 集成，不再维护本地 Agent Core。Pi 仅作为历史选型参考。
 - **模型与流式交互**：AI SDK 是模型、工具协议和流式 UI 适配层，不是 Agent Runtime。
 - **专业文档渲染**：`DesignDocument` 独立比较 Konva/Fabric，必要时以 Pixi/WebGL 提升渲染上限。
 - **权威产品状态**：CreativeCanvas、ExecutionPlan、WorkflowDefinition、DesignDocument、Command、Revision、Asset、Job、Capability、Provenance 与 Policy 始终由 Muses 拥有。
@@ -238,8 +238,8 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 2. 已完成单 Agent 真实生图最小闭环：PostgreSQL Run/Event、AI SDK 模型工具循环、Workflow SDK driver、真实 Image Capability、Gateway 入画布与刷新恢复。
 3. 已完成权威 CreativeCanvas 的默认创作模式投影、可移动 Asset、来源数据、可展开最小 ExecutionPlan 和真实 steering/follow-up 浏览器验收。
 4. 已完成 UI、Agent 和 API 按稳定 id、版本与幂等键调用专业空间中的指定 WorkflowDefinition，以及单 Agent 恢复、压缩、费用、预算、审批、取消、隔离、追踪与固定 eval Gate。
-5. 已冻结 Agent 与 Workflow 课题分离：先在独立 `muses-agent` 项目交付 Codex 形态 Web 产品、Eve Harness、开放 UI/SDK、Sandbox、Skill/MCP 和 Conformance Suite。
-6. 独立 Agent Gate 通过后，以 Host SDK 集成到 Muses，并移除 Studio 的首图固化 Agent 行为；随后实现 Workflow `agent.run` 与平台自举。
+5. 已冻结 Agent 与 Workflow 课题分离：在独立 `open-agent` 项目交付 Codex 形态 Web 产品、Eve Harness、开放 UI/SDK、Sandbox、Skill/MCP 和 Conformance Suite。
+6. 独立 Agent Gate 通过后，以 Host SDK 集成到 Muses，并移除 Studio 的首图固化 Agent 行为；当前已完成 SDK、Host JWT Runtime Config、opaque scope 和 Embed 注入，下一阶段验证 Workflow `agent.run` 与平台自举。
 7. Agent 独立性、Muses Host 一致性与 Workflow 组合 Gate 通过后才进入真实 PPT；AI 短剧随后验证跨媒体复用。
 
 技术候选的新版本不会自动改变路线。升级、替换和正式采用必须由可复现证据与 APCC 决策驱动。

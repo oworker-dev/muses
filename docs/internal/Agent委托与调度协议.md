@@ -13,7 +13,7 @@ description: Muses Agent Orchestration 的父子 Run、显式上下文、服务�
 
 本文记录 2026-07-30 前旧 Muses 内置 Runtime 的 A10/A11 委派协议与验证证据，不再描述现行可执行实现。原 `@muses/agent-core`、PostgreSQL Scheduler、Child Runtime、Workflow driver 和 `agent.delegate` 已在独立 Agent 迁移后从 Muses 生产源码退役；历史 migration 与证据保持不可变。
 
-协议中仍长期有效的是父子 Run 血缘、显式上下文、权限只收窄、预算预留、DAG、取消和结构化结果原则。这些能力必须在独立 `muses-agent` 的 AgentRun/Profile/SubAgent 公开契约中重新实现并通过跨宿主 Conformance Suite，不能通过恢复 Muses 本地 Runtime 继续开发。当前生产 Skill/MCP 生命周期、SubAgent 调度、物理沙盒和全链路费用仍不得描述为已经可用。
+协议中仍长期有效的是父子 Run 血缘、显式上下文、权限只收窄、预算预留、DAG、取消和结构化结果原则。这些能力必须在独立 `open-agent` 的 AgentRun/Profile/SubAgent 公开契约中重新实现并通过跨宿主 Conformance Suite，不能通过恢复 Muses 本地 Runtime 继续开发。当前生产 Skill/MCP 生命周期、SubAgent 调度、物理沙盒和全链路费用仍不得描述为已经可用。
 
 ## 2. 不固定组织层级
 
