@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   AGENT_EMBED_CONTRACT_VERSION,
   parseAgentEmbedEvent,
-} from "@muses/agent-contracts/embed"
+} from "@oworker/open-agent-contracts/embed"
 
 describe("Agent Embed host protocol", () => {
   it("accepts only the versioned event surface", () => {

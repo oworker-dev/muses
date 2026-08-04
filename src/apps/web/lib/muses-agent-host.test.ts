@@ -19,8 +19,7 @@ describe("Muses standalone Agent host", () => {
       {
         userId: "user-1",
         workspaceId: "workspace-1",
-        projectId: "project-1",
-        canvasId: "canvas-1",
+        scope: { projectId: "project-1", canvasId: "canvas-1" },
       },
       environment,
     )
@@ -34,8 +33,7 @@ describe("Muses standalone Agent host", () => {
       iss: "muses.test",
       sub: "user-1",
       tenantId: "workspace-1",
-      projectId: "project-1",
-      canvasId: "canvas-1",
+      agentHostScope: JSON.stringify({ projectId: "project-1", canvasId: "canvas-1" }),
     })
   })
 

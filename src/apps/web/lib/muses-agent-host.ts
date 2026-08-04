@@ -5,15 +5,22 @@ import {
   type AgentRunClient,
   type AgentRunEventsResponse,
   type AgentRunStartResponse,
-} from "@muses/agent-client"
+} from "@oworker/open-agent-client"
 import {
   type AgentEvent,
   type AgentProfileRef,
   type AgentRunPolicy,
   type AgentRunSnapshot,
   type StartAgentRunRequest,
-} from "@muses/agent-contracts/agent-run"
-import { AGENT_HOST_CONTRACT_VERSION } from "@muses/agent-contracts/host"
+} from "@oworker/open-agent-contracts/agent-run"
+import {
+  AGENT_HOST_CONTRACT_VERSION,
+} from "@oworker/open-agent-contracts/host"
+import {
+  parseAgentRuntimeConfigSnapshot,
+  type AgentRuntimeConfigSnapshot,
+} from "@oworker/open-agent-contracts/runtime-config"
+import { readMusesAgentRuntimeConfig } from "./muses-agent-runtime-config"
 
 export const MUSES_AGENT_HOST_CONTRACT_VERSION = AGENT_HOST_CONTRACT_VERSION
 const DEFAULT_TOKEN_TTL_SECONDS = 300
@@ -22,8 +29,9 @@ export type MusesAgentHostActor = {
   readonly userId: string
   readonly workspaceId: string
   readonly actorType?: "user" | "service"
-  readonly projectId?: string
-  readonly canvasId?: string
+  /** Opaque host scope. Open Agent signs and forwards it without interpretation. */
+  readonly scope?: Readonly<Record<string, string>>
+  readonly runtimeConfig?: AgentRuntimeConfigSnapshot
 }
 
 export type MusesAgentProfileRef = AgentProfileRef
@@ -51,6 +59,9 @@ export function createMusesAgentHostToken(
   const now = Math.floor(Date.now() / 1000)
   const expiresAt = new Date((now + ttl) * 1000).toISOString()
   const header = { alg: "HS256", typ: "JWT" }
+  const runtimeConfig = parseAgentRuntimeConfigSnapshot(
+    actor.runtimeConfig ?? readMusesAgentRuntimeConfig(environment),
+  )
   const payload = {
     actorType: actor.actorType ?? "user",
     aud: audience,
@@ -59,8 +70,8 @@ export function createMusesAgentHostToken(
     iss: issuer,
     jti: `muses-host-${randomUUID()}`,
     scope: ["agent:runs"],
-    ...(actor.projectId ? { projectId: actor.projectId } : {}),
-    ...(actor.canvasId ? { canvasId: actor.canvasId } : {}),
+    ...(actor.scope ? { agentHostScope: JSON.stringify(actor.scope) } : {}),
+    agentRuntimeConfig: JSON.stringify(runtimeConfig),
     sub: actor.userId,
     tenantId: actor.workspaceId,
   }

@@ -51,6 +51,7 @@ import {
   createMusesAgentHostClient,
   type MusesAgentRunSnapshot,
 } from "@/lib/muses-agent-host"
+import { getMusesAgentRuntimeConfig } from "@/lib/muses-agent-runtime-config"
 import {
   clampWorkflowAgentBudget,
   getWorkflowAgentProfile,
@@ -841,12 +842,14 @@ async function startAgentRunStep(request: {
     profile,
     requiredPermissions
   )
+  const runtimeConfig = await getMusesAgentRuntimeConfig()
 
   const client = createMusesAgentHostClient({
     userId: request.actorUserId,
     workspaceId: request.definition.workspaceId,
     actorType: "service",
-    ...(request.projectId ? { projectId: request.projectId } : {}),
+    runtimeConfig,
+    ...(request.projectId ? { scope: { projectId: request.projectId } } : {}),
   })
   const response = await client.start({
     idempotencyKey: request.idempotencyKey,
@@ -894,11 +897,13 @@ async function inspectAgentRunStep(request: {
 }): Promise<MusesAgentRunSnapshot> {
   "use step"
 
+  const runtimeConfig = await getMusesAgentRuntimeConfig()
   return createMusesAgentHostClient({
     userId: request.actorUserId,
     workspaceId: request.workspaceId,
     actorType: "service",
-    ...(request.projectId ? { projectId: request.projectId } : {}),
+    runtimeConfig,
+    ...(request.projectId ? { scope: { projectId: request.projectId } } : {}),
   }).inspect(request.runId)
 }
 inspectAgentRunStep.maxRetries = 0
@@ -911,11 +916,13 @@ async function cancelAgentRunStep(request: {
 }) {
   "use step"
 
+  const runtimeConfig = await getMusesAgentRuntimeConfig()
   return createMusesAgentHostClient({
     userId: request.actorUserId,
     workspaceId: request.workspaceId,
     actorType: "service",
-    ...(request.projectId ? { projectId: request.projectId } : {}),
+    runtimeConfig,
+    ...(request.projectId ? { scope: { projectId: request.projectId } } : {}),
   }).cancel(request.runId)
 }
 cancelAgentRunStep.maxRetries = 0

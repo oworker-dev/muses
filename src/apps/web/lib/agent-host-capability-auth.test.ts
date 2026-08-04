@@ -4,7 +4,7 @@ import {
   AgentHostCapabilityAuthError,
   signAgentHostCapabilityRequest,
   verifyAgentHostCapabilityRequest,
-} from "@muses/agent-host/signature"
+} from "@oworker/open-agent-host/signature"
 
 const SECRET = "01234567890123456789012345678901"
 const NOW = 1_800_000_000_000

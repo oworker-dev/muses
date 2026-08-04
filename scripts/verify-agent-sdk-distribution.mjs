@@ -7,9 +7,9 @@ const webPackage = JSON.parse(
 )
 const lockfile = await readFile(new URL("pnpm-lock.yaml", workspaceRoot), "utf8")
 const packages = new Map([
-  ["@muses/agent-client", "agent-client"],
-  ["@muses/agent-contracts", "agent-contracts"],
-  ["@muses/agent-host", "agent-host"],
+  ["@oworker/open-agent-client", "agent-client"],
+  ["@oworker/open-agent-contracts", "agent-contracts"],
+  ["@oworker/open-agent-host", "agent-host"],
 ])
 const commits = new Set()
 
@@ -17,7 +17,7 @@ for (const [packageName, packagePath] of packages) {
   const specifier = webPackage.dependencies?.[packageName]
   const match = specifier?.match(
     new RegExp(
-      `^github:oworker-dev/muses-agent#([0-9a-f]{40})&path:/packages/${packagePath}$`,
+      `^github:oworker-dev/open-agent#([0-9a-f]{40})&path:/packages/${packagePath}$`,
     ),
   )
   assert.ok(match, `${packageName} must use an exact Muses Agent commit and package path.`)
@@ -29,7 +29,7 @@ const [commit] = commits
 
 for (const forbidden of [
   "release-assets.githubusercontent.com",
-  "github.com/oworker-dev/muses-agent/releases/download/",
+  "github.com/oworker-dev/open-agent/releases/download/",
   "jwt=",
 ]) {
   assert.equal(lockfile.includes(forbidden), false, `pnpm-lock.yaml contains ${forbidden}.`)
@@ -37,7 +37,7 @@ for (const forbidden of [
 
 for (const packagePath of packages.values()) {
   const immutableSource =
-    `https://codeload.github.com/oworker-dev/muses-agent/tar.gz/${commit}`
+    `https://codeload.github.com/oworker-dev/open-agent/tar.gz/${commit}`
     + `#path:/packages/${packagePath}`
   assert.ok(
     lockfile.includes(immutableSource),

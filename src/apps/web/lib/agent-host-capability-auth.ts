@@ -2,7 +2,7 @@ import { getPgPool } from "@/lib/database"
 import {
   AgentHostCapabilityAuthError,
   verifyAgentHostCapabilityRequest,
-} from "@muses/agent-host/signature"
+} from "@oworker/open-agent-host/signature"
 import {
   AgentHostScopeError,
   requireAuthorizedAgentHostScope,
@@ -11,8 +11,7 @@ import {
 export type AgentHostCapabilityActor = {
   readonly userId: string
   readonly workspaceId: string
-  readonly projectId?: string
-  readonly canvasId?: string
+  readonly scope?: Readonly<Record<string, string>>
   readonly actorType: "user" | "service"
   readonly role: "owner" | "admin" | "member" | "viewer"
 }
@@ -67,8 +66,8 @@ export async function authenticateAgentHostCapabilityRequest(
       403,
     )
   }
-  const projectId = identity.projectId
-  const canvasId = identity.canvasId
+  const projectId = identity.scope?.projectId
+  const canvasId = identity.scope?.canvasId
   let scope: { readonly projectId?: string; readonly canvasId?: string } = {}
   if (canvasId && !projectId) {
     throw new AgentHostCapabilityAuthError(
@@ -94,7 +93,7 @@ export async function authenticateAgentHostCapabilityRequest(
   return {
     userId: principalId,
     workspaceId: tenantId,
-    ...scope,
+    scope,
     actorType: actorTypeHeader,
     role: row.role,
   }

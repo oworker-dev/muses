@@ -128,7 +128,7 @@ Eve 是 Apache-2.0、filesystem-first 的耐久 Agent Framework，`0.27.8`
 Skills、State、Channels、Schedules、Human-in-the-loop、Subagents、Sandbox
 和基于 Workflow SDK 的 step checkpoint/resume 都有较完整实现。
 
-当前在独立项目 `/root/projects/muses-agent` 中已验证：
+当前在独立项目 `/root/projects/open-agent` 中已验证：
 
 - Web 与嵌入模式共享的多轮 durable session、continuation token、刷新恢复和 Usage。
 - 独立 Headless AgentRun API 与 Muses Workflow `agent-run` 节点组合。
@@ -218,7 +218,7 @@ Harness 工具只能调用 Muses Query、Command 与 Capability。模型消息�
 
 - 外层画布：AI Elements + XYFlow。
 - 耐久工作流：Workflow SDK。
-- Agent Runtime：独立 `/root/projects/muses-agent` 以 Eve 作为默认 Web Harness；Muses Headless 与 Pi 保留为兼容实现。Muses 通过 Host SDK 注入平台工具、身份、预算与计费，不把 Eve 导入自身 Node 22 进程。
+- Agent Runtime：独立 `/root/projects/open-agent` 以 Eve 作为默认 Web Harness；Muses 通过 Host SDK 注入平台工具、身份、预算与计费，不把 Eve 导入自身 Node 22 进程。
 - 生成 Asset：Muses PostgreSQL 保存 Asset 身份、对象键、元数据和来源，S3 兼容对象存储保存二进制；Workflow SDK 输出只作为执行结果，不作为 Asset 授权或生命周期权威。
 - 模型工具协议：AI SDK 7；内部点分工具名通过可逆别名映射到供应商安全名称。
 - 首批 Agent 工具：`canvas.inspect`、`canvas.item.put`、`image.generate`，写操作统一经过 Operation Gateway。

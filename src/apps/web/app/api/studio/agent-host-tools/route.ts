@@ -28,7 +28,7 @@ import {
   MusesAgentToolRegistry,
 } from "@/lib/agent-tools"
 import { authenticateAgentHostCapabilityRequest } from "@/lib/agent-host-capability-auth"
-import { AgentHostCapabilityAuthError } from "@muses/agent-host/signature"
+import { AgentHostCapabilityAuthError } from "@oworker/open-agent-host/signature"
 import { getOrCreateOperationGatewaySnapshot } from "@/lib/operation-gateway-store"
 
 export const dynamic = "force-dynamic"
@@ -120,9 +120,20 @@ export async function POST(request: Request) {
   }
 
   try {
+    const projectId = actor.scope?.projectId
+    if (!projectId) {
+      return Response.json(
+        {
+          contractVersion: AGENT_HOST_CAPABILITY_CONTRACT_VERSION,
+          error: "host-capability-project-required",
+          message: "A Project scope is required for Muses Host capabilities.",
+        },
+        { status: 400 },
+      )
+    }
     const gateway = await getOrCreateOperationGatewaySnapshot({
       workspaceId: actor.workspaceId,
-      projectId: actor.projectId,
+      projectId,
       userId: actor.userId,
     })
     const call: AgentToolCall = {

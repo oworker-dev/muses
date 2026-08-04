@@ -17,7 +17,7 @@ CLI 是开发、诊断和自动化入口，不是当前主要用户体验。生�
 
 当前以两个可以独立构建、运行和发布的项目推进：
 
-- `/root/projects/muses-agent`：通用 Web Agent 产品，包含 Eve Harness、Agent 服务、Web 工作台、Client/Host SDK、开放 UI、Sandbox、Tool、Skill、MCP 和 Eval。
+- `/root/projects/open-agent`：通用 Web Agent 产品，包含 Eve Harness、Agent 服务、Web 工作台、Client/Host SDK、开放 UI、Sandbox、Tool、Skill、MCP 和 Eval。
 - `/root/projects/saas`：Muses AI 设计平台。Muses Host 和 Workflow Engine 在同一仓库中保持模块与运行边界独立，后续是否拆仓由真实部署和团队所有权决定，而不是预先微服务化。
 
 项目数量不改变产品边界。Agent、Workflow Engine 和 Muses Host 仍是三个独立物种：
@@ -102,7 +102,7 @@ Eve 是独立 Web Agent 默认发行版 Harness，Pi 是轻量嵌入式对照，
 
 当前安装的 Eve `0.27.8` 处于 preview，要求 Node.js 24，并使用 Workflow SDK `5.0.0-beta` 协议；当前 Muses 主运行时是 Node.js 22 与 Workflow SDK 4.6.2。Eve 当前还没有证明满足 Muses 的 per-AgentRun 物理沙盒和并发消息顺序契约。因此：
 
-1. `/root/projects/muses-agent` 在 Node 24 与独立 Workflow World 上直接跑通 Eve 默认发行版，不导入 Muses 业务模块。
+1. `/root/projects/open-agent` 在 Node 24 与独立 Workflow World 上直接跑通 Eve 默认发行版，不导入 Muses 业务模块。
 2. 用同一 Conformance Suite 验证 Eve、Pi 与 Headless 公开语义，而不是直接升级 Muses 生产运行时。
 3. Eve 通过流、审批、取消、Usage、消息顺序和物理沙盒 Gate 后，才允许 Muses Host 把生产 Agent 流量切到该发行版。
 4. 即使更换 Harness，公开 SDK、事件、Profile、Tool、Usage 和 Host 协议也不改变。
@@ -133,9 +133,9 @@ Host 调用对时间戳、method、path 和 body 做 HMAC 签名，同时携带 
 
 截至 2026-08-02，独立 Agent 已拥有自己的 `muses_agent` 产品数据 schema、独立 `muses_agent_world` Eve Workflow World、Host JWT、线程所有权、Headless AgentRun API、可恢复事件流和 iframe 嵌入协议。Eve 上下文压缩以 82% 阈值启用；一个 AgentRun 独占一个 durable session，其 `/workspace` 跨 turn 保留。Muses 不再保存或压缩 Agent 上下文，也不再执行本地模型循环。
 
-截至 2026-08-03，Muses 已消费 `v0.1.0-alpha.8` 的 `@muses/agent-contracts`、`@muses/agent-client` 与 `@muses/agent-host`，并将三个 package path 固定到同一不可变 release commit `f2f1e897686c7a16a589dc78f4ce9f4c2c513183`。Agent 仓库随 release commit 提交可审计构建产物，Muses 的冷安装不需要重新构建 SDK，也不会把 GitHub Release 的短期签名 URL 写入锁文件；日常检查会拒绝可移动引用、过期 JWT 地址或 package commit 分叉。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
+截至 2026-08-04，Muses 已切换到 `open-agent` 仓库 `oworker-dev/open-agent` 的 `v0.1.0-alpha.9`，并将三个 package path 固定到同一不可变提交 `5bcd6a5c7ea98ad710216e02abe892ec211bdc38`。Agent 仓库随提交包含可审计构建产物，Muses 的冷安装不需要重新构建 SDK，也不会把 GitHub Release 的短期签名 URL 写入锁文件；日常检查会拒绝可移动引用、过期 JWT 地址或 package commit 分叉。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
 
-同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@muses/agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
+同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@oworker/open-agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
 
 同日完成首图宿主验收：自然语言 AgentRun 先发现 `canvas.inspect` 与 `image.generate`，再调用真实图像 Provider，生成并持久化一个 PNG Asset，通过 Operation Gateway 放入 CreativeCanvas，随后重新读取画布。验收同时检查了 1,629,358 字节对象、Asset/Workflow/credit reservation/settle 收据、`1,000,000` credit micros 结算、Agent 输入/输出/cache token 以及新快照中的 Asset。Agent Host 同步调用默认等待上限固定为 120 秒；超过该边界的长媒体仍必须使用 durable accepted + wait，不把长超时伪装成最终方案。该工程证据已通过，但“用户无需讲解即可完成首图”的产品负责人验收仍保持未完成。
 

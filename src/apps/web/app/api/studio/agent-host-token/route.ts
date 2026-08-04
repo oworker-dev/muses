@@ -1,4 +1,5 @@
 import { createMusesAgentHostToken, isMusesAgentConfigured } from "@/lib/muses-agent-host"
+import { getMusesAgentRuntimeConfig } from "@/lib/muses-agent-runtime-config"
 import {
   AgentHostScopeError,
   requireAuthorizedAgentHostScope,
@@ -49,11 +50,15 @@ export async function GET(request: Request) {
     }
     throw error
   }
+  const runtimeConfig = await getMusesAgentRuntimeConfig()
   const issued = createMusesAgentHostToken({
     userId: access.user.id,
     workspaceId: access.context.workspace.id,
-    projectId: scope.projectId,
-    canvasId: scope.canvasId,
+    scope: {
+      projectId: scope.projectId,
+      canvasId: scope.canvasId,
+    },
+    runtimeConfig,
   })
   const publicServiceUrl = (
     process.env.MUSES_AGENT_PUBLIC_URL || process.env.MUSES_AGENT_SERVICE_URL || ""
@@ -65,5 +70,6 @@ export async function GET(request: Request) {
     serviceUrl: publicServiceUrl,
     embedUrl: `${publicServiceUrl}/embed`,
     scope,
+    runtimeConfig,
   })
 }

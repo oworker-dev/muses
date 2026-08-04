@@ -9,7 +9,7 @@ import {
   AGENT_EMBED_CONTRACT_VERSION,
   parseAgentEmbedEvent,
   type AgentEmbedConfigureMessage,
-} from "@muses/agent-contracts/embed"
+} from "@oworker/open-agent-contracts/embed"
 import {
   getWorkflowAgentProfile,
   hostCapabilitiesForWorkflowAgent,
@@ -22,10 +22,14 @@ type HostTokenResponse = {
   readonly message?: string
   readonly serviceUrl?: string
   readonly scope?: { readonly projectId: string; readonly canvasId: string }
+  readonly runtimeConfig?: import("@oworker/open-agent-contracts/runtime-config").AgentRuntimeConfigSnapshot
 }
 
 type Bootstrap = Required<
-  Pick<HostTokenResponse, "accessToken" | "embedUrl" | "expiresAt" | "serviceUrl" | "scope">
+  Pick<
+    HostTokenResponse,
+    "accessToken" | "embedUrl" | "expiresAt" | "serviceUrl" | "scope" | "runtimeConfig"
+  >
 >
 
 const PROFILE = getWorkflowAgentProfile("muses-platform", "0.1.0")!
@@ -111,6 +115,7 @@ export function StudioAgentPanel({
       serviceUrl: bootstrap.serviceUrl,
       storageKey: `muses:${workspaceId}:${projectId}:threads:v1`,
       profile: { id: PROFILE.profileId, version: PROFILE.profileVersion },
+      runtimeConfig: bootstrap.runtimeConfig,
       runPolicy: {
         hostCapabilities: hostCapabilitiesForWorkflowAgent(PROFILE),
         limits: PROFILE.budget,

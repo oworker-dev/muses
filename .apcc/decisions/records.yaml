@@ -239,3 +239,18 @@ items:
     revisitCondition: Muses 升级到 Node 24 且 Eve 能以独立 Workflow World 和每 Run 沙盒 Adapter 通过恢复、审批、FIFO 与删除成本 Gate。
     createdAt: 2026-07-28T19:48:04.538Z
     decidedAt: 2026-07-28T19:48:19.287Z
+  - id: agent-open-agent
+    name: 将独立 Agent 产品中立化并命名为 open-agent
+    description: 把独立 Agent 定义为宿主中立、可独立运行、可通过版本化配置协议定制的 open-agent；Muses 仅作为外部宿主适配实现。
+    docPath: null
+    category: architecture
+    proposedBy: product-owner
+    context: 当前 Agent 仓库、包、Profile、工具和模型目录仍混入 Muses 命名与宿主条件，违背两个项目完全独立的产品边界。
+    impactOfNoAction: 第三方宿主无法在不修改 Agent 源码的情况下定制模型、上下文、Skill、MCP 和工具，Muses 业务持续污染通用内核。
+    expectedOutcome: open-agent 默认中立运行，宿主通过 AgentConfigSnapshot 和 Adapter 注入版本化配置，Muses 专用逻辑仅存在于 Muses 集成层。
+    boundary: 本决策覆盖产品命名、运行时配置协议、扩展注入与宿主适配边界；不在 open-agent 内实现任何 Muses 画布、媒体或工作流业务。
+    status: approved
+    decisionSummary: 产品所有者确认 Agent 与 Muses 是两个完全不同的项目；open-agent 必须以中立默认形态独立成立，并允许任意宿主通过受验证配置与 Adapter 定制内核能力。
+    revisitCondition: null
+    createdAt: 2026-08-04T01:45:57.339Z
+    decidedAt: 2026-08-04T01:46:03.903Z

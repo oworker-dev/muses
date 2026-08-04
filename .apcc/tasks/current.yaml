@@ -1975,3 +1975,16 @@ items:
     createdAt: 2026-08-03T22:39:35.004Z
     updatedAt: 2026-08-04T01:07:36.424Z
     statusChangedAt: 2026-08-04T00:34:24.552Z
+  - id: neutralize-open-agent-runtime
+    name: 中立化并重命名 open-agent 运行时
+    summary: 迁移仓库与包命名，建立 AgentConfigSnapshot/Adapter 契约，移除 Muses 专用运行时逻辑，并以独立 Web 与 Muses 外部宿主双路径验证。
+    status: in_progress
+    planRef: agent-independence-contract
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: true
+    pinnedReason: 当前 Agent 产品边界纠偏的首要任务，完成前不得继续增加宿主专用条件。
+    createdAt: 2026-08-04T01:46:13.695Z
+    updatedAt: 2026-08-04T01:46:13.695Z
+    statusChangedAt: 2026-08-04T01:46:13.695Z

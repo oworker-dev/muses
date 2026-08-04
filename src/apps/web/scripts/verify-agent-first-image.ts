@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto"
 import type {
   AgentEvent,
   AgentRunSnapshot,
-} from "@muses/agent-contracts/agent-run"
+} from "@oworker/open-agent-contracts/agent-run"
 
 import { getPgPool } from "../lib/database"
 import { createMusesAgentHostClient } from "../lib/muses-agent-host"
@@ -18,8 +18,7 @@ const canvasId = required("MUSES_E2E_CANVAS_ID")
 const client = createMusesAgentHostClient({
   userId,
   workspaceId,
-  projectId,
-  canvasId,
+  scope: { projectId, canvasId },
   actorType: "service",
 })
 const idempotencyKey = `muses-agent-first-image:${Date.now()}:${randomUUID()}`

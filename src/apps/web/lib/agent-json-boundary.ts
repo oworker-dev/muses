@@ -1,4 +1,4 @@
-import type { JsonValue } from "@muses/agent-contracts/agent-run"
+import type { JsonValue } from "@oworker/open-agent-contracts/agent-run"
 import { FatalError } from "workflow"
 
 const AGENT_JSON_MAX_DEPTH = 32
