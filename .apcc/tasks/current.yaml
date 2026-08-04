@@ -1964,7 +1964,7 @@ items:
     statusChangedAt: 2026-08-03T22:05:02.278Z
   - id: deliver-standalone-agent-production-ux
     name: 交付独立 Agent 生产级 Web 体验
-    summary: AI Elements/shadcn Web、即时发送、真实会话管理、Context、Skill/MCP 发现、响应式视觉、错误续跑、SDK 分发、请求级 Provider 预算与确定性生产门禁已完成；真实 Muses Host 全链复验受阻于唯一 LLM Provider Connection 余额不足（最小 256 token 预扣仍被拒绝），正式发布另需 HTTPS 精确嵌入源，GitHub 推送另需更新已过期 token。
+    summary: AI Elements/shadcn Web、即时发送、真实会话管理、Context、Skill/MCP 发现、响应式视觉、错误续跑、SDK 分发、请求级 Provider 预算与确定性生产门禁已完成并已推送；真实 Muses Host 全链复验受阻于唯一 LLM Provider Connection 余额不足（该 Vault 凭证与当前 OPENAI_IMAGE_API_KEY 一致，最小 256 token 预扣仍被拒绝），正式发布另需 HTTPS 精确嵌入源。
     status: blocked
     planRef: standalone-agent-engine
     parentTaskId: configure-eve-production-sandbox
@@ -1973,5 +1973,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-03T22:39:35.004Z
-    updatedAt: 2026-08-04T00:34:24.552Z
+    updatedAt: 2026-08-04T00:58:34.853Z
     statusChangedAt: 2026-08-04T00:34:24.552Z
