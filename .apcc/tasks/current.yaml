@@ -1262,7 +1262,7 @@ items:
     statusChangedAt: 2026-07-30T18:01:01.129Z
   - id: verify-agent-production-slo
     name: 完成安全、负载、故障、Eval 与 SLO Gate
-    summary: Node 24 类型检查、Agent 84/84 单测、真实 PostgreSQL 扩展 HTTP 生命周期、Provider HTTP/SSE 故障注入矩阵、Eve 双次上下文压缩无漂移、Docker 固定 Eval 6/6（43/43 gates）、Eve 与 Next 生产构建通过。408/429/5xx 由 Eve 唯一受限重试，硬超时与部分断流可同 session 显式续跑；压缩保留事实/todo/sandbox 并重置读前写安全状态。仍缺并发 AgentRun 压力、真实外部 Provider 长上下文 E2E、目标部署 SLO 与计费对账证据，未达到 Codex 级生产完成。
+    summary: Node 24 下 Open Agent 118/118 单测、类型检查、生产 doctor、SDK/Next/embed 完整生产构建均通过；Muses 105 项领域/Web 测试、全类型检查、Workflow/Next/API/CLI/MCP 生产构建通过。Provider 故障、固定 Eval、上下文压缩、Host E2E、Docker 沙盒与 reaper 已有真实证据。仍缺目标部署并发压力、外部 Provider 长上下文、SLO/计费对账与正式 Collector 证据，不能宣称最终生产完成。
     status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
@@ -1271,7 +1271,7 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:01.340Z
-    updatedAt: 2026-08-02T09:08:37.978Z
+    updatedAt: 2026-08-04T16:14:43.998Z
     statusChangedAt: 2026-08-01T15:56:16.306Z
   - id: implement-eve-default-adapter
     name: 实现 Eve 默认 Harness Adapter
@@ -1353,7 +1353,7 @@ items:
     statusChangedAt: 2026-08-02T15:59:33.825Z
   - id: unify-agent-observability-usage
     name: 统一 Agent、Workflow、模型、工具和费用观测
-    summary: 独立 Agent Web 与 Eve Runtime 已统一接入 @vercel/otel；同步 HTTP 传播 W3C context，耐久 Workflow 队列以 Span Link 保留因果关系。独立 Postgres World 实测导出 205 个 spans，AgentRun/correlation/Profile/session 关联字段齐全，私密 prompt 探针未导出。仍需在部署 Collector 下串联 Muses/Workflow/Host/模型/工具/费用并完成仪表盘、留存与计费对账证据。
+    summary: 独立 Agent Web 与 Eve Runtime 使用 @vercel/otel；同步 HTTP 传播 W3C context，耐久队列以 Span Link 保留因果。OTLP 验证共接收 9 次 export、657 spans，包含 open-agent/open-agent-web，Web→durable Agent trace link 与运行关联字段通过，私密 prompt marker 未导出。仍需目标部署真实 Collector/仪表盘，并串联 Muses Workflow/Host/模型/工具/费用及留存、计费对账。
     status: in_progress
     planRef: agent-production-gate
     parentTaskId: null
@@ -1362,7 +1362,7 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:02.084Z
-    updatedAt: 2026-08-02T04:51:00.800Z
+    updatedAt: 2026-08-04T16:14:44.487Z
     statusChangedAt: 2026-08-01T15:56:16.561Z
   - id: publish-open-agent-kit
     name: 发布开放可自托管 Agent Kit
@@ -1665,7 +1665,7 @@ items:
     statusChangedAt: 2026-08-01T03:53:44.065Z
   - id: configure-eve-production-sandbox
     name: 配置独立 Agent 生产沙盒与能力基线
-    summary: 生产 doctor 已强制显式选择 docker|microsandbox|vercel；Docker 默认 deny-all，要求 EVE_SANDBOX_RETENTION_HOURS 与 EVE_SANDBOX_REAPER_MAX_REMOVALS。已交付 operator reaper、Eve session ownership、数据库 agent_sandbox_deletions tombstone、短 lease claim、完成/失败重试状态和 Web DELETE session 顺序：先 Eve reset，再授权物理删除。真实 PostgreSQL + Docker 验证证明 stopped/exact-running 只删除已授权资源，未授权、保护、跨 ownership 资源保持。仍需目标部署 daemon hardening、资源配额、reaper 调度、持久审计导出和托管后端证据。
+    summary: 生产 doctor 强制显式选择 docker|microsandbox|vercel；Docker deny-all、same-session /workspace 持久化、cross-session 隔离已通过。Reaper 的授权账本、dry-run、保护、ownership 与 exact-running-session 删除均通过。仍需在目标部署配置实际定时 reaper、daemon hardening、CPU/内存/磁盘配额、持久审计导出及托管后端证据。
     status: in_progress
     planRef: standalone-agent-engine
     parentTaskId: null
@@ -1674,7 +1674,7 @@ items:
     pinned: true
     pinnedReason: 独立 Agent 生产 Gate 的首个阻断项。
     createdAt: 2026-08-01T15:08:36.250Z
-    updatedAt: 2026-08-02T06:04:00.453Z
+    updatedAt: 2026-08-04T16:14:44.245Z
     statusChangedAt: 2026-08-01T15:08:36.250Z
   - id: deliver-agent-tool-and-eval-loop
     name: 交付通用工具闭环与自主任务 Eval
@@ -1847,7 +1847,7 @@ items:
     statusChangedAt: 2026-08-02T11:53:02.250Z
   - id: harden-agent-release-operations
     name: 加固 Agent CI、发布来源与生产运维
-    summary: 交付 Node 24 CI、构建与包安装验证、发布来源证明、安全策略、自托管部署及数据留存运行手册；不跨越许可证和正式公共发布决策。
+    summary: Node 24 CI、构建/包安装验证、发布来源证明、安全策略、自托管部署及数据留存手册已交付；2026-08-05 再次完成 Open Agent SDK/Next/embed 与 Muses Workflow/Next/API/CLI/MCP 干净生产构建。正式发布仍受许可证决策、目标部署 SLO 和运维门禁约束。
     status: in_progress
     planRef: agent-production-gate
     parentTaskId: publish-open-agent-kit
@@ -1856,7 +1856,7 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-02T15:16:02.220Z
-    updatedAt: 2026-08-02T15:16:02.220Z
+    updatedAt: 2026-08-04T16:14:44.727Z
     statusChangedAt: 2026-08-02T15:16:02.220Z
   - id: detect-workflow-world-queue-contamination
     name: 检测 Workflow World 队列版本污染
@@ -1988,3 +1988,16 @@ items:
     createdAt: 2026-08-04T01:46:13.695Z
     updatedAt: 2026-08-04T01:46:13.695Z
     statusChangedAt: 2026-08-04T01:46:13.695Z
+  - id: task-107
+    name: 恢复本地基础设施并重跑生产门禁
+    summary: 2026-08-05 已恢复业务 PostgreSQL、独立 Muses Workflow World、Valkey、MinIO、Open Agent 数据库与独立 Eve World；Eve 4275、Agent Web 3100、Muses 4730 均返回 200。补跑 Open Agent 118/118、Muses 105 项测试、类型检查、production doctor、Workflow World doctor，以及两个项目 Node 24 生产构建；工作树仅保留本 APCC 证据更新。
+    status: done
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-04T11:22:12.352Z
+    updatedAt: 2026-08-04T16:14:44.965Z
+    statusChangedAt: 2026-08-04T16:14:44.965Z
