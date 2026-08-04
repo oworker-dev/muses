@@ -24,6 +24,17 @@ describe("Muses Open Agent runtime config", () => {
     expect(config.models[0]?.providerModelId).toBe("gpt-5")
   })
 
+  it("publishes the requested workflow profile for Agent nodes", () => {
+    const config = readMusesAgentRuntimeConfig({}, {
+      profileId: "general-purpose",
+      profileVersion: "0.1.0",
+    })
+    expect(config.profile).toMatchObject({
+      id: "general-purpose",
+      version: "0.1.0",
+    })
+  })
+
   it("rejects an override that tries to publish a non-Muses profile", () => {
     const config = readMusesAgentRuntimeConfig({})
     expect(() =>
@@ -37,5 +48,12 @@ describe("Muses Open Agent runtime config", () => {
         }),
       }),
     ).toThrow(/muses-platform/)
+
+    expect(() =>
+      readMusesAgentRuntimeConfig(
+        { MUSES_AGENT_RUNTIME_CONFIG_JSON: JSON.stringify(config) },
+        { profileId: "general-purpose", profileVersion: "0.1.0" },
+      ),
+    ).toThrow(/general-purpose/)
   })
 })

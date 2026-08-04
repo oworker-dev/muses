@@ -842,7 +842,10 @@ async function startAgentRunStep(request: {
     profile,
     requiredPermissions
   )
-  const runtimeConfig = await getMusesAgentRuntimeConfig()
+  const runtimeConfig = await getMusesAgentRuntimeConfig(process.env, {
+    profileId: profile.profileId,
+    profileVersion: profile.profileVersion,
+  })
 
   const client = createMusesAgentHostClient({
     userId: request.actorUserId,

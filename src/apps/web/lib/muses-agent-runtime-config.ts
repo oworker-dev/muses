@@ -23,13 +23,23 @@ const DEFAULT_MODEL_IDS = [
 
 const DEFAULT_PROFILE = getWorkflowAgentProfile("muses-platform", "0.1.0")
 
+export type MusesAgentProfileRef = {
+  readonly profileId: string
+  readonly profileVersion: string
+}
+
 export function readMusesAgentRuntimeConfig(
   environment: Readonly<Record<string, string | undefined>> = process.env,
+  requestedProfile?: MusesAgentProfileRef,
 ): AgentRuntimeConfigSnapshot {
+  const profile = resolveProfile(requestedProfile)
   const configured = environment.MUSES_AGENT_RUNTIME_CONFIG_JSON?.trim()
   if (configured) {
     try {
-      return assertMusesProfile(parseAgentRuntimeConfigSnapshot(JSON.parse(configured)))
+      return assertMusesProfile(
+        parseAgentRuntimeConfigSnapshot(JSON.parse(configured)),
+        profile,
+      )
     } catch (error) {
       if (error instanceof Error && error.message.includes("Muses Open Agent runtime config")) {
         throw error
@@ -42,7 +52,7 @@ export function readMusesAgentRuntimeConfig(
   }
   const defaultModelId = environment.MUSES_AGENT_DEFAULT_MODEL_ID?.trim()
   const models = parseEnvironmentModels(environment.MUSES_AGENT_MODELS_JSON)
-  return createSnapshot(models ?? defaultModels(), defaultModelId)
+  return createSnapshot(models ?? defaultModels(), defaultModelId, profile)
 }
 
 /**
@@ -52,9 +62,11 @@ export function readMusesAgentRuntimeConfig(
  */
 export async function getMusesAgentRuntimeConfig(
   environment: Readonly<Record<string, string | undefined>> = process.env,
+  requestedProfile?: MusesAgentProfileRef,
 ): Promise<AgentRuntimeConfigSnapshot> {
+  const profile = resolveProfile(requestedProfile)
   if (environment.MUSES_AGENT_RUNTIME_CONFIG_JSON?.trim()) {
-    return readMusesAgentRuntimeConfig(environment)
+    return readMusesAgentRuntimeConfig(environment, profile)
   }
 
   try {
@@ -95,6 +107,7 @@ export async function getMusesAgentRuntimeConfig(
       return createSnapshot(
         models,
         environment.MUSES_AGENT_DEFAULT_MODEL_ID?.trim() || models[0]!.id,
+        profile,
       )
     }
   } catch (error) {
@@ -103,12 +116,13 @@ export async function getMusesAgentRuntimeConfig(
     // selected model has no actual provider connection.
     console.warn("Unable to resolve the Muses LLM catalog for Open Agent token", error)
   }
-  return readMusesAgentRuntimeConfig(environment)
+  return readMusesAgentRuntimeConfig(environment, profile)
 }
 
 function createSnapshot(
   modelInputs: readonly Pick<AgentRuntimeModel, "id" | "providerModelId" | "label">[],
   requestedDefault?: string,
+  profile = DEFAULT_PROFILE,
 ): AgentRuntimeConfigSnapshot {
   const models: AgentRuntimeModel[] = modelInputs.map((model) => ({
     id: model.id,
@@ -122,8 +136,7 @@ function createSnapshot(
   const defaultModelId = models.some((model) => model.id === requestedDefault)
     ? requestedDefault!
     : models[0]!.id
-  const profile = DEFAULT_PROFILE
-  if (!profile) throw new Error("The published Muses platform Agent profile is missing.")
+  if (!profile) throw new Error("The requested Muses Agent profile is missing.")
   return parseAgentRuntimeConfigSnapshot({
     contractVersion: AGENT_RUNTIME_CONFIG_CONTRACT_VERSION,
     id: "muses-platform",
@@ -154,13 +167,33 @@ function createSnapshot(
 
 function assertMusesProfile(
   config: AgentRuntimeConfigSnapshot,
+  requestedProfile = DEFAULT_PROFILE,
 ): AgentRuntimeConfigSnapshot {
-  if (config.profile.id !== "muses-platform" || config.profile.version !== "0.1.0") {
+  if (
+    !requestedProfile ||
+    config.profile.id !== requestedProfile.profileId ||
+    config.profile.version !== requestedProfile.profileVersion
+  ) {
     throw new Error(
-      "Muses Open Agent runtime config must publish the muses-platform@0.1.0 profile.",
+      `Muses Open Agent runtime config must publish the ${requestedProfile?.profileId ?? "requested"}@${requestedProfile?.profileVersion ?? "unknown"} profile.`,
     )
   }
   return config
+}
+
+function resolveProfile(requestedProfile?: MusesAgentProfileRef) {
+  const profile = requestedProfile
+    ? getWorkflowAgentProfile(
+      requestedProfile.profileId,
+      requestedProfile.profileVersion,
+    )
+    : DEFAULT_PROFILE
+  if (!profile) {
+    throw new Error(
+      `Muses Open Agent profile ${requestedProfile?.profileId ?? "muses-platform"}@${requestedProfile?.profileVersion ?? "0.1.0"} is not published.`,
+    )
+  }
+  return profile
 }
 
 function defaultModels() {

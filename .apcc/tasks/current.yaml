@@ -1717,7 +1717,7 @@ items:
     statusChangedAt: 2026-08-02T02:32:55.977Z
   - id: verify-muses-platform-agent-canvas-workflow
     name: 验证 Muses 平台 Agent 驱动画布工作流闭环
-    summary: 双向真实闭环已通过：平台 Agent 使用 Host Capability 检查画布、调用/等待工作流、放置结果并复查；专业画布用户也可通过 UI 创建 Start→agent.run→End(result:text)、发布冻结定义并由独立 Agent 完成运行。
+    summary: 双向真实闭环已通过并加固：平台 Agent 使用 Host Capability 检查画布、调用/耐久等待工作流、放置结果并复查；Workflow agent.run 节点按自身 Profile 签发 Runtime Config，真实 Provider 与确定性 Mock 均完成 Start→general-purpose Agent→End(result:text)，最终输出 BRIDGE_READY。
     status: done
     planRef: codex-agent-experience
     parentTaskId: null
@@ -1726,7 +1726,7 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-01T15:08:37.337Z
-    updatedAt: 2026-08-02T17:59:53.111Z
+    updatedAt: 2026-08-04T10:05:31.221Z
     statusChangedAt: 2026-08-02T02:32:56.500Z
   - id: verify-extension-management-http-boundary
     name: 验证扩展管理 HTTP 授权与数据库生命周期
