@@ -1964,8 +1964,8 @@ items:
     statusChangedAt: 2026-08-03T22:05:02.278Z
   - id: deliver-standalone-agent-production-ux
     name: 交付独立 Agent 生产级 Web 体验
-    summary: 以真实 Provider、官方 AI Elements/shadcn 组件、即时发送、会话管理、Context、Skill/MCP 发现和双尺寸视觉回归实现用户可用门禁；Muses 通过服务端 Responses 代理按模型解析凭证，真实非 Mock 连续对话通过前不得完成。
-    status: in_progress
+    summary: AI Elements/shadcn Web、即时发送、真实会话管理、Context、Skill/MCP 发现、响应式视觉、错误续跑、SDK 分发、请求级 Provider 预算与确定性生产门禁已完成；真实 Muses Host 全链复验受阻于唯一 LLM Provider Connection 余额不足（最小 256 token 预扣仍被拒绝），正式发布另需 HTTPS 精确嵌入源，GitHub 推送另需更新已过期 token。
+    status: blocked
     planRef: standalone-agent-engine
     parentTaskId: configure-eve-production-sandbox
     countedForProgress: true
@@ -1973,5 +1973,5 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-03T22:39:35.004Z
-    updatedAt: 2026-08-03T23:25:21.957Z
-    statusChangedAt: 2026-08-03T22:39:35.004Z
+    updatedAt: 2026-08-04T00:34:24.552Z
+    statusChangedAt: 2026-08-04T00:34:24.552Z
