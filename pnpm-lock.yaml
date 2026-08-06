@@ -74,14 +74,14 @@ importers:
         specifier: ^16.2.6
         version: 16.2.6
       '@oworker/open-agent-client':
-        specifier: github:oworker-dev/open-agent#df3e7ce054b3ed96cdda31f33e342e148b0e36e9&path:/packages/agent-client
-        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-client(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts)
+        specifier: github:oworker-dev/open-agent#442420dae167d8ee72b55133d2ba961433fb0633&path:/packages/agent-client
+        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-client(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts)
       '@oworker/open-agent-contracts':
-        specifier: github:oworker-dev/open-agent#df3e7ce054b3ed96cdda31f33e342e148b0e36e9&path:/packages/agent-contracts
-        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts
+        specifier: github:oworker-dev/open-agent#442420dae167d8ee72b55133d2ba961433fb0633&path:/packages/agent-contracts
+        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts
       '@oworker/open-agent-host':
-        specifier: github:oworker-dev/open-agent#df3e7ce054b3ed96cdda31f33e342e148b0e36e9&path:/packages/agent-host
-        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-host(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts)
+        specifier: github:oworker-dev/open-agent#442420dae167d8ee72b55133d2ba961433fb0633&path:/packages/agent-host
+        version: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-host(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts)
       '@react-email/render':
         specifier: ^2.0.8
         version: 2.0.8(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -2003,8 +2003,8 @@ packages:
   '@oworker/aclip@0.3.6':
     resolution: {integrity: sha512-B4zMkVRXalKSLoGAVyTZPvA84h67KKv63QUd9kSTo1IfcxSq2wFmMuDq1V+tblTxghAE6ZEj5ntzVeTRhlFv4Q==}
 
-  '@oworker/open-agent-client@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-client':
-    resolution: {path: /packages/agent-client, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9}
+  '@oworker/open-agent-client@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-client':
+    resolution: {path: /packages/agent-client, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633}
     version: 0.1.0-alpha.9
     engines: {node: '>=20'}
     peerDependencies:
@@ -2014,13 +2014,13 @@ packages:
       eve:
         optional: true
 
-  '@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts':
-    resolution: {path: /packages/agent-contracts, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9}
+  '@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts':
+    resolution: {path: /packages/agent-contracts, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633}
     version: 0.1.0-alpha.9
     engines: {node: '>=20'}
 
-  '@oworker/open-agent-host@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-host':
-    resolution: {path: /packages/agent-host, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9}
+  '@oworker/open-agent-host@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-host':
+    resolution: {path: /packages/agent-host, tarball: https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633}
     version: 0.1.0-alpha.9
     engines: {node: '>=20'}
     peerDependencies:
@@ -9458,15 +9458,15 @@ snapshots:
       - supports-color
       - yaml
 
-  '@oworker/open-agent-client@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-client(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts)':
+  '@oworker/open-agent-client@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-client(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts)':
     dependencies:
-      '@oworker/open-agent-contracts': https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts
+      '@oworker/open-agent-contracts': https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts
 
-  '@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts': {}
+  '@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts': {}
 
-  '@oworker/open-agent-host@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-host(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts)':
+  '@oworker/open-agent-host@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-host(@oworker/open-agent-contracts@https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts)':
     dependencies:
-      '@oworker/open-agent-contracts': https://codeload.github.com/oworker-dev/open-agent/tar.gz/df3e7ce054b3ed96cdda31f33e342e148b0e36e9#path:/packages/agent-contracts
+      '@oworker/open-agent-contracts': https://codeload.github.com/oworker-dev/open-agent/tar.gz/442420dae167d8ee72b55133d2ba961433fb0633#path:/packages/agent-contracts
 
   '@oxc-project/types@0.139.0': {}
 

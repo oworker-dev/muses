@@ -6,6 +6,9 @@ const { Client } = pg;
 const studioEmail = "muses-studio-e2e@example.com";
 const studioPassword = "MusesStudioE2E123!";
 const authoringEmail = "muses-agent-authoring-e2e@example.com";
+const agentEmbedUrl = `${(
+  process.env.MUSES_AGENT_PUBLIC_URL || "http://127.0.0.1:3000"
+).replace(/\/+$/, "")}/embed`;
 let workspaceId = "";
 
 test.beforeAll(async ({ request }) => {
@@ -92,10 +95,7 @@ test("Studio uses one full-height right rail for Agent and node settings", async
   await expect(agent).toBeVisible();
   expect((await agent.boundingBox())?.height).toBeGreaterThan(780);
   const embed = agent.locator("iframe");
-  await expect(embed).toHaveAttribute(
-    "src",
-    /^http:\/\/127\.0\.0\.1:3000\/embed$/,
-  );
+  await expect(embed).toHaveAttribute("src", agentEmbedUrl);
   const embedUrl = await embed.getAttribute("src");
   expect(embedUrl).not.toContain("token");
   expect(embedUrl).not.toContain("accessToken");
@@ -104,15 +104,17 @@ test("Studio uses one full-height right rail for Agent and node settings", async
     agentFrame.getByRole("textbox", { name: "Describe a task" }),
   ).toBeVisible({ timeout: 30_000 });
   await expect(
-    agentFrame.getByRole("combobox", { name: "Model" }),
+    agentFrame.getByRole("button", { name: "Model" }),
   ).toBeVisible();
   await expect(
     agentFrame.getByRole("combobox", { name: "Reasoning" }),
   ).toBeVisible();
-  await expect(agentFrame.getByText("0 / 128k", { exact: true })).toBeVisible();
+  await expect(
+    agentFrame.getByRole("button", { name: "Context" }),
+  ).toBeVisible();
   await agentFrame.getByRole("button", { name: "Open navigation" }).click();
   await expect(
-    agentFrame.getByRole("button", { name: "New task", exact: true }),
+    agentFrame.getByRole("complementary", { name: "Tasks" }),
   ).toBeVisible();
   await agentFrame.getByRole("button", { name: "Close navigation" }).click();
 

@@ -1,5 +1,5 @@
 /**
- * Production-topology smoke test for Muses Workflow -> standalone muses-agent.
+ * Production-topology smoke test for Muses Workflow -> standalone Open Agent.
  *
  * Required environment:
  *   MUSES_BASE_URL, MUSES_SESSION_COOKIE, MUSES_WORKSPACE_ID,

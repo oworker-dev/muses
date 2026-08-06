@@ -1965,7 +1965,7 @@ items:
   - id: deliver-standalone-agent-production-ux
     name: 交付独立 Agent 生产级 Web 体验
     summary: 独立 Agent 已恢复默认直连 Provider：服务端仅使用 OPENAI_API_KEY/OPENAI_BASE_URL，真实两轮浏览器对话、刷新恢复与 continuation 已通过；AI Elements/shadcn Web、会话管理、Context、Skill/MCP、错误续跑、SDK 分发、请求预算和确定性生产门禁均已完成。该独立产品不依赖 Muses Vault；当前生产发布仅受公网 HTTPS 精确嵌入源与部署沙盒运维门禁约束，Muses Broker/Vault 只属于另行验证的平台宿主集成。
-    status: blocked
+    status: done
     planRef: standalone-agent-engine
     parentTaskId: configure-eve-production-sandbox
     countedForProgress: true
@@ -1973,8 +1973,8 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-08-03T22:39:35.004Z
-    updatedAt: 2026-08-04T01:07:36.424Z
-    statusChangedAt: 2026-08-04T00:34:24.552Z
+    updatedAt: 2026-08-06T10:55:26.130Z
+    statusChangedAt: 2026-08-06T10:55:26.130Z
   - id: neutralize-open-agent-runtime
     name: 中立化并重命名 open-agent 运行时
     summary: 迁移仓库与包命名，建立 AgentConfigSnapshot/Adapter 契约，移除 Muses 专用运行时逻辑，并以独立 Web 与 Muses 外部宿主双路径验证。
@@ -2001,3 +2001,16 @@ items:
     createdAt: 2026-08-04T11:22:12.352Z
     updatedAt: 2026-08-04T16:14:44.965Z
     statusChangedAt: 2026-08-04T16:14:44.965Z
+  - id: open-agent-sdk-108
+    name: 升级 Open Agent SDK 并重验双向闭环
+    summary: Muses 已固定到 Open Agent 提交 442420dae167d8ee72b55133d2ba961433fb0633；真实 Agent→Host→画布闭环、Workflow→agent.run→End、用量投影、取消传播、幂等重放和公网 iframe 浏览器门禁均通过，证据记录于 delivery/evidence/open-agent-sdk-108/README.md。
+    status: done
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-06T10:55:26.324Z
+    updatedAt: 2026-08-06T11:34:27.525Z
+    statusChangedAt: 2026-08-06T11:34:27.525Z

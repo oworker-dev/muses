@@ -20,7 +20,7 @@ for (const [packageName, packagePath] of packages) {
       `^github:oworker-dev/open-agent#([0-9a-f]{40})&path:/packages/${packagePath}$`,
     ),
   )
-  assert.ok(match, `${packageName} must use an exact Muses Agent commit and package path.`)
+  assert.ok(match, `${packageName} must use an exact Open Agent commit and package path.`)
   commits.add(match[1])
 }
 

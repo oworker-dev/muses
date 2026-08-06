@@ -261,7 +261,7 @@ Site administrators can manage capability-scoped model connections at `/admin/pr
 Admin-managed custom Provider URLs must use HTTPS in production and match an exact hostname in `MUSES_PROVIDER_ALLOWED_HOSTS` (comma-separated; `api.openai.com` is the default). This allowlist applies to stored runtime routes and health checks. Deployment-owned `OPENAI_BASE_URL` variables remain trusted operator configuration.
 
 Muses does not execute Agent text-model loops in-process. The independently
-deployed `muses-agent` service calls the private OpenAI Responses-compatible
+deployed `open-agent` service calls the private OpenAI Responses-compatible
 Muses broker with `MUSES_AGENT_PROVIDER_BROKER_SECRET`; the broker resolves an
 Admin-managed `llm` Provider Connection by model allowlist and keeps its
 upstream credential server-side. Configure the Agent's `OPENAI_BASE_URL` as
