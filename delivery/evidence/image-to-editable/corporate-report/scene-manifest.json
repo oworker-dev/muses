@@ -1,0 +1,212 @@
+{
+  "schemaVersion": "1.0",
+  "capability": "image.to-editable.v1",
+  "fixture": {
+    "id": "corporate-report-2024",
+    "sourceName": "a.png",
+    "sourceSha256": "d44949fc9184ba7f071b4f8bf0de9d37638f5d2c76112f28823ba3b35e12a126"
+  },
+  "canvas": {
+    "width": 1672,
+    "height": 941,
+    "colorSpace": "srgb"
+  },
+  "assets": [
+    {
+      "id": "hero-city",
+      "path": "assets/hero-city.png",
+      "mimeType": "image/png",
+      "width": 380,
+      "height": 409,
+      "sha256": "03846bf558a44f7be4126130a1a782064dd43ea9493ce501e5d199bad786b219",
+      "role": "raster-layer"
+    },
+    {
+      "id": "hero-waves",
+      "path": "assets/hero-waves.png",
+      "mimeType": "image/png",
+      "width": 1010,
+      "height": 90,
+      "sha256": "bb890561a81d68b0eea545cb4bafbc1deafe14476891b18d1db4a5cbf3128b9d",
+      "role": "raster-layer"
+    },
+    {
+      "id": "brand-mark",
+      "path": "assets/brand-mark.png",
+      "mimeType": "image/png",
+      "width": 51,
+      "height": 49,
+      "sha256": "64f762bde6bba6f1d5f723ea0ac1162b1037b544740e219ba4970f1bb7774b11",
+      "role": "raster-layer"
+    },
+    {
+      "id": "preview",
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "width": 1672,
+      "height": 941,
+      "sha256": "1fd11b9d6bbda09a46140e1a2a54cc22202ce7925f57d6dd16bf99d36ba174ab",
+      "role": "preview"
+    },
+    {
+      "id": "editable-svg",
+      "path": "editable.svg",
+      "mimeType": "image/svg+xml",
+      "width": 1672,
+      "height": 941,
+      "sha256": "f9e7b1736c1f0f30c7e501201006e7c1db2794d769a5c99f67a7fb47c8762b8f",
+      "role": "svg"
+    }
+  ],
+  "layers": [
+    {
+      "id": "background",
+      "name": "渐变背景与山形",
+      "type": "background",
+      "zIndex": 0,
+      "editable": true,
+      "logicalBBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1672,
+        "height": 941
+      }
+    },
+    {
+      "id": "hero-city",
+      "name": "城市天际线",
+      "type": "raster-layer",
+      "zIndex": 10,
+      "editable": true,
+      "logicalBBox": {
+        "x": 630,
+        "y": 65,
+        "width": 380,
+        "height": 409
+      },
+      "assetId": "hero-city"
+    },
+    {
+      "id": "hero-waves",
+      "name": "蓝色波纹",
+      "type": "raster-layer",
+      "zIndex": 20,
+      "editable": true,
+      "logicalBBox": {
+        "x": 0,
+        "y": 384,
+        "width": 1010,
+        "height": 90
+      },
+      "assetId": "hero-waves"
+    },
+    {
+      "id": "brand-mark",
+      "name": "品牌标记",
+      "type": "raster-layer",
+      "zIndex": 30,
+      "editable": true,
+      "logicalBBox": {
+        "x": 27,
+        "y": 16,
+        "width": 51,
+        "height": 49
+      },
+      "assetId": "brand-mark"
+    },
+    {
+      "id": "hero-copy",
+      "name": "品牌与主标题",
+      "type": "group",
+      "zIndex": 40,
+      "editable": true,
+      "logicalBBox": {
+        "x": 59,
+        "y": 20,
+        "width": 930,
+        "height": 365
+      }
+    },
+    {
+      "id": "right-dashboard",
+      "name": "经营数据与业务结构",
+      "type": "group",
+      "zIndex": 50,
+      "editable": true,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 29,
+        "width": 619,
+        "height": 440
+      }
+    },
+    {
+      "id": "strategy",
+      "name": "战略方向与目标",
+      "type": "group",
+      "zIndex": 60,
+      "editable": true,
+      "logicalBBox": {
+        "x": 18,
+        "y": 488,
+        "width": 360,
+        "height": 303
+      }
+    },
+    {
+      "id": "roadmap",
+      "name": "2025重点战略举措",
+      "type": "group",
+      "zIndex": 70,
+      "editable": true,
+      "logicalBBox": {
+        "x": 390,
+        "y": 488,
+        "width": 584,
+        "height": 315
+      }
+    },
+    {
+      "id": "growth-chart",
+      "name": "业绩增长趋势",
+      "type": "group",
+      "zIndex": 80,
+      "editable": true,
+      "logicalBBox": {
+        "x": 1012,
+        "y": 488,
+        "width": 640,
+        "height": 313
+      }
+    },
+    {
+      "id": "footer",
+      "name": "企业价值观与愿景",
+      "type": "group",
+      "zIndex": 90,
+      "editable": true,
+      "logicalBBox": {
+        "x": 18,
+        "y": 826,
+        "width": 1654,
+        "height": 115
+      }
+    }
+  ],
+  "exports": {
+    "svg": "editable.svg",
+    "preview": "preview.png"
+  },
+  "structuralSummary": {
+    "nativeTextElements": 154,
+    "vectorShapeElements": 113,
+    "rasterLayerElements": 3,
+    "embedsFullSourceImage": false
+  },
+  "limitations": [
+    "This is a fixture-driven reconstruction, not a general VLM extraction pipeline.",
+    "The skyline, wave, and brand mark remain replaceable raster layers.",
+    "KaiTi/Noto CJK font substitution can change calligraphic title metrics across hosts.",
+    "Provider-backed clean-background and transparent-redraw stages were not available in this execution environment."
+  ]
+}

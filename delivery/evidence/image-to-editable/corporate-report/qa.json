@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "width": 1672,
+    "height": 941
+  },
+  "rendered": {
+    "width": 1672,
+    "height": 941
+  },
+  "structural": {
+    "nativeTextElements": 154,
+    "vectorShapeElements": 113,
+    "rasterLayerElements": 3,
+    "embedsFullSourceImage": false
+  },
+  "pixels": {
+    "nonBlank": true,
+    "meanAbsoluteError": 24.561,
+    "similarity": 0.9037
+  },
+  "checks": {
+    "dimensionsMatch": true,
+    "previewIsNonBlank": true,
+    "nativeTextPresent": true,
+    "vectorChartsPresent": true,
+    "rasterLayersAreBounded": true,
+    "noFullSourceEmbedding": true,
+    "manifestHasEditableGroups": true
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0",
+  "qualityStatus": "failed",
+  "source": {
+    "width": 1672,
+    "height": 941
+  },
+  "rendered": {
+    "width": 1672,
+    "height": 941
+  },
+  "structure": {
+    "textElements": 99,
+    "rasterElements": 24,
+    "renderedRasterElements": 24
+  },
+  "pixels": {
+    "nonBlank": true,
+    "meanAbsoluteError": 23.6382,
+    "similarity": 0.9073
+  },
+  "chroma": {
+    "detectedKey": {
+      "r": 241,
+      "g": 8,
+      "b": 245
+    },
+    "transparentCoverage": 0.6886
+  },
+  "failureNotes": [
+    "full-canvas background classification swallowed clear-boundary corner and footer artwork",
+    "element-redraw-depth-01-alpha.png contains synthetic magenta in enclosed chart/logo regions",
+    "chart/card outputs contain opaque rectangular backgrounds and redraw noise",
+    "critical logo, chart, and small-icon geometry was not checked element-by-element"
+  ],
+  "checks": {
+    "sameCanvasSize": true,
+    "nonBlank": true,
+    "hasEditableText": true,
+    "hasRasterLayers": true,
+    "detectedRasterLayers": true,
+    "hasRequiredProviderStages": true,
+    "providerRequestIdsCaptured": true,
+    "elementQualityPassed": false,
+    "criticalElementsPassed": false,
+    "boundedArtworkNotSwallowedByBackground": false,
+    "noChromaLeakage": false,
+    "noGeometryDrift": false
+  }
+}

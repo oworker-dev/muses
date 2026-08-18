@@ -254,3 +254,18 @@ items:
     revisitCondition: null
     createdAt: 2026-08-04T01:45:57.339Z
     decidedAt: 2026-08-04T01:46:03.903Z
+  - id: ai-3
+    name: 建立宿主无关的 AI 图像能力与独立媒体执行边界
+    description: 在 Muses Monorepo 内初始化内聚的 ai-image 能力域，以 image-to-editable 为首个垂直能力；通过独立 API/Worker 组合入口运行，宿主仅依赖版本化契约和 Client。
+    docPath: internal/image-to-editable/技术方案.md
+    category: architecture
+    proposedBy: product-owner
+    context: 图片转可编辑方案已经形成，需要在开发前冻结目录语义、权威状态、宿主集成、模型适配、异步执行和后续图像能力扩展边界。
+    impactOfNoAction: 实现可能散落到 Web、packages 与 providers，导致供应商 SDK、Muses 领域状态和算法流程相互耦合，后续难以独立部署或供其他宿主复用。
+    expectedOutcome: 形成一个宿主无关、可独立运行且可由 Muses 适配的 AI 图像能力域，首个 image-to-editable 能力拥有可评审的版本化契约、阶段模型和验证计划。
+    boundary: 本轮仅初始化目录、架构决策和技术文档占位；不新增 API、Worker、数据库迁移、模型调用、SDK 实现或用户界面。
+    status: approved
+    decisionSummary: 产品负责人已确认推进宿主无关的 ai-image 能力边界，并以测试图拆分为可编辑 SVG 作为首个交付 Gate。
+    revisitCondition: 只有独立扩缩容、跨仓发布、数据主权或第二宿主证据出现时，才重新评估仓库与部署拓扑。
+    createdAt: 2026-08-17T15:55:01.029Z
+    decidedAt: 2026-08-17T16:18:00.954Z

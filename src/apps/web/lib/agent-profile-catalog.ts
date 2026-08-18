@@ -45,7 +45,9 @@ export const MUSES_WORKFLOW_AGENT_PROFILES = [
       maxTurns: 12,
       maxModelCalls: 12,
       maxToolCalls: 24,
-      maxInputTokens: 120_000,
+      // This is a cumulative task budget across model calls, not a context
+      // window. Keep it large enough for durable multi-step Agent work.
+      maxInputTokens: 500_000,
       maxOutputTokens: 24_000,
       maxDurationMs: 15 * 60 * 1000,
     },
@@ -104,7 +106,7 @@ export const MUSES_WORKFLOW_AGENT_PROFILES = [
       maxTurns: 16,
       maxModelCalls: 16,
       maxToolCalls: 32,
-      maxInputTokens: 160_000,
+      maxInputTokens: 1_000_000,
       maxOutputTokens: 32_000,
       maxDurationMs: 20 * 60 * 1000,
     },

@@ -1,0 +1,3880 @@
+{
+  "schemaVersion": "1.0",
+  "capability": "image.to-editable.v1",
+  "qualityStatus": "partial",
+  "source": {
+    "name": "a.png",
+    "sha256": "2d296826f8b4be5b5ea54ef9c63002e59d8812e958970cae5f811ac9e57edd2d",
+    "width": 1672,
+    "height": 941
+  },
+  "canvas": {
+    "width": 1672,
+    "height": 941,
+    "colorSpace": "srgb"
+  },
+  "background": {
+    "path": "assets/clean-background.png",
+    "sha256": "c7f10734939f95389b28ec6b271c5d3552bf0340bede6a6c5e511b94479acad6",
+    "sourceElementId": "raster-repaired-full-canvas-corporate-infographic-backd-1"
+  },
+  "elements": [
+    {
+      "id": "raster-zhi-chuang-future-technology-geometric-blue-cube-2",
+      "name": "Zhi Chuang Future Technology geometric blue cube logo mark",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 30,
+        "y": 19,
+        "width": 43,
+        "height": 43
+      },
+      "generationBBox": {
+        "x": 22,
+        "y": 11,
+        "width": 59,
+        "height": 59
+      },
+      "detectedBBox": {
+        "x": 27,
+        "y": 13,
+        "width": 50,
+        "height": 55
+      },
+      "cropBBox": {
+        "x": 25,
+        "y": 11,
+        "width": 54,
+        "height": 59
+      },
+      "placementBBox": {
+        "x": 28.28,
+        "y": 17.4364,
+        "width": 46.44,
+        "height": 46.1273
+      },
+      "asset": {
+        "path": "assets/elements/raster-zhi-chuang-future-technology-geometric-blue-cube-2.png",
+        "sha256": "55c98278ac3e3612108deeda8d1c766c8a2bc5c9cc160f94eba0df19964af1af",
+        "width": 54,
+        "height": 59
+      },
+      "confidence": 0.98,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-3",
+      "name": "智创未来科技有限公司",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 81,
+        "y": 23,
+        "width": 220,
+        "height": 25
+      },
+      "text": {
+        "value": "智创未来科技有限公司",
+        "fontSize": 21,
+        "fontWeight": 700,
+        "fill": "#101522",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-zhi-chuang-future-technology-co-ltd-4",
+      "name": "ZHI CHUANG FUTURE TECHNOLOGY CO., LTD.",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 82,
+        "y": 49,
+        "width": 190,
+        "height": 11
+      },
+      "text": {
+        "value": "ZHI CHUANG FUTURE TECHNOLOGY CO., LTD.",
+        "fontSize": 8,
+        "fontWeight": 400,
+        "fill": "#343947",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-5",
+      "name": "智启新程 · 创领未来",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 737,
+        "y": 36,
+        "width": 184,
+        "height": 24
+      },
+      "text": {
+        "value": "智启新程 · 创领未来",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#06367f",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-three-blue-forward-chevrons-beside-brand-slogan-6",
+      "name": "Three blue forward chevrons beside brand slogan",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 934,
+        "y": 36,
+        "width": 54,
+        "height": 20
+      },
+      "generationBBox": {
+        "x": 926,
+        "y": 28,
+        "width": 70,
+        "height": 36
+      },
+      "detectedBBox": {
+        "x": 926,
+        "y": 30,
+        "width": 13,
+        "height": 23
+      },
+      "cropBBox": {
+        "x": 924,
+        "y": 28,
+        "width": 17,
+        "height": 27
+      },
+      "placementBBox": {
+        "x": 925.6923,
+        "y": 34.2609,
+        "width": 70.6154,
+        "height": 23.4783
+      },
+      "asset": {
+        "path": "assets/elements/raster-three-blue-forward-chevrons-beside-brand-slogan-6.png",
+        "sha256": "eb1a1ce97d1c8e377928643e16f512559661167f3c0ead8fbfb74f63399cd63a",
+        "width": 17,
+        "height": 27
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-7",
+      "name": "聚势而上",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 59,
+        "y": 89,
+        "width": 421,
+        "height": 116
+      },
+      "text": {
+        "value": "聚势而上",
+        "fontSize": 74,
+        "fontWeight": 700,
+        "fill": "#07377f",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-8",
+      "name": "智创未来",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 231,
+        "y": 191,
+        "width": 405,
+        "height": 106
+      },
+      "text": {
+        "value": "智创未来",
+        "fontSize": 74,
+        "fontWeight": 700,
+        "fill": "#07377f",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-2025-9",
+      "name": "— 2024年度工作总结暨2025年度战略规划报告 —",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 58,
+        "y": 311,
+        "width": 521,
+        "height": 27
+      },
+      "text": {
+        "value": "— 2024年度工作总结暨2025年度战略规划报告 —",
+        "fontSize": 23,
+        "fontWeight": 700,
+        "fill": "#082b69",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-innovation-lightbulb-icon-10",
+      "name": "Blue innovation lightbulb icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 58,
+        "y": 356,
+        "width": 26,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 50,
+        "y": 348,
+        "width": 42,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 50,
+        "y": 348,
+        "width": 40,
+        "height": 22
+      },
+      "cropBBox": {
+        "x": 48,
+        "y": 346,
+        "width": 44,
+        "height": 26
+      },
+      "placementBBox": {
+        "x": 56.7,
+        "y": 353.5455,
+        "width": 28.6,
+        "height": 31.9091
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-innovation-lightbulb-icon-10.png",
+        "sha256": "102ccd7f7a6da3172363b1547a4cf68b10f807f3e34f38ecd75d0e1633995997",
+        "width": 44,
+        "height": 26
+      },
+      "confidence": 0.95,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-11",
+      "name": "创新驱动",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 87,
+        "y": 359,
+        "width": 72,
+        "height": 23
+      },
+      "text": {
+        "value": "创新驱动",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#0641a1",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-stacked-database-icon-12",
+      "name": "Blue stacked-database icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 188,
+        "y": 356,
+        "width": 25,
+        "height": 26
+      },
+      "generationBBox": {
+        "x": 180,
+        "y": 348,
+        "width": 41,
+        "height": 42
+      },
+      "detectedBBox": {
+        "x": 180,
+        "y": 348,
+        "width": 37,
+        "height": 21
+      },
+      "cropBBox": {
+        "x": 178,
+        "y": 346,
+        "width": 41,
+        "height": 25
+      },
+      "placementBBox": {
+        "x": 186.6486,
+        "y": 353.5238,
+        "width": 27.7027,
+        "height": 30.9524
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-stacked-database-icon-12.png",
+        "sha256": "15722ed41815c401ac6c5ba5dd09ad3bdc2c82a0875de90ec02a87dac489d95e",
+        "width": 41,
+        "height": 25
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-13",
+      "name": "数据赋能",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 220,
+        "y": 359,
+        "width": 72,
+        "height": 23
+      },
+      "text": {
+        "value": "数据赋能",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#0641a1",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-collaboration-people-icon-14",
+      "name": "Blue collaboration people icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 324,
+        "y": 356,
+        "width": 27,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 316,
+        "y": 348,
+        "width": 43,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 316,
+        "y": 348,
+        "width": 32,
+        "height": 21
+      },
+      "cropBBox": {
+        "x": 314,
+        "y": 346,
+        "width": 36,
+        "height": 25
+      },
+      "placementBBox": {
+        "x": 322.3125,
+        "y": 353.4286,
+        "width": 30.375,
+        "height": 32.1429
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-collaboration-people-icon-14.png",
+        "sha256": "d8e81dac2bb9d69754e239a1abf193f9e1efc95c039bca876a0270b757b8a37c",
+        "width": 36,
+        "height": 25
+      },
+      "confidence": 0.95,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-15",
+      "name": "协同共赢",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 358,
+        "y": 359,
+        "width": 72,
+        "height": 23
+      },
+      "text": {
+        "value": "协同共赢",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#0641a1",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-upward-growth-chart-icon-16",
+      "name": "Blue upward-growth chart icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 457,
+        "y": 356,
+        "width": 27,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 449,
+        "y": 348,
+        "width": 43,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 449,
+        "y": 348,
+        "width": 22,
+        "height": 20
+      },
+      "cropBBox": {
+        "x": 447,
+        "y": 346,
+        "width": 26,
+        "height": 24
+      },
+      "placementBBox": {
+        "x": 454.5455,
+        "y": 353.3,
+        "width": 31.9091,
+        "height": 32.4
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-upward-growth-chart-icon-16.png",
+        "sha256": "b8e1703039bad2fb860cb1a2efe72d34f3704734e6a0474d021fc74e00dec39e",
+        "width": 26,
+        "height": 24
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-17",
+      "name": "持续增长",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 490,
+        "y": 359,
+        "width": 72,
+        "height": 23
+      },
+      "text": {
+        "value": "持续增长",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#0641a1",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-18",
+      "name": "战略方向与目标",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 38,
+        "y": 495,
+        "width": 150,
+        "height": 23
+      },
+      "text": {
+        "value": "战略方向与目标",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-rounded-square-rocket-icon-19",
+      "name": "Blue rounded-square rocket icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 36,
+        "y": 530,
+        "width": 52,
+        "height": 53
+      },
+      "generationBBox": {
+        "x": 28,
+        "y": 522,
+        "width": 68,
+        "height": 69
+      },
+      "detectedBBox": {
+        "x": 28,
+        "y": 522,
+        "width": 68,
+        "height": 69
+      },
+      "cropBBox": {
+        "x": 26,
+        "y": 520,
+        "width": 72,
+        "height": 73
+      },
+      "placementBBox": {
+        "x": 34.4706,
+        "y": 528.4638,
+        "width": 55.0588,
+        "height": 56.0725
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-rounded-square-rocket-icon-19.png",
+        "sha256": "bc603995ed27db72e3da604147944265abde6520b8c68475f2444ac2ab2e614f",
+        "width": 72,
+        "height": 73
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-20",
+      "name": "创新驱动发展",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 537,
+        "width": 96,
+        "height": 19
+      },
+      "text": {
+        "value": "创新驱动发展",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#0750b7",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-21",
+      "name": "持续加大研发投入，突破关键核心技术，\n构建自主可控的技术体系。",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 558,
+        "width": 223,
+        "height": 31
+      },
+      "text": {
+        "value": "持续加大研发投入，突破关键核心技术，\n构建自主可控的技术体系。",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-cyan-rounded-square-digital-globe-icon-22",
+      "name": "Cyan rounded-square digital globe icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 36,
+        "y": 600,
+        "width": 52,
+        "height": 53
+      },
+      "generationBBox": {
+        "x": 28,
+        "y": 592,
+        "width": 68,
+        "height": 69
+      },
+      "detectedBBox": {
+        "x": 28,
+        "y": 592,
+        "width": 68,
+        "height": 69
+      },
+      "cropBBox": {
+        "x": 26,
+        "y": 590,
+        "width": 72,
+        "height": 73
+      },
+      "placementBBox": {
+        "x": 34.4706,
+        "y": 598.4638,
+        "width": 55.0588,
+        "height": 56.0725
+      },
+      "asset": {
+        "path": "assets/elements/raster-cyan-rounded-square-digital-globe-icon-22.png",
+        "sha256": "0f0175fe0abfb1a4fea7e7b15ece6b91ec5d969fbdfca20fdb7ce97d14572ced",
+        "width": 72,
+        "height": 73
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-23",
+      "name": "深化数字化转型",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 605,
+        "width": 96,
+        "height": 19
+      },
+      "text": {
+        "value": "深化数字化转型",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#0798b3",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-24",
+      "name": "以数据为核心，驱动业务流程优化与\n管理效率全面提升。",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 626,
+        "width": 221,
+        "height": 31
+      },
+      "text": {
+        "value": "以数据为核心，驱动业务流程优化与\n管理效率全面提升。",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-purple-rounded-square-collaboration-icon-25",
+      "name": "Purple rounded-square collaboration icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 36,
+        "y": 665,
+        "width": 52,
+        "height": 53
+      },
+      "generationBBox": {
+        "x": 28,
+        "y": 657,
+        "width": 68,
+        "height": 69
+      },
+      "detectedBBox": {
+        "x": 28,
+        "y": 657,
+        "width": 68,
+        "height": 69
+      },
+      "cropBBox": {
+        "x": 26,
+        "y": 655,
+        "width": 72,
+        "height": 73
+      },
+      "placementBBox": {
+        "x": 34.4706,
+        "y": 663.4638,
+        "width": 55.0588,
+        "height": 56.0725
+      },
+      "asset": {
+        "path": "assets/elements/raster-purple-rounded-square-collaboration-icon-25.png",
+        "sha256": "39a4cc1b8ac880bf1d44f878038204951cded2c0bdba2c5f30e3627343a4fcbe",
+        "width": 72,
+        "height": 73
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-26",
+      "name": "拓展生态合作",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 670,
+        "width": 96,
+        "height": 19
+      },
+      "text": {
+        "value": "拓展生态合作",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#7842c2",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-27",
+      "name": "携手合作伙伴共建产业生态，打造\n开放共赢的协同发展格局。",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 691,
+        "width": 223,
+        "height": 31
+      },
+      "text": {
+        "value": "携手合作伙伴共建产业生态，打造\n开放共赢的协同发展格局。",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-orange-rounded-square-rising-chart-icon-28",
+      "name": "Orange rounded-square rising-chart icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 36,
+        "y": 730,
+        "width": 52,
+        "height": 53
+      },
+      "generationBBox": {
+        "x": 28,
+        "y": 722,
+        "width": 68,
+        "height": 69
+      },
+      "detectedBBox": {
+        "x": 28,
+        "y": 722,
+        "width": 68,
+        "height": 69
+      },
+      "cropBBox": {
+        "x": 26,
+        "y": 720,
+        "width": 72,
+        "height": 73
+      },
+      "placementBBox": {
+        "x": 34.4706,
+        "y": 728.4638,
+        "width": 55.0588,
+        "height": 56.0725
+      },
+      "asset": {
+        "path": "assets/elements/raster-orange-rounded-square-rising-chart-icon-28.png",
+        "sha256": "fd0adab6ae3a4f1bd9e5e92a329e0c202b2e161044c4850f718aa91d0ec264a8",
+        "width": 72,
+        "height": 73
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-29",
+      "name": "提升全球竞争力",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 735,
+        "width": 96,
+        "height": 19
+      },
+      "text": {
+        "value": "提升全球竞争力",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#df661a",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-30",
+      "name": "加速海外市场布局，提升品牌影响力，\n实现全球化可持续增长。",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 102,
+        "y": 756,
+        "width": 222,
+        "height": 31
+      },
+      "text": {
+        "value": "加速海外市场布局，提升品牌影响力，\n实现全球化可持续增长。",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-2025-31",
+      "name": "2025年度重点战略举措（路线图）",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 408,
+        "y": 495,
+        "width": 276,
+        "height": 23
+      },
+      "text": {
+        "value": "2025年度重点战略举措（路线图）",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-stage-blue-arrow-strategic-roadmap-with-bor-32",
+      "name": "Four-stage blue-arrow strategic roadmap with bordered milestone body",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 399,
+        "y": 538,
+        "width": 575,
+        "height": 113
+      },
+      "generationBBox": {
+        "x": 391,
+        "y": 530,
+        "width": 591,
+        "height": 129
+      },
+      "detectedBBox": {
+        "x": 391,
+        "y": 530,
+        "width": 576,
+        "height": 107
+      },
+      "cropBBox": {
+        "x": 389,
+        "y": 528,
+        "width": 580,
+        "height": 111
+      },
+      "placementBBox": {
+        "x": 397.0035,
+        "y": 535.8879,
+        "width": 578.9931,
+        "height": 117.2243
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-stage-blue-arrow-strategic-roadmap-with-bor-32.png",
+        "sha256": "a8302792a0230c45f3ce44ebb3f9c966c99711acbc37e70112cb54d162480dae",
+        "width": 580,
+        "height": 111
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-q1-33",
+      "name": "Q1  夯实基础",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 418,
+        "y": 545,
+        "width": 95,
+        "height": 20
+      },
+      "text": {
+        "value": "Q1  夯实基础",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q2-34",
+      "name": "Q2  加速增长",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 560,
+        "y": 545,
+        "width": 98,
+        "height": 20
+      },
+      "text": {
+        "value": "Q2  加速增长",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q3-35",
+      "name": "Q3  扩大优势",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 708,
+        "y": 545,
+        "width": 98,
+        "height": 20
+      },
+      "text": {
+        "value": "Q3  扩大优势",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q4-36",
+      "name": "Q4  实现突破",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 852,
+        "y": 545,
+        "width": 98,
+        "height": 20
+      },
+      "text": {
+        "value": "Q4  实现突破",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-37",
+      "name": "• 完善组织架构\n• 优化产品体系\n• 强化人才储备",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 418,
+        "y": 581,
+        "width": 85,
+        "height": 56
+      },
+      "text": {
+        "value": "• 完善组织架构\n• 优化产品体系\n• 强化人才储备",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#171d31",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-38",
+      "name": "• 推进重点项目落地\n• 拓展核心市场\n• 提升运营效率",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 552,
+        "y": 581,
+        "width": 94,
+        "height": 56
+      },
+      "text": {
+        "value": "• 推进重点项目落地\n• 拓展核心市场\n• 提升运营效率",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#171d31",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-39",
+      "name": "• 深化生态合作\n• 扩大市场份额\n• 增强品牌影响力",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 701,
+        "y": 581,
+        "width": 96,
+        "height": 56
+      },
+      "text": {
+        "value": "• 深化生态合作\n• 扩大市场份额\n• 增强品牌影响力",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#171d31",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-40",
+      "name": "• 实现业绩突破\n• 探索新兴业务\n• 布局未来增长点",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 843,
+        "y": 581,
+        "width": 105,
+        "height": 56
+      },
+      "text": {
+        "value": "• 实现业绩突破\n• 探索新兴业务\n• 布局未来增长点",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#171d31",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-41",
+      "name": "核心能力建设",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 418,
+        "y": 665,
+        "width": 130,
+        "height": 22
+      },
+      "text": {
+        "value": "核心能力建设",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#092e75",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-technology-innovation-head-and-gea-42",
+      "name": "Blue circular technology-innovation head-and-gears icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 418,
+        "y": 690,
+        "width": 82,
+        "height": 75
+      },
+      "generationBBox": {
+        "x": 410,
+        "y": 682,
+        "width": 98,
+        "height": 91
+      },
+      "detectedBBox": {
+        "x": 410,
+        "y": 682,
+        "width": 78,
+        "height": 82
+      },
+      "cropBBox": {
+        "x": 408,
+        "y": 680,
+        "width": 82,
+        "height": 86
+      },
+      "placementBBox": {
+        "x": 415.8974,
+        "y": 688.1707,
+        "width": 86.2051,
+        "height": 78.6585
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-technology-innovation-head-and-gea-42.png",
+        "sha256": "b3f1c4e2466a69e28f3bcfe3381e22ac03a5ba160db4af2ae55cc5db67dc7179",
+        "width": 82,
+        "height": 86
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-43",
+      "name": "技术创新",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 427,
+        "y": 757,
+        "width": 63,
+        "height": 18
+      },
+      "text": {
+        "value": "技术创新",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#0752c7",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-44",
+      "name": "突破核心技术\n增强产品竞争力",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 420,
+        "y": 777,
+        "width": 76,
+        "height": 29
+      },
+      "text": {
+        "value": "突破核心技术\n增强产品竞争力",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-cyan-circular-database-icon-45",
+      "name": "Cyan circular database icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 556,
+        "y": 690,
+        "width": 82,
+        "height": 75
+      },
+      "generationBBox": {
+        "x": 548,
+        "y": 682,
+        "width": 98,
+        "height": 91
+      },
+      "detectedBBox": {
+        "x": 548,
+        "y": 682,
+        "width": 86,
+        "height": 82
+      },
+      "cropBBox": {
+        "x": 546,
+        "y": 680,
+        "width": 90,
+        "height": 86
+      },
+      "placementBBox": {
+        "x": 554.093,
+        "y": 688.1707,
+        "width": 85.814,
+        "height": 78.6585
+      },
+      "asset": {
+        "path": "assets/elements/raster-cyan-circular-database-icon-45.png",
+        "sha256": "ddd60137949bdbf7a72933c9b5c5ae241a4c03412e2a6c10c891a32b4c3196a7",
+        "width": 90,
+        "height": 86
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-46",
+      "name": "数据智能",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 566,
+        "y": 757,
+        "width": 63,
+        "height": 18
+      },
+      "text": {
+        "value": "数据智能",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#087fae",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-47",
+      "name": "构建数据中台\n驱动智能决策",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 559,
+        "y": 777,
+        "width": 76,
+        "height": 29
+      },
+      "text": {
+        "value": "构建数据中台\n驱动智能决策",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-purple-circular-shield-icon-48",
+      "name": "Purple circular shield icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 696,
+        "y": 690,
+        "width": 82,
+        "height": 75
+      },
+      "generationBBox": {
+        "x": 688,
+        "y": 682,
+        "width": 98,
+        "height": 91
+      },
+      "detectedBBox": {
+        "x": 688,
+        "y": 682,
+        "width": 94,
+        "height": 82
+      },
+      "cropBBox": {
+        "x": 686,
+        "y": 680,
+        "width": 98,
+        "height": 86
+      },
+      "placementBBox": {
+        "x": 694.2553,
+        "y": 688.1707,
+        "width": 85.4894,
+        "height": 78.6585
+      },
+      "asset": {
+        "path": "assets/elements/raster-purple-circular-shield-icon-48.png",
+        "sha256": "d47ac0f7609bc33a904f9156d3eaddc18d62ba5dd310939763e1c13578b4a3a2",
+        "width": 98,
+        "height": 86
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-49",
+      "name": "安全可信",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 706,
+        "y": 757,
+        "width": 63,
+        "height": 18
+      },
+      "text": {
+        "value": "安全可信",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#7841c7",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-50",
+      "name": "强化信息安全\n保障业务稳健",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 699,
+        "y": 777,
+        "width": 76,
+        "height": 29
+      },
+      "text": {
+        "value": "强化信息安全\n保障业务稳健",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-orange-circular-talent-team-icon-51",
+      "name": "Orange circular talent-team icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 835,
+        "y": 690,
+        "width": 82,
+        "height": 75
+      },
+      "generationBBox": {
+        "x": 827,
+        "y": 682,
+        "width": 98,
+        "height": 91
+      },
+      "detectedBBox": {
+        "x": 827,
+        "y": 682,
+        "width": 98,
+        "height": 82
+      },
+      "cropBBox": {
+        "x": 825,
+        "y": 680,
+        "width": 102,
+        "height": 86
+      },
+      "placementBBox": {
+        "x": 833.3265,
+        "y": 688.1707,
+        "width": 85.3469,
+        "height": 78.6585
+      },
+      "asset": {
+        "path": "assets/elements/raster-orange-circular-talent-team-icon-51.png",
+        "sha256": "0ab30b176ea04af75fe6c7944180af0337068f9c6abfb3cb21292b6d815b9e96",
+        "width": 102,
+        "height": 86
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-52",
+      "name": "人才发展",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 846,
+        "y": 757,
+        "width": 63,
+        "height": 18
+      },
+      "text": {
+        "value": "人才发展",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#e25c1a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-53",
+      "name": "完善培养体系\n激发组织活力",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 838,
+        "y": 777,
+        "width": 77,
+        "height": 29
+      },
+      "text": {
+        "value": "完善培养体系\n激发组织活力",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "text-54",
+      "name": "企业价值观",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 37,
+        "y": 830,
+        "width": 112,
+        "height": 22
+      },
+      "text": {
+        "value": "企业价值观",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-customer-first-icon-55",
+      "name": "Blue circular customer-first icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 34,
+        "y": 870,
+        "width": 44,
+        "height": 45
+      },
+      "generationBBox": {
+        "x": 26,
+        "y": 862,
+        "width": 60,
+        "height": 61
+      },
+      "detectedBBox": {
+        "x": 37,
+        "y": 862,
+        "width": 49,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 35,
+        "y": 860,
+        "width": 53,
+        "height": 47
+      },
+      "placementBBox": {
+        "x": 32.2041,
+        "y": 867.907,
+        "width": 47.5918,
+        "height": 49.186
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-customer-first-icon-55.png",
+        "sha256": "00de0aee69cf9c373b85d8d39a4ec6f075170b6970856671408a8a6da850e6f9",
+        "width": 53,
+        "height": 47
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-56",
+      "name": "客户至上",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 88,
+        "y": 871,
+        "width": 69,
+        "height": 19
+      },
+      "text": {
+        "value": "客户至上",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#092d72",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-57",
+      "name": "以客户为中心\n创造价值",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 88,
+        "y": 894,
+        "width": 72,
+        "height": 31
+      },
+      "text": {
+        "value": "以客户为中心\n创造价值",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-integrity-star-icon-58",
+      "name": "Blue circular integrity star icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 189,
+        "y": 870,
+        "width": 44,
+        "height": 45
+      },
+      "generationBBox": {
+        "x": 181,
+        "y": 862,
+        "width": 60,
+        "height": 61
+      },
+      "detectedBBox": {
+        "x": 197,
+        "y": 862,
+        "width": 44,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 195,
+        "y": 860,
+        "width": 48,
+        "height": 47
+      },
+      "placementBBox": {
+        "x": 187,
+        "y": 867.907,
+        "width": 48,
+        "height": 49.186
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-integrity-star-icon-58.png",
+        "sha256": "a5a2c7e34fb1180a9f0254dcbf427de9b7bdc6e447c12ca414d92268d1388c40",
+        "width": 48,
+        "height": 47
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-59",
+      "name": "诚信担当",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 243,
+        "y": 871,
+        "width": 69,
+        "height": 19
+      },
+      "text": {
+        "value": "诚信担当",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#092d72",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-60",
+      "name": "诚信正直\n勇于担当",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 243,
+        "y": 894,
+        "width": 72,
+        "height": 31
+      },
+      "text": {
+        "value": "诚信正直\n勇于担当",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-cooperation-team-icon-61",
+      "name": "Blue circular cooperation-team icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 343,
+        "y": 870,
+        "width": 44,
+        "height": 45
+      },
+      "generationBBox": {
+        "x": 335,
+        "y": 862,
+        "width": 60,
+        "height": 61
+      },
+      "detectedBBox": {
+        "x": 358,
+        "y": 862,
+        "width": 37,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 356,
+        "y": 860,
+        "width": 41,
+        "height": 47
+      },
+      "placementBBox": {
+        "x": 340.6216,
+        "y": 867.907,
+        "width": 48.7568,
+        "height": 49.186
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-cooperation-team-icon-61.png",
+        "sha256": "cfc67323d454f8d3db3b7fa5192c531c5bf94d557b4c1afd5704f14710796c78",
+        "width": 41,
+        "height": 47
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-62",
+      "name": "合作共赢",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 398,
+        "y": 871,
+        "width": 69,
+        "height": 19
+      },
+      "text": {
+        "value": "合作共赢",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#092d72",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-63",
+      "name": "开放协同\n互利共赢",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 398,
+        "y": 894,
+        "width": 72,
+        "height": 31
+      },
+      "text": {
+        "value": "开放协同\n互利共赢",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-innovation-lightbulb-icon-64",
+      "name": "Blue circular innovation lightbulb icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 497,
+        "y": 870,
+        "width": 44,
+        "height": 45
+      },
+      "generationBBox": {
+        "x": 489,
+        "y": 862,
+        "width": 60,
+        "height": 61
+      },
+      "detectedBBox": {
+        "x": 520,
+        "y": 862,
+        "width": 29,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 518,
+        "y": 860,
+        "width": 33,
+        "height": 47
+      },
+      "placementBBox": {
+        "x": 493.9655,
+        "y": 867.907,
+        "width": 50.069,
+        "height": 49.186
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-innovation-lightbulb-icon-64.png",
+        "sha256": "5e9de18896255ae33d6c6dbdd752e9017107464011b0cca197dbcfc932129d2d",
+        "width": 33,
+        "height": 47
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-65",
+      "name": "创新进取",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 552,
+        "y": 871,
+        "width": 69,
+        "height": 19
+      },
+      "text": {
+        "value": "创新进取",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#092d72",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-66",
+      "name": "追求卓越\n持续创新",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 552,
+        "y": 894,
+        "width": 72,
+        "height": 31
+      },
+      "text": {
+        "value": "追求卓越\n持续创新",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-passion-heart-icon-67",
+      "name": "Blue circular passion heart icon",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "medium",
+      "fidelityRisk": "medium",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 652,
+        "y": 870,
+        "width": 44,
+        "height": 45
+      },
+      "generationBBox": {
+        "x": 644,
+        "y": 862,
+        "width": 60,
+        "height": 61
+      },
+      "detectedBBox": {
+        "x": 679,
+        "y": 862,
+        "width": 25,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 677,
+        "y": 860,
+        "width": 29,
+        "height": 47
+      },
+      "placementBBox": {
+        "x": 648.48,
+        "y": 867.907,
+        "width": 51.04,
+        "height": 49.186
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-passion-heart-icon-67.png",
+        "sha256": "9c82e2c2b0ac965d7ebb8b33245d6d7b0a898d8a685c934ca41c5cfb7d062c2c",
+        "width": 29,
+        "height": 47
+      },
+      "confidence": 0.96,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-68",
+      "name": "激情奋斗",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 707,
+        "y": 871,
+        "width": 69,
+        "height": 19
+      },
+      "text": {
+        "value": "激情奋斗",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "fill": "#092d72",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-69",
+      "name": "热爱工作\n成就梦想",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 707,
+        "y": 894,
+        "width": 72,
+        "height": 31
+      },
+      "text": {
+        "value": "热爱工作\n成就梦想",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-70",
+      "name": "2024年度核心成果概览",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1053,
+        "y": 36,
+        "width": 218,
+        "height": 24
+      },
+      "text": {
+        "value": "2024年度核心成果概览",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-column-rounded-kpi-overview-card-with-separ-71",
+      "name": "Four-column rounded KPI overview card with separators and blue metric icons",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "medium",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1032,
+        "y": 78,
+        "width": 620,
+        "height": 136
+      },
+      "generationBBox": {
+        "x": 1024,
+        "y": 70,
+        "width": 636,
+        "height": 152
+      },
+      "detectedBBox": {
+        "x": 1050,
+        "y": 70,
+        "width": 605,
+        "height": 140
+      },
+      "cropBBox": {
+        "x": 1048,
+        "y": 68,
+        "width": 609,
+        "height": 144
+      },
+      "placementBBox": {
+        "x": 1029.9504,
+        "y": 76.0571,
+        "width": 624.0992,
+        "height": 139.8857
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-column-rounded-kpi-overview-card-with-separ-71.png",
+        "sha256": "39390f0f630c4d4d9e2fd037e2c0dc75aefe60bdbf9066ae8242770f281a7475",
+        "width": 609,
+        "height": 144
+      },
+      "confidence": 0.98,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-72",
+      "name": "营业收入",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1094,
+        "y": 101,
+        "width": 64,
+        "height": 18
+      },
+      "text": {
+        "value": "营业收入",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#192039",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-28-6-73",
+      "name": "28.6",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1055,
+        "y": 140,
+        "width": 91,
+        "height": 31
+      },
+      "text": {
+        "value": "28.6",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-74",
+      "name": "亿元",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1116,
+        "y": 151,
+        "width": 30,
+        "height": 16
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-23-7-75",
+      "name": "同比增长  ▲ 23.7%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1056,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长  ▲ 23.7%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202536",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-76",
+      "name": "净利润",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1244,
+        "y": 101,
+        "width": 48,
+        "height": 18
+      },
+      "text": {
+        "value": "净利润",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#192039",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-4-32-77",
+      "name": "4.32",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1205,
+        "y": 140,
+        "width": 91,
+        "height": 31
+      },
+      "text": {
+        "value": "4.32",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-78",
+      "name": "亿元",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1265,
+        "y": 151,
+        "width": 30,
+        "height": 16
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-31-2-79",
+      "name": "同比增长  ▲ 31.2%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1205,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长  ▲ 31.2%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202536",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-80",
+      "name": "客户总数",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1403,
+        "y": 101,
+        "width": 64,
+        "height": 18
+      },
+      "text": {
+        "value": "客户总数",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#192039",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-12-842-81",
+      "name": "12,842",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1362,
+        "y": 140,
+        "width": 95,
+        "height": 31
+      },
+      "text": {
+        "value": "12,842",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-82",
+      "name": "家",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1457,
+        "y": 151,
+        "width": 16,
+        "height": 16
+      },
+      "text": {
+        "value": "家",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-19-8-83",
+      "name": "同比增长  ▲ 19.8%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1363,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长  ▲ 19.8%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202536",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-84",
+      "name": "研发投入",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1565,
+        "y": 101,
+        "width": 64,
+        "height": 18
+      },
+      "text": {
+        "value": "研发投入",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#192039",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-3-15-85",
+      "name": "3.15",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1528,
+        "y": 140,
+        "width": 91,
+        "height": 31
+      },
+      "text": {
+        "value": "3.15",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-86",
+      "name": "亿元",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1588,
+        "y": 151,
+        "width": 30,
+        "height": 16
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-28-6-87",
+      "name": "同比增长  ▲ 28.6%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1528,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长  ▲ 28.6%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202536",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-88",
+      "name": "业务结构分布",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1053,
+        "y": 243,
+        "width": 128,
+        "height": 23
+      },
+      "text": {
+        "value": "业务结构分布",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-five-segment-business-structure-donut-chart-in-b-89",
+      "name": "Five-segment business-structure donut chart in blue, green, purple, orange, and red",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1098,
+        "y": 279,
+        "width": 202,
+        "height": 201
+      },
+      "generationBBox": {
+        "x": 1090,
+        "y": 271,
+        "width": 218,
+        "height": 217
+      },
+      "detectedBBox": {
+        "x": 1114,
+        "y": 271,
+        "width": 194,
+        "height": 206
+      },
+      "cropBBox": {
+        "x": 1112,
+        "y": 269,
+        "width": 198,
+        "height": 210
+      },
+      "placementBBox": {
+        "x": 1095.9175,
+        "y": 277.0485,
+        "width": 206.1649,
+        "height": 204.9029
+      },
+      "asset": {
+        "path": "assets/elements/raster-five-segment-business-structure-donut-chart-in-b-89.png",
+        "sha256": "b7b2b8165e4037ae279f99b337a138d0f789e499f2451a8b62e2271e0d4c83e1",
+        "width": 198,
+        "height": 210
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-28-6-90",
+      "name": "28.6",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1164,
+        "y": 359,
+        "width": 72,
+        "height": 38
+      },
+      "text": {
+        "value": "28.6",
+        "fontSize": 34,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-91",
+      "name": "亿元",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1182,
+        "y": 391,
+        "width": 36,
+        "height": 16
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0a47b8",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-92",
+      "name": "总营收",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1180,
+        "y": 409,
+        "width": 40,
+        "height": 14
+      },
+      "text": {
+        "value": "总营收",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#303648",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-five-colored-circular-legend-swatches-93",
+      "name": "Five colored circular legend swatches",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1377,
+        "y": 300,
+        "width": 16,
+        "height": 150
+      },
+      "generationBBox": {
+        "x": 1369,
+        "y": 292,
+        "width": 32,
+        "height": 166
+      },
+      "detectedBBox": {
+        "x": 1345,
+        "y": 271,
+        "width": 80,
+        "height": 176
+      },
+      "cropBBox": {
+        "x": 1343,
+        "y": 269,
+        "width": 84,
+        "height": 180
+      },
+      "placementBBox": {
+        "x": 1376.6,
+        "y": 298.2955,
+        "width": 16.8,
+        "height": 153.4091
+      },
+      "asset": {
+        "path": "assets/elements/raster-five-colored-circular-legend-swatches-93.png",
+        "sha256": "0ef6c251b62843e23290a5fbffbe0c0027a531e557347447f744a2af2c357a73",
+        "width": 84,
+        "height": 180
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-40-2-94",
+      "name": "智能制造解决方案          40.2%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1396,
+        "y": 301,
+        "width": 193,
+        "height": 19
+      },
+      "text": {
+        "value": "智能制造解决方案          40.2%",
+        "fontSize": 15,
+        "fontWeight": 400,
+        "fill": "#171c2d",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-28-7-95",
+      "name": "企业数字化服务            28.7%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1396,
+        "y": 334,
+        "width": 193,
+        "height": 19
+      },
+      "text": {
+        "value": "企业数字化服务            28.7%",
+        "fontSize": 15,
+        "fontWeight": 400,
+        "fill": "#171c2d",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-18-3-96",
+      "name": "工业互联网平台            18.3%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1396,
+        "y": 367,
+        "width": 193,
+        "height": 19
+      },
+      "text": {
+        "value": "工业互联网平台            18.3%",
+        "fontSize": 15,
+        "fontWeight": 400,
+        "fill": "#171c2d",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-9-6-97",
+      "name": "智能硬件产品                 9.6%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1396,
+        "y": 400,
+        "width": 193,
+        "height": 19
+      },
+      "text": {
+        "value": "智能硬件产品                 9.6%",
+        "fontSize": 15,
+        "fontWeight": 400,
+        "fill": "#171c2d",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-3-2-98",
+      "name": "其他业务                        3.2%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1396,
+        "y": 433,
+        "width": 193,
+        "height": 19
+      },
+      "text": {
+        "value": "其他业务                        3.2%",
+        "fontSize": 15,
+        "fontWeight": 400,
+        "fill": "#171c2d",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2022-2025-99",
+      "name": "2022-2025年业绩增长趋势",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 495,
+        "width": 224,
+        "height": 23
+      },
+      "text": {
+        "value": "2022-2025年业绩增长趋势",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-dual-axis-grouped-bar-and-line-chart-with-gridli-100",
+      "name": "Dual-axis grouped bar and line chart with gridlines, blue revenue bars, cyan profit bars, purple profit-margin line, markers, and axes",
+      "type": "raster-layer",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "split-leaf",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1048,
+        "y": 538,
+        "width": 584,
+        "height": 251
+      },
+      "generationBBox": {
+        "x": 1040,
+        "y": 530,
+        "width": 600,
+        "height": 267
+      },
+      "detectedBBox": {
+        "x": 1040,
+        "y": 530,
+        "width": 600,
+        "height": 267
+      },
+      "cropBBox": {
+        "x": 1038,
+        "y": 528,
+        "width": 604,
+        "height": 271
+      },
+      "placementBBox": {
+        "x": 1046.0533,
+        "y": 536.1199,
+        "width": 587.8933,
+        "height": 254.7603
+      },
+      "asset": {
+        "path": "assets/elements/raster-dual-axis-grouped-bar-and-line-chart-with-gridli-100.png",
+        "sha256": "b8e6acb433b6218dcae863a6745740e80285f2a4f7de93c502b07995ade5f50f",
+        "width": 604,
+        "height": 271
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-101",
+      "name": "■  营业收入（亿元）",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1062,
+        "y": 540,
+        "width": 107,
+        "height": 18
+      },
+      "text": {
+        "value": "■  营业收入（亿元）",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-102",
+      "name": "■  净利润（亿元）",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1178,
+        "y": 540,
+        "width": 107,
+        "height": 18
+      },
+      "text": {
+        "value": "■  净利润（亿元）",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-103",
+      "name": "—●— 净利率（%）",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1307,
+        "y": 540,
+        "width": 88,
+        "height": 18
+      },
+      "text": {
+        "value": "—●— 净利率（%）",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#342349",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-30-20-10-0-104",
+      "name": "30\n\n20\n\n10\n\n0",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1021,
+        "y": 578,
+        "width": 19,
+        "height": 208
+      },
+      "text": {
+        "value": "30\n\n20\n\n10\n\n0",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#5d616b",
+        "textAlign": "end"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-20-15-10-5-0-105",
+      "name": "20%\n\n15%\n\n10%\n\n5%\n\n0%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1617,
+        "y": 578,
+        "width": 35,
+        "height": 208
+      },
+      "text": {
+        "value": "20%\n\n15%\n\n10%\n\n5%\n\n0%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#30343d",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-16-5-106",
+      "name": "16.5",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1084,
+        "y": 666,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "16.5",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#073c9f",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2-45-107",
+      "name": "2.45",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1125,
+        "y": 738,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "2.45",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-14-8-108",
+      "name": "14.8%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1096,
+        "y": 623,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "14.8%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#25294a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-15-1-109",
+      "name": "15.1%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1227,
+        "y": 606,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "15.1%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#25294a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-3-29-110",
+      "name": "3.29",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1260,
+        "y": 725,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "3.29",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-28-6-111",
+      "name": "28.6",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1354,
+        "y": 590,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "28.6",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#073c9f",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-4-32-112",
+      "name": "4.32",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1393,
+        "y": 713,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "4.32",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-15-1-113",
+      "name": "15.1%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1392,
+        "y": 615,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "15.1%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#25294a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-35-0-114",
+      "name": "35.0",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1490,
+        "y": 568,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "35.0",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#073c9f",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-5-80-115",
+      "name": "5.80",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1532,
+        "y": 703,
+        "width": 33,
+        "height": 17
+      },
+      "text": {
+        "value": "5.80",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#172038",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-16-6-116",
+      "name": "16.6%",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1535,
+        "y": 616,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "16.6%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#25294a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2022-117",
+      "name": "2022",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1098,
+        "y": 786,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "2022",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#30343d",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2023-118",
+      "name": "2023",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1231,
+        "y": 786,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "2023",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#30343d",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-119",
+      "name": "2024",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1368,
+        "y": 786,
+        "width": 38,
+        "height": 17
+      },
+      "text": {
+        "value": "2024",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#30343d",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-2025e-120",
+      "name": "2025E",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 1505,
+        "y": 786,
+        "width": 48,
+        "height": 17
+      },
+      "text": {
+        "value": "2025E",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#30343d",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-121",
+      "name": "“",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "medium",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 862,
+        "y": 866,
+        "width": 43,
+        "height": 48
+      },
+      "text": {
+        "value": "“",
+        "fontSize": 53,
+        "fontWeight": 700,
+        "fill": "#d4a957",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-122",
+      "name": "我们致力于成为全球领先的智能制造与数字化解决方案提供商，",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 919,
+        "y": 866,
+        "width": 490,
+        "height": 23
+      },
+      "text": {
+        "value": "我们致力于成为全球领先的智能制造与数字化解决方案提供商，",
+        "fontSize": 16,
+        "fontWeight": 400,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-123",
+      "name": "以科技创新推动产业进步，让智能连接未来，让价值创造无限可能！",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "low",
+      "zIndex": 6,
+      "logicalBBox": {
+        "x": 919,
+        "y": 896,
+        "width": 511,
+        "height": 23
+      },
+      "text": {
+        "value": "以科技创新推动产业进步，让智能连接未来，让价值创造无限可能！",
+        "fontSize": 16,
+        "fontWeight": 400,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-124",
+      "name": "智创未来",
+      "type": "text",
+      "role": "foreground",
+      "parentId": "raster-repaired-full-canvas-corporate-infographic-backd-1",
+      "decomposition": "native-text",
+      "editValue": "high",
+      "fidelityRisk": "high",
+      "zIndex": 7,
+      "logicalBBox": {
+        "x": 1458,
+        "y": 861,
+        "width": 151,
+        "height": 62
+      },
+      "text": {
+        "value": "智创未来",
+        "fontSize": 40,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    }
+  ],
+  "exports": {
+    "svg": "editable.svg",
+    "preview": "preview.png"
+  },
+  "provenance": {
+    "mode": "provider-backed-spike",
+    "calls": [
+      {
+        "requestId": "resp_05e07f348dcb01dc016a8359be7638819991cb06d27dadd686",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "operation": "vision-analysis",
+        "createdAt": "2026-08-17T18:58:02.537Z",
+        "durationMs": 195289,
+        "usage": {
+          "inputTokens": 7291,
+          "outputTokens": 10370,
+          "totalTokens": 17661
+        }
+      },
+      {
+        "requestId": "image-1786993334585",
+        "provider": "openai",
+        "model": "gpt-image-2",
+        "operation": "element-redraw",
+        "createdAt": "2026-08-17T19:02:14.585Z",
+        "durationMs": 30280,
+        "usage": {
+          "inputTokens": 4459,
+          "outputTokens": 1640,
+          "totalTokens": 6099,
+          "inputImageTokens": 2443,
+          "inputTextTokens": 2016
+        }
+      },
+      {
+        "requestId": "image-1786993365197",
+        "provider": "openai",
+        "model": "gpt-image-2",
+        "operation": "background-repair",
+        "createdAt": "2026-08-17T19:02:45.197Z",
+        "durationMs": 31314,
+        "usage": {
+          "inputTokens": 2607,
+          "outputTokens": 1640,
+          "totalTokens": 4247,
+          "inputImageTokens": 2443,
+          "inputTextTokens": 164
+        }
+      }
+    ]
+  },
+  "warnings": [
+    "raster-repaired-full-canvas-corporate-infographic-backd-1: promoted-to-editable-background",
+    "quality-gate-failed-visual-regression",
+    "bounded-artwork-swallowed-by-background",
+    "chroma-key-leakage",
+    "aspect-ratio-and-cropping-regression"
+  ]
+}

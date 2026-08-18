@@ -21,6 +21,8 @@ const {
   resolveProviderRuntimeConnection,
   rotateProviderCredential,
 } = await import("../lib/provider-connections")
+const { getMusesAgentRuntimeConfig } =
+  await import("../lib/muses-agent-runtime-config")
 const { getPgPool } = await import("../lib/database")
 
 const firstSecret = "verification-image-key-first"
@@ -33,9 +35,12 @@ try {
     name: `Verification ${Date.now()}`,
     baseUrl: "https://api.openai.com/v1",
     credential: firstSecret,
-    capabilities: ["image"],
-    modelAllowlist: ["gpt-image-2"],
-    offeringIds: ["offering_openai_gpt_image_2_20260728"],
+    capabilities: ["image", "llm"],
+    modelAllowlist: ["gpt-image-2", "gpt-5.6-sol"],
+    offeringIds: [
+      "offering_openai_gpt_image_2_20260728",
+      "offering_openai_gpt_56_sol_20260817",
+    ],
     actorUserId: "provider-vault-verifier",
     actorEmail: "provider-vault-verifier@invalid.local",
   })
@@ -81,6 +86,28 @@ try {
   if (runtime?.apiKey !== firstSecret || runtime.id !== connectionId) {
     throw new Error(
       "The runtime could not open the frozen provider connection."
+    )
+  }
+  const llmRuntime = await resolveProviderRuntimeConnection({
+    capabilityFamily: "llm",
+    providerId: "provider_openai",
+    providerModelId: "gpt-5.6-sol",
+    offeringId: "offering_openai_gpt_56_sol_20260817",
+    connectionId,
+  })
+  if (llmRuntime?.apiKey !== firstSecret || llmRuntime.id !== connectionId) {
+    throw new Error("The administrator-managed LLM route could not be opened.")
+  }
+  const agentRuntime = await getMusesAgentRuntimeConfig({
+    NODE_ENV: "production",
+    MUSES_AGENT_DEFAULT_MODEL_ID: "openai/gpt-5.6-sol@2026-08-17",
+  })
+  if (
+    agentRuntime.defaultModelId !== "openai/gpt-5.6-sol@2026-08-17" ||
+    agentRuntime.models[0]?.providerModelId !== "gpt-5.6-sol"
+  ) {
+    throw new Error(
+      "The administrator-managed LLM route was not published to the Agent Host runtime."
     )
   }
 

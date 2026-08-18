@@ -6,10 +6,10 @@ items:
     parentPlanId: null
     versionRef: null
     owner: codex-main
-    pinned: true
-    pinnedReason: 正式开发前必须保持可见的架构基线。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-24T18:27:47.205Z
-    updatedAt: 2026-07-24T18:30:21.000Z
+    updatedAt: 2026-08-18T01:18:23.384Z
   - id: platform-core-alpha
     name: Platform Core Alpha：创作与工作流基础设施
     summary: 保留画布、资产、模型、身份计费和耐久 Workflow 基础设施；Workflow Engine 与 Agent Engine 分开演进，平台能力只在 Muses 集成层组合。
@@ -36,10 +36,10 @@ items:
     parentPlanId: platform-core-alpha
     versionRef: null
     owner: codex-main
-    pinned: true
-    pinnedReason: 进入实现前只解决会改变核心边界的高风险问题。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-24T19:56:41.359Z
-    updatedAt: 2026-07-24T19:56:41.359Z
+    updatedAt: 2026-08-18T01:18:23.511Z
   - id: workflow-canvas-alpha
     name: Slice 1：工作流无限画布 Alpha
     summary: 技术缺口池：仅当首图或真实场景暴露工作流画布交互、保存或历史阻断时拉取对应任务，不按组件顺序独立推进。

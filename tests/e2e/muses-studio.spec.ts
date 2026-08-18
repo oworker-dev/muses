@@ -9,6 +9,7 @@ const authoringEmail = "muses-agent-authoring-e2e@example.com";
 const agentEmbedUrl = `${(
   process.env.MUSES_AGENT_PUBLIC_URL || "http://127.0.0.1:3000"
 ).replace(/\/+$/, "")}/embed`;
+const canvasAgentMarker = process.env.MUSES_CANVAS_E2E_REF_ID?.trim();
 let workspaceId = "";
 
 test.beforeAll(async ({ request }) => {
@@ -101,20 +102,18 @@ test("Studio uses one full-height right rail for Agent and node settings", async
   expect(embedUrl).not.toContain("accessToken");
   const agentFrame = page.frameLocator('iframe[title="MusesAgent"]');
   await expect(
-    agentFrame.getByRole("textbox", { name: "Describe a task" }),
+    agentFrame.getByRole("textbox", { name: "Do anything" }),
   ).toBeVisible({ timeout: 30_000 });
+  const modelSelector = agentFrame.getByRole("combobox", { name: "Model" });
+  await expect(modelSelector).toBeVisible();
+  await modelSelector.click();
   await expect(
-    agentFrame.getByRole("button", { name: "Model" }),
+    agentFrame.getByRole("radiogroup", { name: "Reasoning" }),
   ).toBeVisible();
-  await expect(
-    agentFrame.getByRole("combobox", { name: "Reasoning" }),
-  ).toBeVisible();
-  await expect(
-    agentFrame.getByRole("button", { name: "Context" }),
-  ).toBeVisible();
+  await page.keyboard.press("Escape");
   await agentFrame.getByRole("button", { name: "Open navigation" }).click();
   await expect(
-    agentFrame.getByRole("complementary", { name: "Tasks" }),
+    agentFrame.getByRole("complementary", { name: "Recent sessions" }),
   ).toBeVisible();
   await agentFrame.getByRole("button", { name: "Close navigation" }).click();
 
@@ -133,7 +132,7 @@ test("embedded standalone Agent completes and restores a generic conversation", 
   test.setTimeout(3 * 60_000);
   await page.goto("/studio");
   const frame = page.frameLocator('iframe[title="MusesAgent"]');
-  const composer = frame.getByRole("textbox", { name: "Describe a task" });
+  const composer = frame.getByRole("textbox", { name: "Do anything" });
   await expect(composer).toBeVisible({ timeout: 30_000 });
   await composer.fill("Reply with exactly: MUSES EMBED READY");
   await composer.press("Enter");
@@ -143,6 +142,7 @@ test("embedded standalone Agent completes and restores a generic conversation", 
     timeout: 2 * 60_000,
   });
   await expect(frame.getByText(/Input \d/)).toBeVisible();
+  await expect(frame.getByRole("button", { name: "Context" })).toBeVisible();
 
   await page.reload();
   const restored = page.frameLocator('iframe[title="MusesAgent"]');
@@ -152,7 +152,7 @@ test("embedded standalone Agent completes and restores a generic conversation", 
     timeout: 30_000,
   });
   const continuedComposer = restored.getByRole("textbox", {
-    name: "Describe a task",
+    name: "Do anything",
   });
   await continuedComposer.fill(
     "Now reply with exactly: MUSES CONTINUATION READY",
@@ -161,6 +161,72 @@ test("embedded standalone Agent completes and restores a generic conversation", 
   await expect(
     restored.getByText("MUSES CONTINUATION READY", { exact: true }),
   ).toBeVisible({ timeout: 2 * 60_000 });
+});
+
+test("embedded platform Agent drives the authoritative creative canvas", async ({
+  page,
+}) => {
+  test.skip(
+    !canvasAgentMarker,
+    "MUSES_CANVAS_E2E_REF_ID is required for the canvas mutation gate.",
+  );
+  test.setTimeout(3 * 60_000);
+  const initialResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  expect(initialResponse.ok()).toBeTruthy();
+  const initial =
+    (await initialResponse.json()) as OperationGatewayTestSnapshot;
+
+  await page.goto("/studio");
+  const frame = page.frameLocator('iframe[title="MusesAgent"]');
+  const composer = frame.getByRole("textbox", { name: "Do anything" });
+  await expect(composer).toBeVisible({ timeout: 30_000 });
+  await composer.fill(
+    [
+      "Use canvas.inspect before making a change.",
+      `Then call canvas.item.put exactly once with refId ${JSON.stringify(canvasAgentMarker)}, kind \"artifact\", title \"MUSES HOST CANVAS READY\", x 1440, y 160, width 320, and height 180.`,
+      "Inspect the canvas again and finish only after the item is visible.",
+      "Return exactly MUSES_HOST_CANVAS_READY.",
+    ].join(" "),
+  );
+  await composer.press("Enter");
+  const approval = frame.getByRole("alertdialog", {
+    name: "Tool call awaiting approval",
+  });
+  await expect(approval).toBeVisible({ timeout: 2 * 60_000 });
+  await approval.getByRole("button", { name: "Approve", exact: true }).click();
+  await expect(
+    frame.getByText("MUSES_HOST_CANVAS_READY", { exact: true }),
+  ).toBeVisible({ timeout: 2 * 60_000 });
+
+  await expect
+    .poll(
+      async () => {
+        const response = await page.request.get(
+          `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+        );
+        if (!response.ok()) return null;
+        const snapshot =
+          (await response.json()) as OperationGatewayTestSnapshot;
+        return snapshot.creativeCanvas.items.find(
+          (item) => item.refId === canvasAgentMarker,
+        )?.title;
+      },
+      { timeout: 30_000 },
+    )
+    .toBe("MUSES HOST CANVAS READY");
+  await expect(
+    page.getByText("MUSES HOST CANVAS READY", { exact: true }),
+  ).toBeVisible();
+
+  const finalResponse = await page.request.get(
+    `/api/studio/operation-gateway?workspaceId=${workspaceId}`,
+  );
+  const final = (await finalResponse.json()) as OperationGatewayTestSnapshot;
+  expect(final.creativeCanvas.revision).toBeGreaterThan(
+    initial.creativeCanvas.revision,
+  );
 });
 
 test("Site Admin can inspect the credential-safe Provider control plane", async ({
@@ -1797,6 +1863,12 @@ test("professional canvas authors, publishes, and runs Start to Agent to named E
     const imageNode = page.getByTestId("workflow-node-image-generator-1");
     await expect(imageNode).toBeVisible({ timeout: 30_000 });
     await page.getByRole("button", { name: "Show or hide minimap" }).click();
+    await page.getByTestId("workflow-node-start-1").click();
+    const workflowPrompt = page.getByRole("textbox", {
+      name: "Default value",
+    });
+    await workflowPrompt.fill("Reply with exactly: WORKFLOW_AGENT_READY");
+    await workflowPrompt.press("Tab");
     await imageNode.click();
     await page.keyboard.press("Delete");
     await expect(imageNode).toHaveCount(0);
@@ -1960,8 +2032,26 @@ test("professional canvas authors, publishes, and runs Start to Agent to named E
 
     let completedRun: {
       status?: string;
+      failure?: { code?: string; message?: string };
       result?: {
         outputs?: Record<string, { valueType?: string; value?: unknown }>;
+      };
+      observability?: {
+        nodes?: Array<{
+          nodeId?: string;
+          usage?: {
+            agentRunId?: string;
+            agentEventCount?: number;
+            tokenStatus?: string;
+            inputTokens?: number;
+            outputTokens?: number;
+          };
+        }>;
+        totals?: {
+          tokenStatus?: string;
+          inputTokens?: number;
+          outputTokens?: number;
+        };
       };
     } = {};
     await expect
@@ -1975,13 +2065,33 @@ test("professional canvas authors, publishes, and runs Start to Agent to named E
         },
         { timeout: 3 * 60_000 },
       )
-      .toBe("completed");
+      .toMatch(/^(completed|failed|cancelled)$/);
+    expect(completedRun.status, completedRun.failure?.message).toBe(
+      "completed",
+    );
     expect(completedRun.result?.outputs?.result).toMatchObject({
       valueType: "text",
     });
     expect(completedRun.result?.outputs?.result.value).toEqual(
       expect.any(String),
     );
+    const agentUsage = completedRun.observability?.nodes?.find(
+      (node) => node.nodeId === "agent-run-10",
+    )?.usage;
+    expect(agentUsage).toMatchObject({
+      agentRunId: expect.any(String),
+      tokenStatus: "reported",
+      inputTokens: expect.any(Number),
+      outputTokens: expect.any(Number),
+    });
+    expect(agentUsage?.agentEventCount).toBeGreaterThan(0);
+    expect(agentUsage?.inputTokens).toBeGreaterThan(0);
+    expect(agentUsage?.outputTokens).toBeGreaterThan(0);
+    expect(completedRun.observability?.totals).toMatchObject({
+      tokenStatus: "reported",
+      inputTokens: agentUsage?.inputTokens,
+      outputTokens: agentUsage?.outputTokens,
+    });
   } finally {
     await context.close();
     if (process.env.MUSES_E2E_KEEP_AUTHORING_FIXTURE !== "1") {
@@ -2240,6 +2350,11 @@ async function publishDefaultWorkflow(page: Page) {
 type OperationGatewayTestSnapshot = {
   workspaceId: string;
   project: { id: string };
+  creativeCanvas: {
+    canvasId: string;
+    revision: number;
+    items: Array<{ refId: string; title: string }>;
+  };
   professionalWorkspace: {
     professionalWorkspaceId: string;
     revision: number;

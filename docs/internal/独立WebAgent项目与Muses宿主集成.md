@@ -94,17 +94,17 @@ Muses 通过这些 Host slots 增加画布和创作能力。Studio 不维护另�
 - Prompt composer 固定在任务区底部，提供附件、模型、推理强度、上下文/用量状态和停止入口；选项必须来自 Agent/Profile 或 Host 配置，不写死供应商。
 - 失败必须结束当前运行状态，并提供同线程继续、重试或切换模型的可操作入口，不能刷新后永久停留在“运行中”。
 
-UI 以 Vercel AI Elements 为基础，但高层 `AgentWorkspace`、会话存储契约、事件投影、Host slots 和主题变量必须作为开放模块发布。独立 Web 应用和 Muses Studio 消费同一模块，禁止复制后再分别维护。
+UI 以 assistant-ui 为默认组件基线，但高层 `AgentWorkspace`、会话存储契约、事件投影、Host slots 和主题变量必须作为开放模块发布。独立 Web 应用和 Muses Studio 消费同一模块，禁止复制后再分别维护。
 
 ## 5. Harness 策略
 
-Eve 是独立 Web Agent 默认发行版 Harness，Pi 是轻量嵌入式对照，Muses Headless Runtime 保留为稳定契约参考。任何 Harness 都只能通过 Agent Contracts、Store、Policy、Tool、Sandbox 和 Event 端口工作。
+Eve 是独立 Web Agent 默认发行版 Harness；公开 Headless AgentRun API 是 Muses 使用的稳定集成边界。旧 Muses Headless Runtime 已删除，不再作为参考实现。任何 Harness 都只能通过 Agent Contracts、Store、Policy、Tool、Sandbox 和 Event 端口工作。
 
-当前安装的 Eve `0.27.8` 处于 preview，要求 Node.js 24，并使用 Workflow SDK `5.0.0-beta` 协议；当前 Muses 主运行时是 Node.js 22 与 Workflow SDK 4.6.2。Eve 当前还没有证明满足 Muses 的 per-AgentRun 物理沙盒和并发消息顺序契约。因此：
+当前 Open Agent 使用 Eve `0.31.1`、Node.js 24 和独立的 Workflow SDK 5 PostgreSQL World；Muses 仍使用自己的 Workflow SDK `4.6.2` World，二者不共享队列、数据库 schema 或运行时状态。Open Agent 已通过流恢复、审批、取消、Usage、严格消息顺序和 Docker 沙盒隔离门禁，但目标部署的多租户沙盒后端、资源配额和回收 SLO 仍需单独验收。因此：
 
-1. `/root/projects/open-agent` 在 Node 24 与独立 Workflow World 上直接跑通 Eve 默认发行版，不导入 Muses 业务模块。
-2. 用同一 Conformance Suite 验证 Eve、Pi 与 Headless 公开语义，而不是直接升级 Muses 生产运行时。
-3. Eve 通过流、审批、取消、Usage、消息顺序和物理沙盒 Gate 后，才允许 Muses Host 把生产 Agent 流量切到该发行版。
+1. `/root/projects/open-agent` 在 Node.js 24 与独立 Workflow World 上构建和运行，不导入 Muses 业务模块。
+2. Muses 只消费同一不可变提交的 Contracts、Client 和 Host SDK；升级必须重新跑包分发、类型、构建和双向宿主门禁。
+3. Conformance Suite 验证独立 Web、Headless AgentRun、嵌入式 Host 与工作流 Agent 节点的公开语义；不得通过升级 Muses 自身 Workflow Runtime 来耦合两套状态机。
 4. 即使更换 Harness，公开 SDK、事件、Profile、Tool、Usage 和 Host 协议也不改变。
 
 ## 6. Profile 与平台自举
@@ -133,7 +133,7 @@ Host 调用对时间戳、method、path 和 body 做 HMAC 签名，同时携带 
 
 截至 2026-08-02，独立 Agent 已拥有自己的产品数据 schema、独立 Eve Workflow World、Host JWT、线程所有权、Headless AgentRun API、可恢复事件流和 iframe 嵌入协议。当前默认产品 schema 与 Workflow 队列前缀均使用 `open_agent` 命名；Eve 上下文压缩以 82% 阈值启用，一个 AgentRun 独占一个 durable session，其 `/workspace` 跨 turn 保留。Muses 不再保存或压缩 Agent 上下文，也不再执行本地模型循环。
 
-截至 2026-08-06，Muses 使用 `open-agent` 仓库 `oworker-dev/open-agent` 的 `v0.1.0-alpha.9` SDK，并将三个 package path 固定到同一不可变提交 `442420dae167d8ee72b55133d2ba961433fb0633`。该提交包含 PostgreSQL 持久 follow-up mailbox、严格 session FIFO、权威提交确认、Provider 故障重试契约、可恢复子代理流与生命周期 UI，以及通过门禁的可审计 SDK 构建产物。Muses 的冷安装不需要重新构建 SDK，也不会把 GitHub Release 的短期签名 URL 写入锁文件；日常检查会拒绝可移动引用、过期 JWT 地址或 package commit 分叉。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
+截至 2026-08-06 的历史 SDK 快照使用 `open-agent` 仓库 `oworker-dev/open-agent` 的 `v0.1.0-alpha.9` 和不可变提交 `442420dae167d8ee72b55133d2ba961433fb0633`；对应证据保留在 `delivery/evidence/open-agent-sdk-108/`，不代表当前生产锁定版本。当前 Muses 生产依赖已统一锁定到 Open Agent 提交 `657d1f7683ce3eaab6742bb7ba4c8742302431d7`，三个 package path 共用该不可变版本，并已重跑 SDK 分发、类型、构建和可用门禁；冷安装不得重新构建 SDK，也不得把 GitHub Release 的短期签名 URL 写入锁文件。集成只依赖公开 SDK、Host JWT 和 Host Capability；iframe 仍只是便捷 UI 投影，不是能力边界。旧 Muses Agent Runtime 的源码、API、Workflow driver 和本地上下文实现均已从生产代码删除。
 
 同日完成的专业画布浏览器验收不使用固定 Harness 图：独立测试用户通过 UI 把默认工作流改造成 `Start → agent.run → End(result:text)`，变量选择器按真实自定义端口标签回退，发布目录冻结输出键、显示名、类型与必填性，随后 Muses Workflow SDK 通过 `@oworker/open-agent-client` 启动独立 Agent 并返回命名文本输出。该证据与 Agent→Host 的画布/工作流工具闭环共同证明两个方向都只经过开放 SDK 和版本化宿主能力。
 

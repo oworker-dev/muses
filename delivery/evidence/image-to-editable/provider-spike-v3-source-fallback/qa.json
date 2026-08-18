@@ -1,0 +1,1088 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "width": 1672,
+    "height": 941
+  },
+  "rendered": {
+    "width": 1672,
+    "height": 941
+  },
+  "structure": {
+    "textElements": 128,
+    "visibleTextElements": 0,
+    "rasterElements": 75,
+    "renderedRasterElements": 75
+  },
+  "pixels": {
+    "nonBlank": true,
+    "meanAbsoluteError": 0.3558,
+    "similarity": 0.9986
+  },
+  "chroma": {
+    "detectedKey": {
+      "r": 255,
+      "g": 0,
+      "b": 255
+    },
+    "transparentCoverage": 0.9411
+  },
+  "elements": [
+    {
+      "id": "raster-large-hero-artwork-region-with-mountain-skyline--2",
+      "sceneRole": "bounded-artwork",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.0123,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": true,
+      "status": "failed",
+      "failures": [
+        "generation-boundary-touch",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-residual-hero-landscape-artwork-after-text-and-l-3",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.5162,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": true,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "generation-boundary-touch",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-geometric-hexagonal-company-logo-4",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.5754,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-four-blue-forward-chevrons-8",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-lightbulb-innovation-icon-12",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-database-icon-14",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-collaboration-people-icon-16",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-growth-chart-icon-18",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.7582,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-gradient-section-title-bar-for-kpi-overview-20",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-rounded-blue-kpi-header-background-and-left-acce-21",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 2.9351,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-four-column-kpi-card-frame-with-rounded-border-a-23",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.7612,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-first-kpi-column-frame-24",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-revenue-currency-icon-25",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-second-kpi-column-frame-29",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.4308,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-database-profit-icon-30",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-third-kpi-column-frame-34",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.5905,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-customer-count-person-icon-35",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.0377,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-fourth-kpi-column-frame-39",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-pie-chart-research-investment-icon-40",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.0986,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-gradient-section-title-bar-for-business-str-44",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.0048,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-rounded-section-header-background-and-accent-45",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.2802,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-business-structure-donut-chart-module-with-legen-47",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.3458,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-multi-segment-blue-purple-teal-and-orange-donut--48",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 2.4095,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-blue-legend-dot-52",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-green-legend-dot-55",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-cyan-legend-dot-58",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-orange-legend-dot-61",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-red-legend-dot-64",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-strategy-direction-panel-with-four-rounded-strat-67",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.9377,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-blue-gradient-strategy-section-header-68",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-first-strategic-goal-card-residual-frame-70",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 4.4313,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-blue-rocket-icon-71",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 2.584,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-second-strategic-goal-card-residual-frame-75",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.524,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-cyan-globe-icon-76",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 2.584,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-third-strategic-goal-card-residual-frame-80",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.7316,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-purple-partnership-people-icon-81",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.8386,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-fourth-strategic-goal-card-residual-frame-85",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-orange-rising-chart-icon-86",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.6926,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-central-strategy-roadmap-and-core-capability-pan-90",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.0513,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-blue-gradient-roadmap-section-header-91",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.8467,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-four-step-blue-chevron-roadmap-strip-93",
+      "sceneRole": "container",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.8758,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-four-column-roadmap-detail-table-with-dividers-a-98",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-core-capability-section-with-four-framed-capabil-111",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-blue-vertical-section-accent-112",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-core-innovation-capability-card-frame-114",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-blue-innovation-headset-icon-115",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-data-intelligence-capability-card-frame-119",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.3531,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-cyan-database-stack-icon-120",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.0744,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-security-and-trust-capability-card-frame-124",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.3531,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-purple-shield-security-icon-125",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-talent-development-capability-card-frame-129",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-orange-people-development-icon-130",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.9526,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-2022-2025-performance-growth-chart-module-134",
+      "sceneRole": "container",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.3831,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-blue-gradient-performance-chart-header-135",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.1356,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-chart-legend-swatches-and-labels-137",
+      "sceneRole": "container",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-blue-revenue-legend-swatch-138",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.0435,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-teal-profit-legend-swatch-140",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-purple-line-legend-sample-with-marker-142",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-chart-plot-area-with-grid-axes-grouped-bars-and--144",
+      "sceneRole": "container",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-residual-performance-chart-marks-after-labels-ar-145",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-corporate-values-footer-module-with-five-value-s-171",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.4588,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift"
+      ]
+    },
+    {
+      "id": "raster-blue-gradient-corporate-values-header-172",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.2213,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-customer-first-value-item-174",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-customer-first-circular-icon-175",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-integrity-and-responsibility-value-item-179",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-integrity-circular-icon-180",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.4376,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-win-win-collaboration-value-item-184",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-collaboration-circular-icon-185",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.4376,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-innovation-and-progress-value-item-189",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-innovation-lightbulb-circular-icon-190",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 3.091,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-passion-and-dedication-value-item-194",
+      "sceneRole": "container",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "passed",
+      "failures": []
+    },
+    {
+      "id": "raster-passion-heart-circular-icon-195",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.502,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-dark-blue-footer-quotation-banner-with-flowing-w-199",
+      "sceneRole": "bounded-artwork",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 0.9793,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-residual-blue-wave-and-network-artwork-after-quo-200",
+      "sceneRole": "leaf",
+      "critical": true,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 1.9838,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    },
+    {
+      "id": "raster-large-gold-opening-quotation-mark-201",
+      "sceneRole": "leaf",
+      "critical": false,
+      "aspectRatioDrift": 0,
+      "scaleDrift": 2.929,
+      "keyLeakage": 0,
+      "opaqueEdgeCoverage": 1,
+      "touchesGenerationBoundary": false,
+      "status": "failed",
+      "failures": [
+        "scale-drift",
+        "opaque-rectangular-background"
+      ]
+    }
+  ],
+  "checks": {
+    "sameCanvasSize": true,
+    "nonBlank": true,
+    "hasEditableText": true,
+    "editableTextVisible": false,
+    "hasRasterLayers": true,
+    "detectedRasterLayers": true,
+    "hasRequiredProviderStages": true,
+    "providerRequestIdsCaptured": true,
+    "renderSimilarityFloor": true,
+    "elementQualityPassed": false,
+    "criticalElementsPassed": false,
+    "boundedArtworkNotSwallowedByBackground": true
+  }
+}

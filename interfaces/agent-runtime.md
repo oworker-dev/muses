@@ -50,6 +50,8 @@ host-neutral AgentRun API:
 - `GET /api/agent/runs/:runId` returns the authorized run snapshot;
 - `GET /api/agent/runs/:runId/events?after=...` returns cursor-based events and
   accumulated Input, Output, Cache Read, Cache Write and cost usage;
+- `POST /api/agent/runs/:runId/input` responds to currently pending approvals
+  or questions with an idempotent batch;
 - `DELETE /api/agent/runs/:runId` requests idempotent cancellation.
 
 Every production call carries a short-lived Host JWT. The Agent service verifies
@@ -62,6 +64,10 @@ The service owns AgentRun request fingerprints and idempotency. A response lost
 after Eve accepted a session becomes `submission-ambiguous` and is not
 automatically resubmitted. Cancellation uses Eve's cooperative boundary and
 resets only an exclusive session that cannot settle within the grace period.
+Input responses use a separate idempotency key, reject stale or cross-run
+request ids, and resume only the exact parked AgentRun. Event consumers must
+accept `tool.input.delta` before `tool.requested`; the delta incrementally
+projects tool arguments and does not authorize tool execution by itself.
 
 ## Web and embedded projection
 

@@ -371,10 +371,10 @@ items:
     parentTaskId: null
     countedForProgress: false
     owner: codex-main
-    pinned: true
-    pinnedReason: 当前实现入口：先冻结 Agent 将要操作的稳定产品对象与端口。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-24T19:57:48.378Z
-    updatedAt: 2026-07-28T18:01:09.267Z
+    updatedAt: 2026-08-18T01:18:17.572Z
     statusChangedAt: 2026-07-28T18:01:09.267Z
   - id: build-single-agent-loop
     name: 交付单 Agent 驱动画布闭环
@@ -1502,10 +1502,10 @@ items:
     parentTaskId: null
     countedForProgress: true
     owner: codex-main
-    pinned: true
-    pinnedReason: 当前先冻结长期正确的独立性边界，再开始代码重构。
+    pinned: false
+    pinnedReason: null
     createdAt: 2026-07-30T18:01:03.239Z
-    updatedAt: 2026-08-02T02:32:54.884Z
+    updatedAt: 2026-08-18T01:18:17.702Z
     statusChangedAt: 2026-08-02T02:32:54.884Z
   - id: deliver-resumable-agent-streaming
     name: 交付可恢复实时流与错误续跑体验
@@ -1521,8 +1521,8 @@ items:
     updatedAt: 2026-07-30T18:22:32.403Z
     statusChangedAt: 2026-07-30T18:22:32.403Z
   - id: integrate-ai-elements-agent-ui
-    name: 交付独立 Agent 的 AI Elements Web 体验
-    summary: 以 Codex 桌面端宽屏和小尺寸截图为体验校准，采用 AI Elements 交付会话侧栏、消息/推理/工具/审批时间线、响应式专注态与底部输入区。
+    name: 交付独立 Agent 的 assistant-ui Web 体验
+    summary: 以 Codex 桌面端宽屏和小尺寸截图为体验校准，采用 assistant-ui 交付会话侧栏、消息/推理/工具/审批时间线、响应式专注态与底部输入区；默认前端不得残留 AI Elements 组件或依赖，同时保留宿主自定义 UI 能力。
     status: in_progress
     planRef: standalone-agent-engine
     parentTaskId: null
@@ -1531,7 +1531,7 @@ items:
     pinned: false
     pinnedReason: null
     createdAt: 2026-07-30T18:01:03.452Z
-    updatedAt: 2026-07-30T18:22:32.147Z
+    updatedAt: 2026-08-18T01:25:31.427Z
     statusChangedAt: 2026-07-30T18:22:32.147Z
   - id: deliver-production-skills-mcp
     name: 交付生产 Skill 与 MCP 生命周期
@@ -2014,3 +2014,81 @@ items:
     createdAt: 2026-08-06T10:55:26.324Z
     updatedAt: 2026-08-06T11:34:27.525Z
     statusChangedAt: 2026-08-06T11:34:27.525Z
+  - id: revalidate-muses-host-production-gates
+    name: 复验 Muses Host 生产集成与画布门禁
+    summary: 自举隔离 Muses 管理员、会话、Workspace/Project/Canvas/Deployment 与匹配 Host 配置，并在 Open Agent 生产预览就绪后实际运行平台 Agent 画布和 Workflow agent.run 双向 E2E。
+    status: in_progress
+    planRef: codex-agent-experience
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-16T19:25:12.690Z
+    updatedAt: 2026-08-16T20:05:33.695Z
+    statusChangedAt: 2026-08-16T20:05:33.695Z
+  - id: design-image-to-editable-capability
+    name: 冻结图片转可编辑能力技术方案
+    summary: 方案已由产品负责人确认，ai-3 已批准；技术文档、评审清单和目录占位已完成。
+    status: done
+    planRef: image-capability-alpha
+    parentTaskId: integrate-image-processing
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-17T15:54:51.031Z
+    updatedAt: 2026-08-17T16:18:09.356Z
+    statusChangedAt: 2026-08-17T16:18:09.356Z
+  - id: deliver-image-to-editable-test-svg
+    name: 交付测试图可编辑 SVG 垂直切片
+    summary: 已保留 /root/a.png 的确定性 Fixture SVG 作为结构出口，但真实 Provider 结果的视觉质量未达标；当前需要用修订后的场景角色、局部重绘和逐元素 QA 重新交付，不能以旧的 0.9037 Fixture 相似度作为 Provider 通过证据。
+    status: in_progress
+    planRef: image-capability-alpha
+    parentTaskId: integrate-image-processing
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-17T16:18:17.768Z
+    updatedAt: 2026-08-17T16:33:37.056Z
+    statusChangedAt: 2026-08-17T16:33:37.056Z
+  - id: provider-spike-3
+    name: 实现并验证图片转可编辑真实 Provider Spike
+    summary: 首次真实调用已保留为失败回归样本；旧 QA 错误地将 99 个文字、24 个 raster、1 个底图和 0.9073 回渲染相似度判为通过。当前已重构 background-field/bounded-artwork 场景角色、局部空间批次、内部色键孔洞透明化、比例保护和逐元素 QA，待重新执行 analysis-only 并经视觉审核后再进行 Image Edit。
+    status: in_progress
+    planRef: image-capability-alpha
+    parentTaskId: integrate-image-processing
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-17T16:46:10.736Z
+    updatedAt: 2026-08-17T19:14:23.000Z
+    statusChangedAt: 2026-08-17T19:14:23.000Z
+  - id: agentrun-110
+    name: AgentRun 输入响应与审批闭环
+    summary: 为无头 AgentRun 提供 requestId 归属校验、幂等持久化、Eve respond 恢复及 Muses 真实审批 E2E。
+    status: in_progress
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: false
+    pinnedReason: null
+    createdAt: 2026-08-18T00:12:39.805Z
+    updatedAt: 2026-08-18T00:12:49.883Z
+    statusChangedAt: 2026-08-18T00:12:49.883Z
+  - id: finalize-open-agent-codex-production-release
+    name: 完成 Codex 级 Open Agent 与 Muses 生产发布门禁
+    summary: 逐项验收 Codex 级内核与交互、长任务稳定性、子代理与消息控制、工具增量、资产/100MiB 上传/视觉、沙盒、SDK、OTel、负载，并完成 Muses 宿主同步、提交推送和生产服务启动。
+    status: in_progress
+    planRef: agent-production-gate
+    parentTaskId: null
+    countedForProgress: true
+    owner: codex-main
+    pinned: true
+    pinnedReason: 本轮最终生产收口的统一验收入口
+    createdAt: 2026-08-18T01:18:07.427Z
+    updatedAt: 2026-08-18T01:18:07.427Z
+    statusChangedAt: 2026-08-18T01:18:07.427Z

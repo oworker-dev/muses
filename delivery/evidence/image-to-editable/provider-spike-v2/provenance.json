@@ -1,0 +1,47 @@
+{
+  "calls": [
+    {
+      "requestId": "resp_05e07f348dcb01dc016a8359be7638819991cb06d27dadd686",
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "operation": "vision-analysis",
+      "createdAt": "2026-08-17T18:58:02.537Z",
+      "durationMs": 195289,
+      "usage": {
+        "inputTokens": 7291,
+        "outputTokens": 10370,
+        "totalTokens": 17661
+      }
+    },
+    {
+      "requestId": "image-1786993334585",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "operation": "element-redraw",
+      "createdAt": "2026-08-17T19:02:14.585Z",
+      "durationMs": 30280,
+      "usage": {
+        "inputTokens": 4459,
+        "outputTokens": 1640,
+        "totalTokens": 6099,
+        "inputImageTokens": 2443,
+        "inputTextTokens": 2016
+      }
+    },
+    {
+      "requestId": "image-1786993365197",
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "operation": "background-repair",
+      "createdAt": "2026-08-17T19:02:45.197Z",
+      "durationMs": 31314,
+      "usage": {
+        "inputTokens": 2607,
+        "outputTokens": 1640,
+        "totalTokens": 4247,
+        "inputImageTokens": 2443,
+        "inputTextTokens": 164
+      }
+    }
+  ]
+}

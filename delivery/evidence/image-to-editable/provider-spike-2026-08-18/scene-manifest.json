@@ -1,0 +1,3097 @@
+{
+  "schemaVersion": "1.0",
+  "capability": "image.to-editable.v1",
+  "source": {
+    "name": "a.png",
+    "sha256": "2d296826f8b4be5b5ea54ef9c63002e59d8812e958970cae5f811ac9e57edd2d",
+    "width": 1672,
+    "height": 941
+  },
+  "canvas": {
+    "width": 1672,
+    "height": 941,
+    "colorSpace": "srgb"
+  },
+  "background": {
+    "path": "assets/clean-background.png",
+    "sha256": "2fba7bae0eebcd25acb97541d382ef2e05b939a7c3f89435f6749f304291091e"
+  },
+  "elements": [
+    {
+      "id": "raster-hero-background-illustration-pale-blue-atmospher-1",
+      "name": "Hero background illustration: pale blue atmospheric mountains, futuristic blue city skyline, glowing road/light trails, flowing wave mesh, and translucent blue-white decorative arcs",
+      "type": "raster-layer",
+      "zIndex": 0,
+      "logicalBBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1010,
+        "height": 474
+      },
+      "generationBBox": {
+        "x": 0,
+        "y": 0,
+        "width": 1018,
+        "height": 482
+      },
+      "detectedBBox": {
+        "x": 0,
+        "y": 14,
+        "width": 1018,
+        "height": 468
+      },
+      "cropBBox": {
+        "x": 0,
+        "y": 12,
+        "width": 1020,
+        "height": 472
+      },
+      "asset": {
+        "path": "assets/elements/raster-hero-background-illustration-pale-blue-atmospher-1.png",
+        "sha256": "1817d58195074a3ee74761ddda6f77f7aefdf4f5d9f8b720d437348de51771d8",
+        "width": 1020,
+        "height": 472
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-geometric-hexagonal-company-logo-mark-2",
+      "name": "Blue geometric hexagonal company logo mark",
+      "type": "raster-layer",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 0,
+        "y": 0,
+        "width": 309,
+        "height": 67
+      },
+      "generationBBox": {
+        "x": 0,
+        "y": 0,
+        "width": 317,
+        "height": 75
+      },
+      "detectedBBox": {
+        "x": 31,
+        "y": 14,
+        "width": 50,
+        "height": 55
+      },
+      "cropBBox": {
+        "x": 29,
+        "y": 12,
+        "width": 54,
+        "height": 59
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-geometric-hexagonal-company-logo-mark-2.png",
+        "sha256": "1534e4c62cd9a0c36221c6401a93af398da82610ceb9e26992f33c9193a15dec",
+        "width": 54,
+        "height": 59
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-3",
+      "name": "智创未来科技有限公司",
+      "type": "text",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 83,
+        "y": 24,
+        "width": 220,
+        "height": 23
+      },
+      "text": {
+        "value": "智创未来科技有限公司",
+        "fontSize": 21,
+        "fontWeight": 700,
+        "fill": "#111827",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-zhi-chuang-future-technology-co-ltd-4",
+      "name": "ZHI CHUANG FUTURE TECHNOLOGY CO., LTD.",
+      "type": "text",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 84,
+        "y": 49,
+        "width": 217,
+        "height": 11
+      },
+      "text": {
+        "value": "ZHI CHUANG FUTURE TECHNOLOGY CO., LTD.",
+        "fontSize": 9,
+        "fontWeight": 400,
+        "fill": "#5b6472",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-5",
+      "name": "智启新程 · 创领未来",
+      "type": "text",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 738,
+        "y": 32,
+        "width": 184,
+        "height": 27
+      },
+      "text": {
+        "value": "智启新程 · 创领未来",
+        "fontSize": 20,
+        "fontWeight": 700,
+        "fill": "#063b86",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-blue-right-pointing-chevrons-6",
+      "name": "Four blue right-pointing chevrons",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 934,
+        "y": 36,
+        "width": 50,
+        "height": 24
+      },
+      "generationBBox": {
+        "x": 926,
+        "y": 28,
+        "width": 66,
+        "height": 40
+      },
+      "detectedBBox": {
+        "x": 926,
+        "y": 34,
+        "width": 51,
+        "height": 18
+      },
+      "cropBBox": {
+        "x": 924,
+        "y": 32,
+        "width": 55,
+        "height": 22
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-blue-right-pointing-chevrons-6.png",
+        "sha256": "ed2b0a172368aace5280261ffeb496dc3b36ccd77df6f7f4b5034282c1886c04",
+        "width": 55,
+        "height": 22
+      },
+      "confidence": 0.97,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-7",
+      "name": "聚势而上",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 62,
+        "y": 89,
+        "width": 553,
+        "height": 205
+      },
+      "text": {
+        "value": "聚势而上",
+        "fontSize": 83,
+        "fontWeight": 700,
+        "fill": "#063b86",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-8",
+      "name": "智创未来",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 233,
+        "y": 195,
+        "width": 394,
+        "height": 103
+      },
+      "text": {
+        "value": "智创未来",
+        "fontSize": 77,
+        "fontWeight": 700,
+        "fill": "#06439a",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-2025-9",
+      "name": "— 2024年度工作总结暨2025年度战略规划报告 —",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 59,
+        "y": 314,
+        "width": 519,
+        "height": 27
+      },
+      "text": {
+        "value": "— 2024年度工作总结暨2025年度战略规划报告 —",
+        "fontSize": 22,
+        "fontWeight": 700,
+        "fill": "#12285d",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-10",
+      "name": "创新驱动",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 58,
+        "y": 356,
+        "width": 105,
+        "height": 27
+      },
+      "text": {
+        "value": "创新驱动",
+        "fontSize": 17,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-11",
+      "name": "数据赋能",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 189,
+        "y": 356,
+        "width": 108,
+        "height": 27
+      },
+      "text": {
+        "value": "数据赋能",
+        "fontSize": 17,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-12",
+      "name": "协同共赢",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 326,
+        "y": 356,
+        "width": 108,
+        "height": 27
+      },
+      "text": {
+        "value": "协同共赢",
+        "fontSize": 17,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-13",
+      "name": "持续增长",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 458,
+        "y": 356,
+        "width": 108,
+        "height": 27
+      },
+      "text": {
+        "value": "持续增长",
+        "fontSize": 17,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-lightbulb-innovation-icon-14",
+      "name": "Lightbulb innovation icon",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 58,
+        "y": 355,
+        "width": 25,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 50,
+        "y": 347,
+        "width": 41,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 50,
+        "y": 347,
+        "width": 41,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 48,
+        "y": 345,
+        "width": 45,
+        "height": 47
+      },
+      "asset": {
+        "path": "assets/elements/raster-lightbulb-innovation-icon-14.png",
+        "sha256": "b0fd0f4d8111b3a2025887b703af1387903c48a883248162cde0db409eb8579f",
+        "width": 45,
+        "height": 47
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-database-icon-15",
+      "name": "Database icon",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 188,
+        "y": 355,
+        "width": 26,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 180,
+        "y": 347,
+        "width": 42,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 180,
+        "y": 347,
+        "width": 42,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 178,
+        "y": 345,
+        "width": 46,
+        "height": 47
+      },
+      "asset": {
+        "path": "assets/elements/raster-database-icon-15.png",
+        "sha256": "d75350bb5d980027f8e71a422bd10dacb9e5e66b8eb1e6cf0af69003f391d235",
+        "width": 46,
+        "height": 47
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-people-collaboration-icon-16",
+      "name": "People collaboration icon",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 326,
+        "y": 355,
+        "width": 26,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 318,
+        "y": 347,
+        "width": 42,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 318,
+        "y": 347,
+        "width": 42,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 316,
+        "y": 345,
+        "width": 46,
+        "height": 47
+      },
+      "asset": {
+        "path": "assets/elements/raster-people-collaboration-icon-16.png",
+        "sha256": "f1abcd72e1342f44d0251d48d4ae5a85bdc6a45e22feef522c7a57f35e3ab450",
+        "width": 46,
+        "height": 47
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "raster-growth-chart-icon-17",
+      "name": "Growth chart icon",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 459,
+        "y": 355,
+        "width": 27,
+        "height": 27
+      },
+      "generationBBox": {
+        "x": 451,
+        "y": 347,
+        "width": 43,
+        "height": 43
+      },
+      "detectedBBox": {
+        "x": 451,
+        "y": 347,
+        "width": 43,
+        "height": 43
+      },
+      "cropBBox": {
+        "x": 449,
+        "y": 345,
+        "width": 47,
+        "height": 47
+      },
+      "asset": {
+        "path": "assets/elements/raster-growth-chart-icon-17.png",
+        "sha256": "ff8188ba6aad22f00a3b31724b45eabb12c4b56f24a7a8137c6a8796fac61a6d",
+        "width": 47,
+        "height": 47
+      },
+      "confidence": 0.94,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-19",
+      "name": "2024年度核心成果概览",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 29,
+        "width": 585,
+        "height": 35
+      },
+      "text": {
+        "value": "2024年度核心成果概览",
+        "fontSize": 20,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-20",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 29,
+        "width": 14,
+        "height": 35
+      },
+      "generationBBox": {
+        "x": 1025,
+        "y": 21,
+        "width": 30,
+        "height": 51
+      },
+      "detectedBBox": {
+        "x": 1025,
+        "y": 23,
+        "width": 30,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 1023,
+        "y": 21,
+        "width": 34,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-20.png",
+        "sha256": "2efbc6e139e69be68783876aa176d810d39741e5db94481d75c609e0ae0b0915",
+        "width": 34,
+        "height": 53
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-bordered-kpi-cards-with-icons-and-separator-21",
+      "name": "Four bordered KPI cards with icons and separators",
+      "type": "raster-layer",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 1032,
+        "y": 78,
+        "width": 620,
+        "height": 136
+      },
+      "generationBBox": {
+        "x": 1024,
+        "y": 70,
+        "width": 636,
+        "height": 152
+      },
+      "detectedBBox": {
+        "x": 1024,
+        "y": 70,
+        "width": 636,
+        "height": 152
+      },
+      "cropBBox": {
+        "x": 1022,
+        "y": 68,
+        "width": 640,
+        "height": 156
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-bordered-kpi-cards-with-icons-and-separator-21.png",
+        "sha256": "67d1ddc498951bc7cf93003d09ca5f86376d48b8b1be48907d2fc5f0cb70d041",
+        "width": 640,
+        "height": 156
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-revenue-yuan-icon-22",
+      "name": "Revenue yuan icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1055,
+        "y": 96,
+        "width": 29,
+        "height": 29
+      },
+      "generationBBox": {
+        "x": 1047,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "detectedBBox": {
+        "x": 1047,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "cropBBox": {
+        "x": 1045,
+        "y": 86,
+        "width": 49,
+        "height": 49
+      },
+      "asset": {
+        "path": "assets/elements/raster-revenue-yuan-icon-22.png",
+        "sha256": "e7a70426309c432056e0cd9e6aef9efcdf11f57cccdc2a69583146ae0423bb76",
+        "width": 49,
+        "height": 49
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-23",
+      "name": "营业收入",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1100,
+        "y": 102,
+        "width": 77,
+        "height": 19
+      },
+      "text": {
+        "value": "营业收入",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-28-6-24",
+      "name": "28.6",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1055,
+        "y": 142,
+        "width": 69,
+        "height": 31
+      },
+      "text": {
+        "value": "28.6",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-25",
+      "name": "亿元",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1129,
+        "y": 153,
+        "width": 35,
+        "height": 14
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-23-7-26",
+      "name": "同比增长 ▲ 23.7%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1055,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长 ▲ 23.7%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#22252d",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-stacked-database-profit-icon-27",
+      "name": "Stacked database profit icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1204,
+        "y": 96,
+        "width": 29,
+        "height": 29
+      },
+      "generationBBox": {
+        "x": 1196,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "detectedBBox": {
+        "x": 1196,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "cropBBox": {
+        "x": 1194,
+        "y": 86,
+        "width": 49,
+        "height": 49
+      },
+      "asset": {
+        "path": "assets/elements/raster-stacked-database-profit-icon-27.png",
+        "sha256": "e0616c312ff7df96616c8b9ad019c82416e34b626f64b8e711a45bdfab974ab9",
+        "width": 49,
+        "height": 49
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-28",
+      "name": "净利润",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1247,
+        "y": 102,
+        "width": 61,
+        "height": 19
+      },
+      "text": {
+        "value": "净利润",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-4-32-29",
+      "name": "4.32",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1204,
+        "y": 142,
+        "width": 70,
+        "height": 31
+      },
+      "text": {
+        "value": "4.32",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-30",
+      "name": "亿元",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1278,
+        "y": 153,
+        "width": 35,
+        "height": 14
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-31-2-31",
+      "name": "同比增长 ▲ 31.2%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1204,
+        "y": 183,
+        "width": 109,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长 ▲ 31.2%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#22252d",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-customer-count-person-icon-32",
+      "name": "Customer count person icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1357,
+        "y": 96,
+        "width": 29,
+        "height": 29
+      },
+      "generationBBox": {
+        "x": 1349,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "detectedBBox": {
+        "x": 1349,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "cropBBox": {
+        "x": 1347,
+        "y": 86,
+        "width": 49,
+        "height": 49
+      },
+      "asset": {
+        "path": "assets/elements/raster-customer-count-person-icon-32.png",
+        "sha256": "5c001666506f42f0494a5dfba0e6f2d136b10b4b89bf7598d86580a2d623b69e",
+        "width": 49,
+        "height": 49
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-33",
+      "name": "客户总数",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1402,
+        "y": 102,
+        "width": 76,
+        "height": 19
+      },
+      "text": {
+        "value": "客户总数",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-12-842-34",
+      "name": "12,842",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1361,
+        "y": 142,
+        "width": 90,
+        "height": 31
+      },
+      "text": {
+        "value": "12,842",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-35",
+      "name": "家",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1458,
+        "y": 153,
+        "width": 23,
+        "height": 14
+      },
+      "text": {
+        "value": "家",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-19-8-36",
+      "name": "同比增长 ▲ 19.8%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1361,
+        "y": 183,
+        "width": 108,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长 ▲ 19.8%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#22252d",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-research-investment-pie-chart-icon-37",
+      "name": "Research investment pie-chart icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1512,
+        "y": 96,
+        "width": 29,
+        "height": 29
+      },
+      "generationBBox": {
+        "x": 1504,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "detectedBBox": {
+        "x": 1504,
+        "y": 88,
+        "width": 45,
+        "height": 45
+      },
+      "cropBBox": {
+        "x": 1502,
+        "y": 86,
+        "width": 49,
+        "height": 49
+      },
+      "asset": {
+        "path": "assets/elements/raster-research-investment-pie-chart-icon-37.png",
+        "sha256": "1132e53604015bf548879edf7bc48b7c778347cbb8191d4ed8c2df5abeb9cb5f",
+        "width": 49,
+        "height": 49
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-38",
+      "name": "研发投入",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1550,
+        "y": 102,
+        "width": 77,
+        "height": 19
+      },
+      "text": {
+        "value": "研发投入",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-3-15-39",
+      "name": "3.15",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1530,
+        "y": 142,
+        "width": 65,
+        "height": 31
+      },
+      "text": {
+        "value": "3.15",
+        "fontSize": 29,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-40",
+      "name": "亿元",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1600,
+        "y": 153,
+        "width": 35,
+        "height": 14
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 12,
+        "fontWeight": 700,
+        "fill": "#114db9",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-28-6-41",
+      "name": "同比增长 ▲ 28.6%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1530,
+        "y": 183,
+        "width": 108,
+        "height": 17
+      },
+      "text": {
+        "value": "同比增长 ▲ 28.6%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#22252d",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-42",
+      "name": "业务结构分布",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 236,
+        "width": 585,
+        "height": 31
+      },
+      "text": {
+        "value": "业务结构分布",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-43",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1033,
+        "y": 236,
+        "width": 14,
+        "height": 31
+      },
+      "generationBBox": {
+        "x": 1025,
+        "y": 228,
+        "width": 30,
+        "height": 47
+      },
+      "detectedBBox": {
+        "x": 1025,
+        "y": 228,
+        "width": 30,
+        "height": 47
+      },
+      "cropBBox": {
+        "x": 1023,
+        "y": 226,
+        "width": 34,
+        "height": 51
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-43.png",
+        "sha256": "a3f19ad115f0b86022ff6066cd8b7115dd4c37e31df35c3a49915ee453f1884e",
+        "width": 34,
+        "height": 51
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-five-segment-donut-chart-in-blue-violet-teal-ora-44",
+      "name": "Five-segment donut chart in blue, violet, teal, orange, and purple",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1098,
+        "y": 280,
+        "width": 201,
+        "height": 201
+      },
+      "generationBBox": {
+        "x": 1090,
+        "y": 272,
+        "width": 217,
+        "height": 217
+      },
+      "detectedBBox": {
+        "x": 1090,
+        "y": 272,
+        "width": 217,
+        "height": 217
+      },
+      "cropBBox": {
+        "x": 1088,
+        "y": 270,
+        "width": 221,
+        "height": 221
+      },
+      "asset": {
+        "path": "assets/elements/raster-five-segment-donut-chart-in-blue-violet-teal-ora-44.png",
+        "sha256": "70a8a5a0e18fd8adf80095fb59dec79c143a6adba495c42ee2d3019f27b7c2da",
+        "width": 221,
+        "height": 221
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-28-6-45",
+      "name": "28.6",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1164,
+        "y": 359,
+        "width": 76,
+        "height": 48
+      },
+      "text": {
+        "value": "28.6",
+        "fontSize": 34,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "middle"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-46",
+      "name": "亿元",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1180,
+        "y": 395,
+        "width": 40,
+        "height": 14
+      },
+      "text": {
+        "value": "亿元",
+        "fontSize": 11,
+        "fontWeight": 700,
+        "fill": "#1452c7",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-47",
+      "name": "总营收",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1176,
+        "y": 412,
+        "width": 48,
+        "height": 14
+      },
+      "text": {
+        "value": "总营收",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#4e5564",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-business-structure-legend-with-colored-bullets-a-48",
+      "name": "Business-structure legend with colored bullets and percentages",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1378,
+        "y": 302,
+        "width": 240,
+        "height": 157
+      },
+      "generationBBox": {
+        "x": 1370,
+        "y": 294,
+        "width": 256,
+        "height": 173
+      },
+      "detectedBBox": {
+        "x": 1370,
+        "y": 294,
+        "width": 256,
+        "height": 173
+      },
+      "cropBBox": {
+        "x": 1368,
+        "y": 292,
+        "width": 260,
+        "height": 177
+      },
+      "asset": {
+        "path": "assets/elements/raster-business-structure-legend-with-colored-bullets-a-48.png",
+        "sha256": "6f9b14d8b4c77e55aba67404b2e76e7ea48cff0f7462793ffc6d6be837442c6b",
+        "width": 260,
+        "height": 177
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-40-2-49",
+      "name": "智能制造解决方案        40.2%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1400,
+        "y": 302,
+        "width": 190,
+        "height": 19
+      },
+      "text": {
+        "value": "智能制造解决方案        40.2%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-28-7-50",
+      "name": "企业数字化服务          28.7%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1400,
+        "y": 334,
+        "width": 190,
+        "height": 19
+      },
+      "text": {
+        "value": "企业数字化服务          28.7%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-18-3-51",
+      "name": "工业互联网平台           18.3%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1400,
+        "y": 366,
+        "width": 190,
+        "height": 19
+      },
+      "text": {
+        "value": "工业互联网平台           18.3%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-9-6-52",
+      "name": "智能硬件产品              9.6%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1400,
+        "y": 398,
+        "width": 190,
+        "height": 19
+      },
+      "text": {
+        "value": "智能硬件产品              9.6%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-3-2-53",
+      "name": "其他业务                  3.2%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1400,
+        "y": 430,
+        "width": 190,
+        "height": 19
+      },
+      "text": {
+        "value": "其他业务                  3.2%",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-54",
+      "name": "战略方向与目标",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 18,
+        "y": 488,
+        "width": 365,
+        "height": 33
+      },
+      "text": {
+        "value": "战略方向与目标",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-55",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 18,
+        "y": 488,
+        "width": 10,
+        "height": 33
+      },
+      "generationBBox": {
+        "x": 10,
+        "y": 480,
+        "width": 26,
+        "height": 49
+      },
+      "detectedBBox": {
+        "x": 23,
+        "y": 480,
+        "width": 13,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 21,
+        "y": 478,
+        "width": 17,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-55.png",
+        "sha256": "5d39377405907d179c0c7ac9b58254c29d458de1242b197ad86fc6688ebbb0f7",
+        "width": 17,
+        "height": 53
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-stacked-strategic-goal-cards-with-blue-cyan-56",
+      "name": "Four stacked strategic-goal cards with blue, cyan, purple, and orange icons",
+      "type": "raster-layer",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 19,
+        "y": 530,
+        "width": 328,
+        "height": 263
+      },
+      "generationBBox": {
+        "x": 11,
+        "y": 522,
+        "width": 344,
+        "height": 279
+      },
+      "detectedBBox": {
+        "x": 26,
+        "y": 522,
+        "width": 329,
+        "height": 254
+      },
+      "cropBBox": {
+        "x": 24,
+        "y": 520,
+        "width": 333,
+        "height": 258
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-stacked-strategic-goal-cards-with-blue-cyan-56.png",
+        "sha256": "7efd76f955b35e5bfa00d85350fe8b652866b8b27bf286c0b509f47e5950bb54",
+        "width": 333,
+        "height": 258
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-57",
+      "name": "创新驱动发展",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 540,
+        "width": 143,
+        "height": 22
+      },
+      "text": {
+        "value": "创新驱动发展",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#0d4ec1",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-58",
+      "name": "深化数字化转型",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 575,
+        "width": 143,
+        "height": 22
+      },
+      "text": {
+        "value": "深化数字化转型",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#1196b6",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-59",
+      "name": "拓展生态合作",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 662,
+        "width": 143,
+        "height": 22
+      },
+      "text": {
+        "value": "拓展生态合作",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#7a38b8",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-60",
+      "name": "提升全球竞争力",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 749,
+        "width": 143,
+        "height": 22
+      },
+      "text": {
+        "value": "提升全球竞争力",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#ed7a12",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-61",
+      "name": "持续加大研发投入，突破关键核心技术，构建自主可控的技术体系。",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 562,
+        "width": 216,
+        "height": 28
+      },
+      "text": {
+        "value": "持续加大研发投入，突破关键核心技术，构建自主可控的技术体系。",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#273244",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-62",
+      "name": "以数据为核心，全面业务流程优化与管理效率全面提升。",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 597,
+        "width": 216,
+        "height": 28
+      },
+      "text": {
+        "value": "以数据为核心，全面业务流程优化与管理效率全面提升。",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#273244",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-63",
+      "name": "携手合作伙伴共建产业生态，打造开放共赢的协同发展格局。",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 684,
+        "width": 216,
+        "height": 28
+      },
+      "text": {
+        "value": "携手合作伙伴共建产业生态，打造开放共赢的协同发展格局。",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#273244",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-64",
+      "name": "加速海外市场拓展，提升品牌影响力，实现全球化可持续增长。",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 104,
+        "y": 771,
+        "width": 216,
+        "height": 28
+      },
+      "text": {
+        "value": "加速海外市场拓展，提升品牌影响力，实现全球化可持续增长。",
+        "fontSize": 11,
+        "fontWeight": 400,
+        "fill": "#273244",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "text-2025-65",
+      "name": "2025年度重点战略举措（路线图）",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 388,
+        "y": 488,
+        "width": 586,
+        "height": 33
+      },
+      "text": {
+        "value": "2025年度重点战略举措（路线图）",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-66",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 388,
+        "y": 488,
+        "width": 10,
+        "height": 33
+      },
+      "generationBBox": {
+        "x": 380,
+        "y": 480,
+        "width": 26,
+        "height": 49
+      },
+      "detectedBBox": {
+        "x": 402,
+        "y": 502,
+        "width": 4,
+        "height": 26
+      },
+      "cropBBox": {
+        "x": 400,
+        "y": 500,
+        "width": 8,
+        "height": 30
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-66.png",
+        "sha256": "470684ba3ac8cb73e77a62b8e03fdaa69c383fd421caa24bc1030f9c8f01d1c9",
+        "width": 8,
+        "height": 30
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-stage-blue-roadmap-arrow-q1-q2-q3-q4-67",
+      "name": "Four-stage blue roadmap arrow: Q1, Q2, Q3, Q4",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 399,
+        "y": 539,
+        "width": 575,
+        "height": 29
+      },
+      "generationBBox": {
+        "x": 391,
+        "y": 531,
+        "width": 591,
+        "height": 45
+      },
+      "detectedBBox": {
+        "x": 399,
+        "y": 531,
+        "width": 576,
+        "height": 45
+      },
+      "cropBBox": {
+        "x": 397,
+        "y": 529,
+        "width": 580,
+        "height": 49
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-stage-blue-roadmap-arrow-q1-q2-q3-q4-67.png",
+        "sha256": "baff34f043b7e5d31911b10ae859155d58b7514622a649d34cd1b7d3883464a2",
+        "width": 580,
+        "height": 49
+      },
+      "confidence": 0.98,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-q1-68",
+      "name": "Q1 夯实基础",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 419,
+        "y": 546,
+        "width": 80,
+        "height": 18
+      },
+      "text": {
+        "value": "Q1 夯实基础",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q2-69",
+      "name": "Q2 加速增长",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 558,
+        "y": 546,
+        "width": 93,
+        "height": 18
+      },
+      "text": {
+        "value": "Q2 加速增长",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q3-70",
+      "name": "Q3 扩大优势",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 702,
+        "y": 546,
+        "width": 93,
+        "height": 18
+      },
+      "text": {
+        "value": "Q3 扩大优势",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-q4-71",
+      "name": "Q4 实现突破",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 845,
+        "y": 546,
+        "width": 94,
+        "height": 18
+      },
+      "text": {
+        "value": "Q4 实现突破",
+        "fontSize": 14,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-four-column-roadmap-detail-panel-with-bullet-lis-72",
+      "name": "Four-column roadmap detail panel with bullet lists and separators",
+      "type": "raster-layer",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 399,
+        "y": 568,
+        "width": 575,
+        "height": 83
+      },
+      "generationBBox": {
+        "x": 391,
+        "y": 560,
+        "width": 591,
+        "height": 99
+      },
+      "detectedBBox": {
+        "x": 399,
+        "y": 560,
+        "width": 576,
+        "height": 99
+      },
+      "cropBBox": {
+        "x": 397,
+        "y": 558,
+        "width": 580,
+        "height": 103
+      },
+      "asset": {
+        "path": "assets/elements/raster-four-column-roadmap-detail-panel-with-bullet-lis-72.png",
+        "sha256": "7589144b127c62b9e7ba00d2b38379f44913003f2fa6b82e3ab75fa7a94c1889",
+        "width": 580,
+        "height": 103
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "raster-core-capability-section-with-four-outlined-circu-73",
+      "name": "Core capability section with four outlined circular capability icons",
+      "type": "raster-layer",
+      "zIndex": 2,
+      "logicalBBox": {
+        "x": 401,
+        "y": 664,
+        "width": 573,
+        "height": 145
+      },
+      "generationBBox": {
+        "x": 393,
+        "y": 656,
+        "width": 589,
+        "height": 161
+      },
+      "detectedBBox": {
+        "x": 399,
+        "y": 656,
+        "width": 576,
+        "height": 136
+      },
+      "cropBBox": {
+        "x": 397,
+        "y": 654,
+        "width": 580,
+        "height": 140
+      },
+      "asset": {
+        "path": "assets/elements/raster-core-capability-section-with-four-outlined-circu-73.png",
+        "sha256": "1cb3465fb6a9bc8d71dea4c1667f1f71551fe18cff243049007b3ab175e8c15e",
+        "width": 580,
+        "height": 140
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-74",
+      "name": "核心能力建设",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 418,
+        "y": 670,
+        "width": 104,
+        "height": 23
+      },
+      "text": {
+        "value": "核心能力建设",
+        "fontSize": 18,
+        "fontWeight": 700,
+        "fill": "#123d82",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-technology-innovation-icon-75",
+      "name": "Blue technology innovation icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 433,
+        "y": 694,
+        "width": 51,
+        "height": 51
+      },
+      "generationBBox": {
+        "x": 425,
+        "y": 686,
+        "width": 67,
+        "height": 67
+      },
+      "detectedBBox": {
+        "x": 425,
+        "y": 686,
+        "width": 67,
+        "height": 67
+      },
+      "cropBBox": {
+        "x": 423,
+        "y": 684,
+        "width": 71,
+        "height": 71
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-technology-innovation-icon-75.png",
+        "sha256": "7cda8248bd56c2a8397dfeae311dee1257431162369853b31d570a3ea495d24f",
+        "width": 71,
+        "height": 71
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-76",
+      "name": "技术创新",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 432,
+        "y": 755,
+        "width": 69,
+        "height": 39
+      },
+      "text": {
+        "value": "技术创新",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#0e4cc0",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-77",
+      "name": "突破核心技术\n增强产品竞争力",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 419,
+        "y": 780,
+        "width": 93,
+        "height": 29
+      },
+      "text": {
+        "value": "突破核心技术\n增强产品竞争力",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "middle"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-cyan-data-intelligence-capability-icon-and-outli-78",
+      "name": "Cyan data intelligence capability icon and outlined circle",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 544,
+        "y": 694,
+        "width": 105,
+        "height": 115
+      },
+      "generationBBox": {
+        "x": 536,
+        "y": 686,
+        "width": 121,
+        "height": 131
+      },
+      "detectedBBox": {
+        "x": 536,
+        "y": 686,
+        "width": 121,
+        "height": 106
+      },
+      "cropBBox": {
+        "x": 534,
+        "y": 684,
+        "width": 125,
+        "height": 110
+      },
+      "asset": {
+        "path": "assets/elements/raster-cyan-data-intelligence-capability-icon-and-outli-78.png",
+        "sha256": "4ac1fad05bec6058f1522a5698ded34685c35f4c4a8d9a37022a7b8114bb69de",
+        "width": 125,
+        "height": 110
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-79",
+      "name": "数据智能",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 558,
+        "y": 755,
+        "width": 73,
+        "height": 19
+      },
+      "text": {
+        "value": "数据智能",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#198fbf",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-purple-security-and-trust-capability-icon-and-ou-80",
+      "name": "Purple security and trust capability icon and outlined circle",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 683,
+        "y": 694,
+        "width": 105,
+        "height": 115
+      },
+      "generationBBox": {
+        "x": 675,
+        "y": 686,
+        "width": 121,
+        "height": 131
+      },
+      "detectedBBox": {
+        "x": 675,
+        "y": 686,
+        "width": 121,
+        "height": 106
+      },
+      "cropBBox": {
+        "x": 673,
+        "y": 684,
+        "width": 125,
+        "height": 110
+      },
+      "asset": {
+        "path": "assets/elements/raster-purple-security-and-trust-capability-icon-and-ou-80.png",
+        "sha256": "76ed134edfc7e901e4c34ff275665f350096d7df17e1987a6b3ac50c82cb9777",
+        "width": 125,
+        "height": 110
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-81",
+      "name": "安全可信",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 699,
+        "y": 755,
+        "width": 74,
+        "height": 19
+      },
+      "text": {
+        "value": "安全可信",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#7139b8",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-orange-talent-development-capability-icon-and-ou-82",
+      "name": "Orange talent development capability icon and outlined circle",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 821,
+        "y": 694,
+        "width": 105,
+        "height": 115
+      },
+      "generationBBox": {
+        "x": 813,
+        "y": 686,
+        "width": 121,
+        "height": 131
+      },
+      "detectedBBox": {
+        "x": 813,
+        "y": 686,
+        "width": 121,
+        "height": 106
+      },
+      "cropBBox": {
+        "x": 811,
+        "y": 684,
+        "width": 125,
+        "height": 110
+      },
+      "asset": {
+        "path": "assets/elements/raster-orange-talent-development-capability-icon-and-ou-82.png",
+        "sha256": "a4b41fcbb80ca32f8ad336c0bb4d2eb231ffbe0e5f8b37887e7d25869b6727cd",
+        "width": 125,
+        "height": 110
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-83",
+      "name": "人才发展",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 839,
+        "y": 755,
+        "width": 73,
+        "height": 19
+      },
+      "text": {
+        "value": "人才发展",
+        "fontSize": 13,
+        "fontWeight": 700,
+        "fill": "#d9651a",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-2022-2025-84",
+      "name": "2022-2025年业绩增长趋势",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1013,
+        "y": 488,
+        "width": 605,
+        "height": 33
+      },
+      "text": {
+        "value": "2022-2025年业绩增长趋势",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-85",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 1013,
+        "y": 488,
+        "width": 10,
+        "height": 33
+      },
+      "generationBBox": {
+        "x": 1005,
+        "y": 480,
+        "width": 26,
+        "height": 49
+      },
+      "detectedBBox": {
+        "x": 1009,
+        "y": 480,
+        "width": 22,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 1007,
+        "y": 478,
+        "width": 26,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-85.png",
+        "sha256": "37e7aa9763aa883b4757814e9335f4396c7409f5da156252065ac4b9fcf7e5de",
+        "width": 26,
+        "height": 53
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-combined-bar-and-line-performance-chart-with-blu-86",
+      "name": "Combined bar-and-line performance chart with blue revenue bars, teal profit bars, and purple net-margin line",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 1048,
+        "y": 586,
+        "width": 557,
+        "height": 192
+      },
+      "generationBBox": {
+        "x": 1040,
+        "y": 578,
+        "width": 573,
+        "height": 208
+      },
+      "detectedBBox": {
+        "x": 1040,
+        "y": 578,
+        "width": 573,
+        "height": 208
+      },
+      "cropBBox": {
+        "x": 1038,
+        "y": 576,
+        "width": 577,
+        "height": 212
+      },
+      "asset": {
+        "path": "assets/elements/raster-combined-bar-and-line-performance-chart-with-blu-86.png",
+        "sha256": "1a0866b14703c6274d72e7c8e0e4984403991bf7dbb6a3493334450106cd4896",
+        "width": 577,
+        "height": 212
+      },
+      "confidence": 0.99,
+      "warnings": [
+        "critical-fidelity-review"
+      ]
+    },
+    {
+      "id": "text-87",
+      "name": "营业收入（亿元）",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1040,
+        "y": 541,
+        "width": 93,
+        "height": 17
+      },
+      "text": {
+        "value": "营业收入（亿元）",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-88",
+      "name": "净利润（亿元）",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1180,
+        "y": 541,
+        "width": 91,
+        "height": 17
+      },
+      "text": {
+        "value": "净利润（亿元）",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-89",
+      "name": "净利率（%）",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1331,
+        "y": 541,
+        "width": 91,
+        "height": 17
+      },
+      "text": {
+        "value": "净利率（%）",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#202638",
+        "textAlign": "start"
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-30-20-10-0-90",
+      "name": "30\n20\n10\n0",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1022,
+        "y": 581,
+        "width": 19,
+        "height": 197
+      },
+      "text": {
+        "value": "30\n20\n10\n0",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#5a616b",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-20-15-10-5-0-91",
+      "name": "20%\n15%\n10%\n5%\n0%",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1592,
+        "y": 581,
+        "width": 23,
+        "height": 197
+      },
+      "text": {
+        "value": "20%\n15%\n10%\n5%\n0%",
+        "fontSize": 12,
+        "fontWeight": 400,
+        "fill": "#5a616b",
+        "textAlign": "start"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-2022-92",
+      "name": "2022",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1081,
+        "y": 789,
+        "width": 48,
+        "height": 18
+      },
+      "text": {
+        "value": "2022",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-2023-93",
+      "name": "2023",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1211,
+        "y": 789,
+        "width": 48,
+        "height": 18
+      },
+      "text": {
+        "value": "2023",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-2024-94",
+      "name": "2024",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1350,
+        "y": 789,
+        "width": 48,
+        "height": 18
+      },
+      "text": {
+        "value": "2024",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-2025e-95",
+      "name": "2025E",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1488,
+        "y": 789,
+        "width": 56,
+        "height": 18
+      },
+      "text": {
+        "value": "2025E",
+        "fontSize": 13,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "middle"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "raster-dark-blue-footer-quotation-banner-with-curved-to-96",
+      "name": "Dark-blue footer quotation banner with curved top edge, glowing network lines, quotation marks, and decorative light points",
+      "type": "raster-layer",
+      "zIndex": 1,
+      "logicalBBox": {
+        "x": 1018,
+        "y": 825,
+        "width": 654,
+        "height": 116
+      },
+      "generationBBox": {
+        "x": 1010,
+        "y": 817,
+        "width": 670,
+        "height": 127
+      },
+      "detectedBBox": {
+        "x": 1010,
+        "y": 817,
+        "width": 653,
+        "height": 94
+      },
+      "cropBBox": {
+        "x": 1008,
+        "y": 815,
+        "width": 657,
+        "height": 98
+      },
+      "asset": {
+        "path": "assets/elements/raster-dark-blue-footer-quotation-banner-with-curved-to-96.png",
+        "sha256": "7a72e82b7dc82360b642b77f3c0fcf79631f42a8266524840fa4b4630c3ec50b",
+        "width": 657,
+        "height": 98
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "text-97",
+      "name": "“",
+      "type": "text",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 865,
+        "y": 869,
+        "width": 37,
+        "height": 36
+      },
+      "text": {
+        "value": "“",
+        "fontSize": 48,
+        "fontWeight": 700,
+        "fill": "#ddb44d",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-98",
+      "name": "我们致力于成为全球领先的智能制造与数字化解决方案提供商，\n以科技创新推动产业进步，让智能连接未来，让价值创造无限可能！",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 921,
+        "y": 867,
+        "width": 464,
+        "height": 48
+      },
+      "text": {
+        "value": "我们致力于成为全球领先的智能制造与数字化解决方案提供商，\n以科技创新推动产业进步，让智能连接未来，让价值创造无限可能！",
+        "fontSize": 16,
+        "fontWeight": 400,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-99",
+      "name": "智创未来",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 1466,
+        "y": 862,
+        "width": 161,
+        "height": 52
+      },
+      "text": {
+        "value": "智创未来",
+        "fontSize": 42,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "end"
+      },
+      "confidence": 0.96,
+      "warnings": []
+    },
+    {
+      "id": "text-100",
+      "name": "企业价值观",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 18,
+        "y": 825,
+        "width": 345,
+        "height": 33
+      },
+      "text": {
+        "value": "企业价值观",
+        "fontSize": 19,
+        "fontWeight": 700,
+        "fill": "#ffffff",
+        "textAlign": "start"
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-title-bar-accent-101",
+      "name": "Blue title-bar accent",
+      "type": "raster-layer",
+      "zIndex": 4,
+      "logicalBBox": {
+        "x": 18,
+        "y": 825,
+        "width": 10,
+        "height": 33
+      },
+      "generationBBox": {
+        "x": 10,
+        "y": 817,
+        "width": 26,
+        "height": 49
+      },
+      "detectedBBox": {
+        "x": 23,
+        "y": 817,
+        "width": 8,
+        "height": 27
+      },
+      "cropBBox": {
+        "x": 21,
+        "y": 815,
+        "width": 12,
+        "height": 31
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-title-bar-accent-101.png",
+        "sha256": "607e641f7cc2232f55003f152407d144d9b778f746d45c71cf360dc3430ffa7c",
+        "width": 12,
+        "height": 31
+      },
+      "confidence": 0.99,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-customer-first-icon-102",
+      "name": "Blue circular customer-first icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 32,
+        "y": 870,
+        "width": 54,
+        "height": 54
+      },
+      "generationBBox": {
+        "x": 24,
+        "y": 862,
+        "width": 70,
+        "height": 70
+      },
+      "detectedBBox": {
+        "x": 39,
+        "y": 862,
+        "width": 55,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 37,
+        "y": 860,
+        "width": 59,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-customer-first-icon-102.png",
+        "sha256": "7b0a9e53f16db3129092b4a89f604260aa7d9ee30bed57d5fe6f7d7d6e8f5123",
+        "width": 59,
+        "height": 53
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-103",
+      "name": "客户至上",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 89,
+        "y": 871,
+        "width": 64,
+        "height": 20
+      },
+      "text": {
+        "value": "客户至上",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#113f8e",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-104",
+      "name": "以客户为中心\n创造价值",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 89,
+        "y": 895,
+        "width": 75,
+        "height": 28
+      },
+      "text": {
+        "value": "以客户为中心\n创造价值",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-integrity-icon-105",
+      "name": "Blue circular integrity icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 188,
+        "y": 870,
+        "width": 54,
+        "height": 54
+      },
+      "generationBBox": {
+        "x": 180,
+        "y": 862,
+        "width": 70,
+        "height": 70
+      },
+      "detectedBBox": {
+        "x": 202,
+        "y": 862,
+        "width": 48,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 200,
+        "y": 860,
+        "width": 52,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-integrity-icon-105.png",
+        "sha256": "0383192c9dc2ca40d9951d2fda830a53de31b971a6d4929de3648bf011efcf8f",
+        "width": 52,
+        "height": 53
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-106",
+      "name": "诚信担当",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 246,
+        "y": 871,
+        "width": 64,
+        "height": 20
+      },
+      "text": {
+        "value": "诚信担当",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#113f8e",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-107",
+      "name": "诚信正直\n勇于担当",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 246,
+        "y": 895,
+        "width": 75,
+        "height": 28
+      },
+      "text": {
+        "value": "诚信正直\n勇于担当",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-collaboration-icon-108",
+      "name": "Blue circular collaboration icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 343,
+        "y": 870,
+        "width": 54,
+        "height": 54
+      },
+      "generationBBox": {
+        "x": 335,
+        "y": 862,
+        "width": 70,
+        "height": 70
+      },
+      "detectedBBox": {
+        "x": 360,
+        "y": 862,
+        "width": 45,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 358,
+        "y": 860,
+        "width": 49,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-collaboration-icon-108.png",
+        "sha256": "094c766c0d15b384e069948fa3fe56a7158f1bfe07e81d60bf28cbbc70980258",
+        "width": 49,
+        "height": 53
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-109",
+      "name": "合作共赢",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 400,
+        "y": 871,
+        "width": 64,
+        "height": 20
+      },
+      "text": {
+        "value": "合作共赢",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#113f8e",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-110",
+      "name": "开放协同\n互利共赢",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 400,
+        "y": 895,
+        "width": 75,
+        "height": 28
+      },
+      "text": {
+        "value": "开放协同\n互利共赢",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-innovation-lightbulb-icon-111",
+      "name": "Blue circular innovation lightbulb icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 494,
+        "y": 870,
+        "width": 54,
+        "height": 54
+      },
+      "generationBBox": {
+        "x": 486,
+        "y": 862,
+        "width": 70,
+        "height": 70
+      },
+      "detectedBBox": {
+        "x": 519,
+        "y": 862,
+        "width": 37,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 517,
+        "y": 860,
+        "width": 41,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-innovation-lightbulb-icon-111.png",
+        "sha256": "a2b96a9f2730f10eb5f7d5919f800c19fd8cce08f3aa24c86b3302b756690eaa",
+        "width": 41,
+        "height": 53
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-112",
+      "name": "创新进取",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 552,
+        "y": 871,
+        "width": 64,
+        "height": 20
+      },
+      "text": {
+        "value": "创新进取",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#113f8e",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-113",
+      "name": "追求卓越\n持续创新",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 552,
+        "y": 895,
+        "width": 75,
+        "height": 28
+      },
+      "text": {
+        "value": "追求卓越\n持续创新",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    },
+    {
+      "id": "raster-blue-circular-passion-heart-icon-114",
+      "name": "Blue circular passion heart icon",
+      "type": "raster-layer",
+      "zIndex": 3,
+      "logicalBBox": {
+        "x": 650,
+        "y": 870,
+        "width": 54,
+        "height": 54
+      },
+      "generationBBox": {
+        "x": 642,
+        "y": 862,
+        "width": 70,
+        "height": 70
+      },
+      "detectedBBox": {
+        "x": 674,
+        "y": 862,
+        "width": 38,
+        "height": 49
+      },
+      "cropBBox": {
+        "x": 672,
+        "y": 860,
+        "width": 42,
+        "height": 53
+      },
+      "asset": {
+        "path": "assets/elements/raster-blue-circular-passion-heart-icon-114.png",
+        "sha256": "c1038c17b1230933018f62da9e82ab5fea3f1a0c2407ef2b1e407fae63d7f509",
+        "width": 42,
+        "height": 53
+      },
+      "confidence": 0.97,
+      "warnings": []
+    },
+    {
+      "id": "text-115",
+      "name": "激情奋斗",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 708,
+        "y": 871,
+        "width": 64,
+        "height": 20
+      },
+      "text": {
+        "value": "激情奋斗",
+        "fontSize": 15,
+        "fontWeight": 700,
+        "fill": "#113f8e",
+        "textAlign": "start"
+      },
+      "confidence": 0.98,
+      "warnings": []
+    },
+    {
+      "id": "text-116",
+      "name": "热爱工作\n成就梦想",
+      "type": "text",
+      "zIndex": 5,
+      "logicalBBox": {
+        "x": 708,
+        "y": 895,
+        "width": 75,
+        "height": 28
+      },
+      "text": {
+        "value": "热爱工作\n成就梦想",
+        "fontSize": 10,
+        "fontWeight": 400,
+        "fill": "#303845",
+        "textAlign": "start"
+      },
+      "confidence": 0.95,
+      "warnings": []
+    }
+  ],
+  "exports": {
+    "svg": "editable.svg",
+    "preview": "preview.png"
+  },
+  "provenance": {
+    "mode": "provider-backed-spike",
+    "calls": [
+      {
+        "requestId": "resp_03f79c9abcd98e85016a83485760c48197af6483fda5bf55ee",
+        "provider": "openai",
+        "model": "gpt-5.6-sol",
+        "operation": "vision-analysis",
+        "createdAt": "2026-08-17T17:43:40.447Z",
+        "durationMs": 145387,
+        "usage": {
+          "inputTokens": 6933,
+          "outputTokens": 7303,
+          "totalTokens": 14236
+        }
+      },
+      {
+        "requestId": "image-1786988766194",
+        "provider": "openai",
+        "model": "gpt-image-2",
+        "operation": "element-redraw",
+        "createdAt": "2026-08-17T17:46:06.194Z",
+        "durationMs": 42900,
+        "usage": {
+          "inputTokens": 4209,
+          "outputTokens": 1640,
+          "totalTokens": 5849,
+          "inputImageTokens": 2443,
+          "inputTextTokens": 1766
+        }
+      },
+      {
+        "requestId": "image-1786988809393",
+        "provider": "openai",
+        "model": "gpt-image-2",
+        "operation": "background-inpaint",
+        "createdAt": "2026-08-17T17:46:49.393Z",
+        "durationMs": 36756,
+        "usage": {
+          "inputTokens": 2588,
+          "outputTokens": 1640,
+          "totalTokens": 4228,
+          "inputImageTokens": 2443,
+          "inputTextTokens": 145
+        }
+      }
+    ]
+  },
+  "warnings": [
+    "raster-right-side-white-dashboard-background-with-faint-18: classified-as-background-scaffold",
+    "chroma-background-coverage-below-expected"
+  ]
+}

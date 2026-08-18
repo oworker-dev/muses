@@ -4,6 +4,38 @@ The current product direction and architecture baseline are recorded in
 `delivery/architecture-baseline.md`. This document continues to describe the
 accepted SaaS foundation on which the AI design platform is being built.
 
+The first fixture-driven `image.to-editable.v1` evidence is under
+`delivery/evidence/image-to-editable/corporate-report/`. It reconstructs the
+provided 1672×941 corporate report into a layered SVG with native text and
+charts, three bounded raster layers, a host-neutral scene manifest, and
+render-back QA. This evidence proves the deterministic export boundary only;
+it does not claim that the general VLM/Image Edit pipeline or public Media API
+is complete.
+
+The first real Provider Spike v2 evidence is under
+`delivery/evidence/image-to-editable/provider-spike-v2/`. It records one
+`gpt-5.6-sol` scene analysis, one hierarchy-batched `gpt-image-2` foreground
+Edit, one Edit-only background Repair, 99 native text layers, 24 replaceable
+raster layers, one editable background, automatic crop/placement data, and a
+`0.9073` render-back similarity. It is a retained **failed visual-quality
+regression sample**: the old structural QA marked it as passed despite
+background swallowing, geometry drift, chroma leakage, and redraw noise. It
+does not constitute a Provider quality gate, standalone Media API, or broad
+production validation.
+
+The revised Provider Spike v3 analysis and replay evidence is under
+`delivery/evidence/image-to-editable/provider-spike-v3/`. The analysis uses
+`gpt-5.6-sol` and classifies bounded artwork, containers, leaves, and native
+text. The first Image Edit replay still failed the transparent redraw gate, so
+the pipeline now excludes failed model assets from publication and records an
+explicit source-preserving fallback. The checked replay is under
+`provider-spike-v3-source-fallback/`: it reaches `0.9956` render-back
+similarity with 75 raster layers, but remains `partial` because all 75 layers use
+source-preserving fallback rather than successful transparent redraws. This is a visual-protection
+regression artifact, not a production-quality pass. All 128 SVG text nodes are
+retained but hidden under source-preserved text, so `editableTextVisible` also
+fails explicitly.
+
 The current value, open-development, and real-work validation boundary is
 recorded in `delivery/value-foundation.md`.
 

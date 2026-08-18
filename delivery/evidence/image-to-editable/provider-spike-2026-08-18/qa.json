@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "source": {
+    "width": 1672,
+    "height": 941
+  },
+  "rendered": {
+    "width": 1672,
+    "height": 941
+  },
+  "structure": {
+    "textElements": 80,
+    "rasterElements": 35,
+    "renderedRasterElements": 35
+  },
+  "pixels": {
+    "nonBlank": true,
+    "meanAbsoluteError": 35.5517,
+    "similarity": 0.8606
+  },
+  "chroma": {
+    "detectedKey": {
+      "r": 240,
+      "g": 6,
+      "b": 245
+    },
+    "transparentCoverage": 0.3569
+  },
+  "checks": {
+    "sameCanvasSize": true,
+    "nonBlank": true,
+    "hasEditableText": true,
+    "hasRasterLayers": true,
+    "detectedRasterLayers": true,
+    "hasRequiredProviderStages": true,
+    "providerRequestIdsCaptured": true
+  }
+}
